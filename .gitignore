@@ -1,0 +1,5 @@
+todo
+*.txt
+comments
+node_modules
+.cache
