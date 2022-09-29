@@ -1,5 +1,6 @@
 todo
-*.txt
+notes.txt
 comments
 node_modules
 .cache
+static
