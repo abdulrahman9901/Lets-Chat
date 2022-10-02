@@ -206140,7 +206140,7 @@ var Chat = /*#__PURE__*/function (_React$Component) {
           id: message.id + 'p',
           className: participants.includes(message.author) ? currentUser === message.author ? 'sender' : 'reciever' : 'out'
         }, message.author) : null, /*#__PURE__*/_react.default.createElement("br", null), /*#__PURE__*/_react.default.createElement("img", {
-          src: "https://img.icons8.com/glyph-neue/128/".concat(participants.includes(message.author) ? '228BE6' : '808080', "/user-male-circle.png")
+          src: "https://img.icons8.com/glyph-neue/128/".concat(participants.includes(message.author) ? currentUser === message.author ? '00008B' : 'DC143C' : '808080', "/user-male-circle.png")
         }), /*#__PURE__*/_react.default.createElement("p", {
           onClick: function onClick(e) {
             return _this3.changeVisibility(e, message.timestamp);

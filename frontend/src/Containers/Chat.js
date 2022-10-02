@@ -149,7 +149,7 @@ class Chat extends React.Component {
                 <br />
             
             {/* <img src="http://emilcarlsson.se/assets/mikeross.png" alt="" /> */}
-            <img src={`https://img.icons8.com/glyph-neue/128/${participants.includes(message.author)?'228BE6':'808080'}/user-male-circle.png`}/>
+            <img src={`https://img.icons8.com/glyph-neue/128/${participants.includes(message.author)? currentUser === message.author ? '00008B' :'DC143C':'808080'}/user-male-circle.png`}/>
             <p onClick={(e) => this.changeVisibility(e,message.timestamp)} id={message.id}>{message.content}
              </p>
              <br/>
