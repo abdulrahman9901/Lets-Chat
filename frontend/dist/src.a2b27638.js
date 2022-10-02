@@ -206085,13 +206085,13 @@ var Chat = /*#__PURE__*/function (_React$Component) {
         prefix = "just now...";
       } else if (timeDiff < 60 && timeDiff >= 1) {
         // less than sixty minutes ago
-        prefix = "".concat(timeDiff, " minutes ago");
+        if (timeDiff < 2) prefix = "one minute ago";else prefix = "".concat(timeDiff, " minutes ago");
       } else if (timeDiff < 24 * 60 && timeDiff >= 60) {
         // less than 24 hours ago
-        prefix = "".concat(Math.round(timeDiff / 60), " hours ago");
+        if (timeDiff < 2 * 60) prefix = "one hour ago";else prefix = "".concat(Math.round(timeDiff / 60), " hours ago");
       } else if (timeDiff < 31 * 24 * 60 && timeDiff >= 24 * 60) {
-        // less than 7 days ago
-        prefix = "".concat(Math.round(timeDiff / (60 * 24)), " days ago");
+        // less than 31 days ago
+        if (timeDiff < 2 * 24 * 60) prefix = "a day ago";else prefix = "".concat(Math.round(timeDiff / (60 * 24)), " days ago");
       } else {
         prefix = "".concat(date.getDate(), "/").concat(date.getMonth() + 1, "/").concat(date.getFullYear(), " at ").concat(date.toLocaleString('en-US', {
           hour: 'numeric',
@@ -211879,7 +211879,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "14615" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "2889" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

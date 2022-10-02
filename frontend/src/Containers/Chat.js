@@ -95,13 +95,22 @@ class Chat extends React.Component {
             prefix = "just now...";
             } else if (timeDiff < 60 && timeDiff >= 1) {
             // less than sixty minutes ago
-            prefix = `${timeDiff} minutes ago`;
+            if (timeDiff < 2)
+                prefix = `one minute ago`;
+            else
+                prefix = `${timeDiff} minutes ago`;
             } else if (timeDiff < 24 * 60 && timeDiff >= 60) {
             // less than 24 hours ago
-            prefix = `${Math.round(timeDiff / 60)} hours ago`;
+            if(timeDiff < 2 * 60)
+                prefix = `one hour ago`;
+            else
+                prefix = `${Math.round(timeDiff / 60)} hours ago`;
             } else if (timeDiff < 31 * 24 * 60 && timeDiff >= 24 * 60) {
-            // less than 7 days ago
-            prefix = `${Math.round(timeDiff / (60 * 24))} days ago`;
+            // less than 31 days ago
+            if(timeDiff < 2 * 24 * 60)
+                prefix = `a day ago`;
+            else
+                prefix = `${Math.round(timeDiff / (60 * 24))} days ago`;
             } else {
             prefix = `${date.getDate()}/${(date.getMonth()+1)}/${date.getFullYear()} at ${date.toLocaleString('en-US', { hour: 'numeric', hour12: true })}`;
             }
