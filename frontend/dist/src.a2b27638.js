@@ -206102,7 +206102,7 @@ var Chat = /*#__PURE__*/function (_React$Component) {
         prefix = "just now...";
       } else if (timeDiff < 60 && timeDiff >= 1) {
         // less than sixty minutes ago
-        if (timeDiff < 2) prefix = "one minute ago";else prefix = "".concat(timeDiff, " minutes ago");
+        if (timeDiff < 2) prefix = "one min. ago";else prefix = "".concat(timeDiff, " mins. ago");
       } else if (timeDiff < 24 * 60 && timeDiff >= 60) {
         // less than 24 hours ago
         if (timeDiff < 2 * 60) prefix = "one hour ago";else prefix = "".concat(Math.round(timeDiff / 60), " hours ago");
@@ -206120,7 +206120,7 @@ var Chat = /*#__PURE__*/function (_React$Component) {
     }
   }, {
     key: "renderMessages",
-    value: function renderMessages(messages, participants) {
+    value: function renderMessages(messages, participantsCount, participants) {
       var _this3 = this;
 
       // const currentUser='admin'
@@ -206135,12 +206135,12 @@ var Chat = /*#__PURE__*/function (_React$Component) {
       return messages.map(function (message) {
         return /*#__PURE__*/_react.default.createElement("div", null, /*#__PURE__*/_react.default.createElement("li", {
           key: message.id,
-          className: currentUser === message.author ? 'sent' : 'replies'
-        }, participants > 2 ? /*#__PURE__*/_react.default.createElement("small", {
+          className: participants.includes(message.author) ? currentUser === message.author ? 'sent' : 'replies' : 'replies out'
+        }, participantsCount > 1 ? /*#__PURE__*/_react.default.createElement("small", {
           id: message.id + 'p',
-          className: currentUser === message.author ? 'sender' : 'reciever'
+          className: participants.includes(message.author) ? currentUser === message.author ? 'sender' : 'reciever' : 'out'
         }, message.author) : null, /*#__PURE__*/_react.default.createElement("br", null), /*#__PURE__*/_react.default.createElement("img", {
-          src: "https://img.icons8.com/glyph-neue/128/228BE6/user-male-circle.png"
+          src: "https://img.icons8.com/glyph-neue/128/".concat(participants.includes(message.author) ? '228BE6' : '808080', "/user-male-circle.png")
         }), /*#__PURE__*/_react.default.createElement("p", {
           onClick: function onClick(e) {
             return _this3.changeVisibility(e, message.timestamp);
@@ -206233,7 +206233,7 @@ var Chat = /*#__PURE__*/function (_React$Component) {
           className: "messages"
         }, /*#__PURE__*/_react.default.createElement("ul", {
           id: "chat-log"
-        }, console.log('messages', _toConsumableArray(new Set(messages))), messages && this.renderMessages(messages, this.props.participantsCount), /*#__PURE__*/_react.default.createElement("li", null, /*#__PURE__*/_react.default.createElement("div", {
+        }, console.log('messages', _toConsumableArray(new Set(messages))), messages && this.renderMessages(messages, this.props.participantsCount, this.props.participants), /*#__PURE__*/_react.default.createElement("li", null, /*#__PURE__*/_react.default.createElement("div", {
           style: {
             float: "left",
             clear: "both"
@@ -211896,7 +211896,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "2889" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "6204" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

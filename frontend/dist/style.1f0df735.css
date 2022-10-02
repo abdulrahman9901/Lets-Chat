@@ -28101,7 +28101,7 @@ body {
     color: #435f7a;
     background: #e6eaea;
     font-size: 1em !important;
-    margin-left: 5%;
+    margin-left: 6%;
     display: inline;
   }
 
@@ -28110,7 +28110,7 @@ body {
     background: #e6eaea;
     font-size: 1em !important;
     display: inline;
-    margin-left: 64%;
+    margin-left: 63%;
     }
 
   #frame .content .messages ul li.replies {
@@ -28367,6 +28367,16 @@ ul.ant-dropdown-menu {
 
 .social-media  > button{
   margin-right: 15px;
+}
+li.out > p {
+  background-color: gray !important;
+}
+small.out {
+  float: right;
+  font-size: 1em !important;
+  margin-right: 3%;
+  font-weight: bold;
+  color: gray !important;
 }
 
 /*# sourceMappingURL=/style.1f0df735.css.map */

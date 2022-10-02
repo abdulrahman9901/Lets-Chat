@@ -11,6 +11,8 @@ from chat.views import get_user_contact
 
 from chat.models import GENDER_SELECTION
 
+from chat.consumers import ChatConsumer
+
 class CustomRegisterSerializer(RegisterSerializer):
     gender = serializers.ChoiceField(choices=GENDER_SELECTION)
     phone_number = serializers.CharField(max_length=30)
@@ -65,6 +67,8 @@ class ChatSerializer(serializers.ModelSerializer):
 
         print(validated_data['admins'],instance.admins.all())
 
+        # ChatConsumer.send_message('new person added')
+
         participants = validated_data['participants']
         admins = validated_data['admins']
         contacts=[]
@@ -93,6 +97,7 @@ class ChatSerializer(serializers.ModelSerializer):
             for admin in new_admins :
                 if admin not in instance.admins.all():
                     instance.admins.add(admin)
+
 
         return instance
 
