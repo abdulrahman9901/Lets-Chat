@@ -1,4 +1,4 @@
-import { Button, Form, message ,Select } from 'antd';
+import { Button, Form, message ,Select ,Radio } from 'antd';
 import React, { useState } from 'react';
 import axios from 'axios';
 import * as navActions from '../store/actions/nav' 
@@ -8,7 +8,7 @@ import {useNavigate} from 'react-router-dom';
 const AddMemeberForm = (props) => {
 
   const [usernames ,SetUsernames] = useState([])
-
+  const [value, setValue] = useState('Participant');
   /**https://github.com/pmndrs/react-three-fiber/issues/2134 */
 
   // const { history } = useHistory();
@@ -23,29 +23,6 @@ const AddMemeberForm = (props) => {
     SetUsernames(value)
   }
 
-
-//   triggerUpdate =(e)=> {
-//     console.log('triggered')
-//     const chatId =window.location.pathname.slice(1);
-//     axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
-//     axios.defaults.xsrfCookieName = "csrftoken";
-//     axios.defaults.headers = {
-//     "Content-Type": "application/json",
-//     Authorization: `Token ${this.props.token}`
-//     };
-//     axios
-//     .put(`http://127.0.0.1:8000/chat/${chatId}/update/`,
-//     { 
-//         "command":'add',
-//         "name": "new name",
-//         "messages": [],
-//         "participants": []
-//     }
-//     )
-//     .then(res => 
-//         (console.log(res.data))
-//     );
-// }
   const addMemeber = (values,token) =>{
     console.log(values.Contacts,token)
     const chatId =window.location.pathname.slice(1);
@@ -55,12 +32,26 @@ const AddMemeberForm = (props) => {
       'Content-Type' : 'application/json',
       Authorization :`Token ${props.token}`
     }
-    axios.put(`http://127.0.0.1:8000/chat/${chatId}/update/`,
-            {
-            "name": "new name",
-            "messages": [],
-            "participants":[...props.participants,...values.Contacts],
-            }
+    console.log('rule is ',value)
+    let content;
+    if (value === 'Participant')
+      content =  {
+        "name": "new name",
+        "messages": [],
+        "participants":[...props.participants,...values.Contacts],
+        'admins':[]
+        }
+      else if (value === 'Admin')
+        content =  {
+          "name": "new name",
+          "messages": [],
+          "participants":[...props.participants,...values.Contacts],
+          'admins':[...values.Contacts]
+          }
+        else 
+          content = null
+
+    axios.put(`http://127.0.0.1:8000/chat/${chatId}/update/`,content
         ).then(res=>{
             console.log(res.data)
             message.success('Memebers were added successfully',5)
@@ -73,12 +64,29 @@ const AddMemeberForm = (props) => {
     console.log('participants: ',[localStorage.getItem('username'),...values.Contacts]);
     addMemeber(values,props.token)
     form.resetFields()
+    setValue('Participants');
     props.closeOnSubmit()
   };
 
   const onFinishFailed = (errorInfo) => {
     console.log('Failed:', errorInfo);
   };
+
+  const onChange = ({ target: { value } }) => {
+    console.log('radio checked', value);
+    setValue(value);
+  };
+
+  const options= [
+    {
+      label: 'Participant',
+      value: 'Participant',
+    },
+    {
+      label: 'Admin',
+      value: 'Admin',
+    },
+  ];
 
   return (
     <Form
@@ -115,6 +123,20 @@ const AddMemeberForm = (props) => {
         {usernames}
       </Select>
       </Form.Item>
+      <Form.Item
+        label="Rule"
+        name='rule'
+        rules={[]}
+      > 
+      <Radio.Group
+        options={options}
+        onChange={onChange}
+        defaultValue={value}
+        optionType="button"
+        buttonStyle="solid"
+      />
+      </Form.Item>
+      
       <Form.Item
         wrapperCol={{
           offset: 8,

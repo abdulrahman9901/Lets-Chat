@@ -205611,6 +205611,11 @@ var AddMemeberForm = function AddMemeberForm(props) {
       _useState2 = _slicedToArray(_useState, 2),
       usernames = _useState2[0],
       SetUsernames = _useState2[1];
+
+  var _useState3 = (0, _react.useState)('Participant'),
+      _useState4 = _slicedToArray(_useState3, 2),
+      value = _useState4[0],
+      setValue = _useState4[1];
   /**https://github.com/pmndrs/react-three-fiber/issues/2134 */
   // const { history } = useHistory();
 
@@ -205624,29 +205629,7 @@ var AddMemeberForm = function AddMemeberForm(props) {
 
   var handleChange = function handleChange(value) {
     SetUsernames(value);
-  }; //   triggerUpdate =(e)=> {
-  //     console.log('triggered')
-  //     const chatId =window.location.pathname.slice(1);
-  //     axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
-  //     axios.defaults.xsrfCookieName = "csrftoken";
-  //     axios.defaults.headers = {
-  //     "Content-Type": "application/json",
-  //     Authorization: `Token ${this.props.token}`
-  //     };
-  //     axios
-  //     .put(`http://127.0.0.1:8000/chat/${chatId}/update/`,
-  //     { 
-  //         "command":'add',
-  //         "name": "new name",
-  //         "messages": [],
-  //         "participants": []
-  //     }
-  //     )
-  //     .then(res => 
-  //         (console.log(res.data))
-  //     );
-  // }
-
+  };
 
   var addMemeber = function addMemeber(values, token) {
     console.log(values.Contacts, token);
@@ -205657,12 +205640,21 @@ var AddMemeberForm = function AddMemeberForm(props) {
       'Content-Type': 'application/json',
       Authorization: "Token ".concat(props.token)
     };
-
-    _axios.default.put("http://127.0.0.1:8000/chat/".concat(chatId, "/update/"), {
+    console.log('rule is ', value);
+    var content;
+    if (value === 'Participant') content = {
       "name": "new name",
       "messages": [],
-      "participants": [].concat(_toConsumableArray(props.participants), _toConsumableArray(values.Contacts))
-    }).then(function (res) {
+      "participants": [].concat(_toConsumableArray(props.participants), _toConsumableArray(values.Contacts)),
+      'admins': []
+    };else if (value === 'Admin') content = {
+      "name": "new name",
+      "messages": [],
+      "participants": [].concat(_toConsumableArray(props.participants), _toConsumableArray(values.Contacts)),
+      'admins': _toConsumableArray(values.Contacts)
+    };else content = null;
+
+    _axios.default.put("http://127.0.0.1:8000/chat/".concat(chatId, "/update/"), content).then(function (res) {
       console.log(res.data);
 
       _antd.message.success('Memebers were added successfully', 5);
@@ -205677,6 +205669,7 @@ var AddMemeberForm = function AddMemeberForm(props) {
     console.log('participants: ', [localStorage.getItem('username')].concat(_toConsumableArray(values.Contacts)));
     addMemeber(values, props.token);
     form.resetFields();
+    setValue('Participants');
     props.closeOnSubmit();
   };
 
@@ -205684,6 +205677,19 @@ var AddMemeberForm = function AddMemeberForm(props) {
     console.log('Failed:', errorInfo);
   };
 
+  var onChange = function onChange(_ref) {
+    var value = _ref.target.value;
+    console.log('radio checked', value);
+    setValue(value);
+  };
+
+  var options = [{
+    label: 'Participant',
+    value: 'Participant'
+  }, {
+    label: 'Admin',
+    value: 'Admin'
+  }];
   return /*#__PURE__*/_react.default.createElement(_antd.Form, {
     name: "basic",
     form: form,
@@ -205711,6 +205717,16 @@ var AddMemeberForm = function AddMemeberForm(props) {
       width: '100%'
     }
   }, usernames)), /*#__PURE__*/_react.default.createElement(_antd.Form.Item, {
+    label: "Rule",
+    name: "rule",
+    rules: []
+  }, /*#__PURE__*/_react.default.createElement(_antd.Radio.Group, {
+    options: options,
+    onChange: onChange,
+    defaultValue: value,
+    optionType: "button",
+    buttonStyle: "solid"
+  })), /*#__PURE__*/_react.default.createElement(_antd.Form.Item, {
     wrapperCol: {
       offset: 8,
       span: 16
@@ -205986,6 +206002,7 @@ var Chat = /*#__PURE__*/function (_React$Component) {
       _axios.default.put("http://127.0.0.1:8000/chat/".concat(chatId, "/update/"), {
         "name": "new name",
         "messages": [],
+        "admins": [],
         "participants": _this.props.participants.filter(function (p) {
           return p != localStorage.getItem('username');
         })
