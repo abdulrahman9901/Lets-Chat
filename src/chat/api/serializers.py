@@ -60,19 +60,39 @@ class ChatSerializer(serializers.ModelSerializer):
         return chat
     
     def update(self, instance, validated_data):
+
         print(validated_data['participants'],instance.participants.all())
+
+        print(validated_data['admins'],instance.admins.all())
+
         participants = validated_data['participants']
+        admins = validated_data['admins']
         contacts=[]
+        new_admins = []
         for username in participants:
                 contacts.append(get_user_contact(username))
+
+        for admin in admins:
+                new_admins.append(get_user_contact(admin))
+
+        # leave case 
         if len(contacts) < len(instance.participants.all()):
             new = list(set(instance.participants.all()) - set(contacts))
             print(new[0])     
-            instance.participants.remove(new[0]) 
+            instance.participants.remove(new[0])
+            if new[0] in instance.admins.all():
+                instance.admins.remove(new[0])  
+
+        # add memeber and/or assign memeber to be an admin 
+
         else:
             for contact in contacts :
                 if contact not in instance.participants.all():
                     instance.participants.add(contact)
+
+            for admin in new_admins :
+                if admin not in instance.admins.all():
+                    instance.admins.add(admin)
 
         return instance
 

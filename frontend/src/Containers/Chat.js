@@ -246,6 +246,7 @@ class Chat extends React.Component {
                 {
                 "name": "new name",
                 "messages": [],
+                "admins" :[],
                 "participants":this.props.participants.filter((p) =>{
                     return p !=localStorage.getItem('username')
                 }),
