@@ -34,24 +34,47 @@ class ContactSerializer(serializers.StringRelatedField):
 
 class ChatSerializer(serializers.ModelSerializer):
     participants = ContactSerializer(many=True)
-
+    admins = ContactSerializer(many=True)
+    
+    allowed_methods = ['get', 'post', 'put', 'delete', 'options','update']
+    
     class Meta:
         model = Chat
-        fields = ('id','name','messages', 'participants')
+        fields = ('id','name','messages', 'participants','admins')
         read_only = ('id')
 
     def create(self, validated_data):
         print(validated_data)
         participants = validated_data.pop('participants')
+        admins = validated_data.pop('admins')
         name = validated_data.pop('name')
         chat = Chat()
         chat.name = name
+        print('first element ',admins[0])
         chat.save()
         for username in participants:
             contact = get_user_contact(username)
             chat.participants.add(contact)
+        chat.admins.add(get_user_contact(admins[0]))
         chat.save()
         return chat
+    
+    def update(self, instance, validated_data):
+        print(validated_data['participants'],instance.participants.all())
+        participants = validated_data['participants']
+        contacts=[]
+        for username in participants:
+                contacts.append(get_user_contact(username))
+        if len(contacts) < len(instance.participants.all()):
+            new = list(set(instance.participants.all()) - set(contacts))
+            print(new[0])     
+            instance.participants.remove(new[0]) 
+        else:
+            for contact in contacts :
+                if contact not in instance.participants.all():
+                    instance.participants.add(contact)
+
+        return instance
 
 #  from chat.models import Chat  
 #  from chat.api.serializers import ChatSerializer

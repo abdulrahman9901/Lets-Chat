@@ -40,6 +40,7 @@ class Message(models.Model):
 
 class Chat(models.Model):
     name = models.CharField(max_length=20,null=True)
+    admins = models.ManyToManyField(Contact,related_name='chat_admins')
     participants = models.ManyToManyField(Contact,related_name='chats')
     messages = models.ManyToManyField(Message,blank=True)
 

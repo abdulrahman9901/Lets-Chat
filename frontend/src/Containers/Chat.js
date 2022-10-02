@@ -1,10 +1,16 @@
 import React from 'react';
+import {message} from 'antd'
 import Sidepanel from './sidepanel';
 import webSocketInstance from '../websocket';
 import Login from './Login';
 import AddChatModal from './Popup';
 import {connect} from 'react-redux'
-
+import { Button } from 'antd';
+import axios from 'axios';
+import AddMemberModal from './MemeberPopup'
+import * as navActions from '../store/actions/nav'
+import * as messageActions from '../store/actions/messages'
+import 'url-change-event'
 class Chat extends React.Component {
 
     state={
@@ -26,21 +32,21 @@ class Chat extends React.Component {
             webSocketInstance.connect(chatId);
         }
     }
+    pathname = location.pathname;
     constructor(props){
         super(props)
         console.log('constructor')
         this.initializeChat()
-        let pathname = location.pathname;
         const CheckUrlChange = () => {
-            if (location.pathname != pathname) {
-                console.log(pathname,location.pathname)
-                pathname = location.pathname;
+            if (location.pathname != this.pathname) {
+                console.log(this.pathname,location.pathname)
+                this.pathname = location.pathname;
                 this.initializeChat()
             }
         }
         // https://stackoverflow.com/a/68371679
         window.addEventListener("click",CheckUrlChange);
-        
+        //window.addEventListener('urlchangeevent',CheckUrlChange);
         // var pushState = window.history.pushState;
         // window.history.pushState = function(state) {
         //     this.initializeChat()
@@ -75,6 +81,8 @@ class Chat extends React.Component {
       componentDidUpdate() {
         this.scrollToBottom();
         this.submitOnEnter();
+        this.pathname = location.pathname;
+        console.log(this.pathname)
     }
     timestampDisplay(timestamp){
         let prefix = "";
@@ -216,10 +224,38 @@ class Chat extends React.Component {
         }); 
     //}
 }
+    leave =()=>{
+        console.log(this.props.token)
+        const chatId =window.location.pathname.slice(1);
+        axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
+        axios.defaults.xsrfCookieName = "csrftoken";
+        axios.defaults.headers = {
+            'Content-Type' : 'application/json',
+            Authorization :`Token ${this.props.token}`
+        }
+        axios.put(`http://127.0.0.1:8000/chat/${chatId}/update/`,
+                {
+                "name": "new name",
+                "messages": [],
+                "participants":this.props.participants.filter((p) =>{
+                    return p !=localStorage.getItem('username')
+                }),
+                }
+        ).then(res=>{
+            console.log(res.data)
+            message.success('You have left the chat successfully',5)
+            this.props.getChats(localStorage.getItem('username'),this.props.token)
+            this.initializeChat();
+            }).catch(err =>{
+                console.log(`error at create chat ${err}`)
+                message.error('something went wrong olease try again later...! ',5)
+            });
+        }
     render(){
         console.log('props =>>>>>>>>>>>> ',this.props)
         const messages=this.props.messages;
         console.log('at render chat ', this.props.participants)
+
         if(this.props.isAuthenticated === true) 
         {console.log("isAuthenticated");
         return (
@@ -227,32 +263,43 @@ class Chat extends React.Component {
                  <AddChatModal 
                 isVisible={this.props.showAddChatPopup}
                 close={() => this.props.closeAddChatPopup()}
-                  />    
+                  />
+                <AddMemberModal 
+                isVisible={this.props.showAddMemeberPopup}
+                close={() => this.props.closeAddMemeberPopup()}
+                />
                 <Sidepanel />
                 <div className="content">
                   <div className="contact-profile">
-                    {/* <img src="https://img.icons8.com/external-xnimrodx-lineal-gradient-xnimrodx/64/000000/external-chat-notification-xnimrodx-lineal-gradient-xnimrodx.png" alt="" /> */}
-                    {/* <img src="https://img.icons8.com/glyph-neue/64/228BE6/filled-chat.png"/> */}
-                    {/* <img src="https://img.icons8.com/material-outlined/96/2C3E50/filled-chat.png"/>  */}
                     <img src="https://img.icons8.com/pastel-glyph/128/2C3E50/communication--v1.png"/>
                     <p> {this.props.name ? this.props.name : window.location.pathname.slice(1) ? `Chat # ${window.location.pathname.slice(1)}`:null} </p>
-                    {/* <div className="social-media">
-                      <i className="fa fa-facebook" aria-hidden="true"></i>
-                      <i className="fa fa-twitter" aria-hidden="true"></i>
-                      <i className="fa fa-instagram" aria-hidden="true"></i>
-                    </div> */}
+                    {this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?   <div className="social-media">
+                    {this.props.admins && this.props.admins.includes(this.props.currentUser) ? 
+                        <Button type="primary" onClick={(e)=>{e.preventDefault();this.props.addMemeber()}}>
+                            Add memeber
+                        </Button>
+                    : null}
+                    <Button danger onClick={(e)=>{e.preventDefault();this.leave();}}>
+                        Leave
+                    </Button>
+                    {this.props.admins && this.props.admins.includes(this.props.currentUser) ? 
+                        <Button type="primary" danger>
+                            Delete 
+                        </Button>
+                    : null}
+                    </div>: null}
                   </div>
                   {! this.props.main ?<div>
                   <div className="messages">
                     <ul id="chat-log"> 
                         {console.log('messages',[...new Set(messages)])}
-                        {messages && this.renderMessages(messages,this.props.participants)}
+                        {messages && this.renderMessages(messages,this.props.participantsCount)}
                         <li><div style={{ float:"left", clear: "both" }}
                               ref={this.messagesEndRef} >
                         </div></li>
                     </ul>
                   </div>
-                  <div className="messages-dial">
+                  {this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ? <div className="messages-dial">
                   <form onSubmit={this.sendMessageHandler}>
                   <div className="message-input">
                     <div className="wrap">
@@ -288,7 +335,7 @@ class Chat extends React.Component {
                     </div>
                   </div>
                   </form>
-                  </div>
+                  </div>:null}
                   </div>
                       :null}
                 </div>
@@ -299,11 +346,21 @@ class Chat extends React.Component {
     }
 }
 
+const mapDispatchToProps =(dispatch) =>{
+    return {
+        addMemeber : () =>dispatch(navActions.openAddMemeberPopup()),
+        getChats : (username,token) =>dispatch(messageActions.getUserChats(username,token)),
+    }
+}
 const mapStateToProps =(state)=>{
     return{
     messages :state.message.messages,
     participants:state.message.participants ,
-    name : state.message.name
+    participantsCount:state.message.participantsCount ,
+    name : state.message.name,
+    token:state.auth.token,
+    currentUser : state.auth.username,
+    admins : state.message.admins
     }
 }
-export default connect(mapStateToProps)(Chat)
+export default connect(mapStateToProps,mapDispatchToProps)(Chat)

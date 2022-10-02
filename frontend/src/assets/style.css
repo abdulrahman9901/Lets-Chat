@@ -910,3 +910,7 @@ ul.ant-dropdown-menu {
   overflow-y: scroll;
   max-height: 72px;
 }
+
+.social-media  > button{
+  margin-right: 15px;
+}

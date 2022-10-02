@@ -1,13 +1,11 @@
-import { Button, Form, Input ,Select , message } from 'antd';
+import { Button, Form, message ,Select } from 'antd';
 import React, { useState } from 'react';
 import axios from 'axios';
 import * as navActions from '../store/actions/nav' 
 import * as messageActions from '../store/actions/messages' 
 import { connect } from 'react-redux';
-import { useHistory , useNavigate} from 'react-router-dom';
-import webSocketInstance from '../websocket';
-
-const AddChatForm = (props) => {
+import {useNavigate} from 'react-router-dom';
+const AddMemeberForm = (props) => {
 
   const [usernames ,SetUsernames] = useState([])
 
@@ -25,27 +23,47 @@ const AddChatForm = (props) => {
     SetUsernames(value)
   }
 
-  const createChat = (values,token) =>{
-    console.log(values.Contacts,token,props.username)
+
+//   triggerUpdate =(e)=> {
+//     console.log('triggered')
+//     const chatId =window.location.pathname.slice(1);
+//     axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
+//     axios.defaults.xsrfCookieName = "csrftoken";
+//     axios.defaults.headers = {
+//     "Content-Type": "application/json",
+//     Authorization: `Token ${this.props.token}`
+//     };
+//     axios
+//     .put(`http://127.0.0.1:8000/chat/${chatId}/update/`,
+//     { 
+//         "command":'add',
+//         "name": "new name",
+//         "messages": [],
+//         "participants": []
+//     }
+//     )
+//     .then(res => 
+//         (console.log(res.data))
+//     );
+// }
+  const addMemeber = (values,token) =>{
+    console.log(values.Contacts,token)
+    const chatId =window.location.pathname.slice(1);
     axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
     axios.defaults.xsrfCookieName = "csrftoken";
     axios.defaults.headers = {
       'Content-Type' : 'application/json',
       Authorization :`Token ${props.token}`
     }
-    axios.post('http://127.0.0.1:8000/chat/create/',
+    axios.put(`http://127.0.0.1:8000/chat/${chatId}/update/`,
             {
-              "messages": [],
-              "admins":[props.username],
-              "participants":[props.username,...values.Contacts],
-              "name":values.Chat_name
+            "name": "new name",
+            "messages": [],
+            "participants":[...props.participants,...values.Contacts],
             }
         ).then(res=>{
             console.log(res.data)
-            //message.success('Chat created successfully',5)
-            props.getuserChats(props.username,props.token)
-            webSocketInstance.fetchMessages(props.username,res.data.id);
-            navigate(`/${res.data.id}`)
+            message.success('Memebers were added successfully',5)
         }).catch(err =>{
             console.log(`error at create chat ${err}`)
             message.error('something went wrong olease try again later...! ',5)
@@ -53,7 +71,7 @@ const AddChatForm = (props) => {
   }
   const onFinish = (values) => {
     console.log('participants: ',[localStorage.getItem('username'),...values.Contacts]);
-    createChat(values,props.token)
+    addMemeber(values,props.token)
     form.resetFields()
     props.closeOnSubmit()
   };
@@ -76,18 +94,6 @@ const AddChatForm = (props) => {
       onFinishFailed={onFinishFailed}
       autoComplete="off"
     >
-      <Form.Item
-        label="Chat name"
-        name='Chat_name'
-        rules={[
-          {
-            required: true,
-            message: 'Please input the Chat name !',
-          },
-        ]}
-      >
-        <Input />
-      </Form.Item>
       <Form.Item
         label="Contacts"
         name='Contacts'
@@ -116,7 +122,7 @@ const AddChatForm = (props) => {
         }}
       >
         <Button type="primary" htmlType="submit">
-          Start New Chat 
+            Add
         </Button>
       </Form.Item>
     </Form>
@@ -126,13 +132,13 @@ const AddChatForm = (props) => {
 const mapStateToProps=(state)=>{
   return{
     token :state.auth.token,
-    username :localStorage.getItem('username')
-  }      
+    participants :state.message.participants
+}      
 }
 const mapDispatchToProps=(dispatch)=>{
   return {
-      closeOnSubmit:()=>{dispatch(navActions.closeAddChatPopup())},
+      closeOnSubmit:()=>{dispatch(navActions.closeAddMemeberPopup())},
       getuserChats : (username,token) =>{dispatch(messageActions.getUserChats(username,token))}
   }
 }
-export default connect(mapStateToProps,mapDispatchToProps)(AddChatForm);
+export default connect(mapStateToProps,mapDispatchToProps)(AddMemeberForm);

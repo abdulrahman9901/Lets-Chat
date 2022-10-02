@@ -16,7 +16,9 @@ export const setMessages =(messages)=>{
         type : actions.SET_MESSAGES,
         messages:messages[0],
         participants:messages[1],
-        name:messages[2]
+        name:messages[2],
+        admins:messages[3],
+        participantsCount:messages[1].length
     }
 }
 
@@ -37,6 +39,8 @@ export const getUserChats = (username, token) => {
         };
         axios
         .get(`http://127.0.0.1:8000/chat/?username=${username}`)
-        .then(res => dispatch(getUserChatsSuccess(res.data)));
+        .then(res => {dispatch(getUserChatsSuccess(res.data))
+            console.log('res.data at getUserChats ',res.data)
+        } );
     };
     };

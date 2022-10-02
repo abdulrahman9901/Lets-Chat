@@ -37,13 +37,15 @@ const mapStateToProps=(state)=>{
     console.log("at app ",state)
     return{
         isAuthenticated:state.auth.token !== null,
-        showAddChatPopup :state.nav.showAddChatPopup
+        showAddChatPopup :state.nav.showAddChatPopup,
+        showAddMemeberPopup :state.nav.showAddMemeberPopup
     }
 }
 const mapDispatchToProps=(dispatch)=>{
     return{
         onTryAutoSignup:()=>{dispatch(authActions.authCheckState())},
         closeAddChatPopup :()=>{dispatch(navActions.closeAddChatPopup())},
+        closeAddMemeberPopup :()=>{dispatch(navActions.closeAddMemeberPopup())},
         addMessage :(message)=>{dispatch(messagesActions.addMessages(message))},
         setMessages :(messages)=>{dispatch(messagesActions.setMessages(messages))}
     }
