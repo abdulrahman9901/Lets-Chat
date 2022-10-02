@@ -28094,8 +28094,9 @@ body {
     /* margin: 6px 8px 0 0; */
   }
   #frame .content .messages ul li.sent p {
-    background: #435f7a;
-    color: #f5f5f5;
+    /* background: #435f7a;
+    color: #f5f5f5; */
+    background: #9BA5D9;
   }
   #frame .content .messages ul div small.sent {
     color: #435f7a;
@@ -28122,7 +28123,8 @@ body {
     /* margin: 6px 0 0 8px; */
   }
   #frame .content .messages ul li.replies p {
-    background: #f5f5f5;
+    /* background: #f5f5f5; */
+    background: #e39595;
     float: right;
   }
   #frame .content .messages ul li img {
