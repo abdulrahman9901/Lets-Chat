@@ -96,9 +96,9 @@ class Chat extends React.Component {
             } else if (timeDiff < 60 && timeDiff >= 1) {
             // less than sixty minutes ago
             if (timeDiff < 2)
-                prefix = `one minute ago`;
+                prefix = `one min. ago`;
             else
-                prefix = `${timeDiff} minutes ago`;
+                prefix = `${timeDiff} mins. ago`;
             } else if (timeDiff < 24 * 60 && timeDiff >= 60) {
             // less than 24 hours ago
             if(timeDiff < 2 * 60)
@@ -129,7 +129,7 @@ class Chat extends React.Component {
         ele.innerText = this.timestampDisplay(timestamp) ;
         console.log(ele.attributes[2].nodeValue)
     }
-    renderMessages(messages,participants){
+    renderMessages(messages,participantsCount,participants){
         // const currentUser='admin'
         const currentUser=localStorage.getItem('username')
         /* for unknown reason last message is duplicated so the next line solve this problem 
@@ -138,17 +138,18 @@ class Chat extends React.Component {
         messages = [...new Map(messages.map((m) => [m.id, m])).values()]
         return messages.map(message =>(
             <div>
-            <li key={message.id}  className={currentUser === message.author ? 'sent' :'replies'}>
-            {participants > 2 ?
-            <small id={message.id+'p'} className={currentUser === message.author ? 'sender' :'reciever'}>
+            <li key={message.id}  className={participants.includes(message.author) ? currentUser === message.author ? 'sent' :'replies' : 'replies out'}>
+            {participantsCount > 1 ?
+            <small id={message.id+'p'} className={participants.includes(message.author) ? currentUser === message.author ? 'sender' :'reciever' :'out'}>
                     {   
                         message.author
                     }
                 </small>
             : null }
                 <br />
+            
             {/* <img src="http://emilcarlsson.se/assets/mikeross.png" alt="" /> */}
-            <img src="https://img.icons8.com/glyph-neue/128/228BE6/user-male-circle.png"/>
+            <img src={`https://img.icons8.com/glyph-neue/128/${participants.includes(message.author)?'228BE6':'808080'}/user-male-circle.png`}/>
             <p onClick={(e) => this.changeVisibility(e,message.timestamp)} id={message.id}>{message.content}
              </p>
              <br/>
@@ -303,7 +304,7 @@ class Chat extends React.Component {
                   <div className="messages">
                     <ul id="chat-log"> 
                         {console.log('messages',[...new Set(messages)])}
-                        {messages && this.renderMessages(messages,this.props.participantsCount)}
+                        {messages && this.renderMessages(messages,this.props.participantsCount,this.props.participants)}
                         <li><div style={{ float:"left", clear: "both" }}
                               ref={this.messagesEndRef} >
                         </div></li>

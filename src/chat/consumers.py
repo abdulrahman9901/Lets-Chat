@@ -6,8 +6,7 @@ from channels.generic.websocket import WebsocketConsumer
 from chat.models import Chat, Contact, Message
 from django.contrib.auth import get_user_model
 from .views import load_last_messages , get_user_contact ,get_current_chat
-from django.shortcuts import get_object_or_404
-from chat.api.serializers import ContactSerializer
+
 User=get_user_model()
 
 class ChatConsumer(WebsocketConsumer):
