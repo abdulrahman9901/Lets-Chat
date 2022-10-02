@@ -4,55 +4,63 @@ import Dropmenu from "./Dropdown";
 import { connect } from "react-redux";
 import * as authActions from '../store/actions/auth'
 import * as navActions from '../store/actions/nav'
+import * as messageActions from '../store/actions/messages'
 import Contact from "../Components/Contacts";
 import axios from "axios";
 
 class Sidepanel extends React.Component{
-  state ={
-    chats:[],
-  }
+  // state ={
+  //   chats:[],
+  // }
 
-getUserChats = (token,username) => {
-  console.log('get chat on ')
-  axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
-  axios.defaults.xsrfCookieName = "csrftoken";
-  axios.defaults.headers = {
-    'Content-Type' : 'application/json',
-    Authorization :`Token ${token}`
-  }
-  axios.get(`http://127.0.0.1:8000/chat/?username=${username}`).then(
-    res => {
-      console.log(res.data);
-      this.setState({
-        chats:res.data
-      })
-    }
-  )
-  }
+// getUserChats = (token,username) => {
+//   console.log('get chat on ')
+//   axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
+//   axios.defaults.xsrfCookieName = "csrftoken";
+//   axios.defaults.headers = {
+//     'Content-Type' : 'application/json',
+//     Authorization :`Token ${token}`
+//   }
+//   axios.get(`http://127.0.0.1:8000/chat/?username=${username}`).then(
+//     res => {
+//       console.log(res.data);
+//       this.setState({
+//         chats:res.data
+//       })
+//     }
+//   )
+//   }
 
 openAddChatPopup = ()=>{
   this.props.addChat()
 }
 componentWillReceiveProps(newProps) {
-  console.log(`newProps = ${newProps.token}`)
+  console.log(`newProps = ${newProps}`)
+  console.log(newProps.chats.length , this.props.chats.length)
       if(newProps.token != null  && newProps.username != null){
+          if(this.props.chats.length <=0 || (newProps.chats.length !== this.props.chats.length)){
           console.log('get in if ');
-          this.getUserChats(newProps.token ,newProps.username)
+          this.props.getChats(newProps.username,newProps.token)
           console.log('after req',this.state)
+          }
       }
 }
 
 componentDidMount(){
-  if(this.state.chats.length <= 0){
+  console.log('at sidepanel componentDidMount',this.props)
     if(this.props.token!= null  && this.props.username != null){
-    this.getUserChats(this.props.token ,this.props.username)
-    }
+    this.props.getChats(this.props.username,this.props.token)
   }
 }
 
 render(){
-  console.log('at render',this.state.chats[0])
-  const aciveChats = this.state.chats.map(chat => {
+  console.log('at sidepanel',this.props)
+  //console.log('at render',this.props.chats[0])
+  //const aciveChats=null
+  let aciveChats;
+  if (this.props.chats){
+        console.log(" if chats")
+        aciveChats = this.props.chats.map(chat => {
         return <Contact 
         key={chat.id}
         chatURL={`/${chat.id}`}
@@ -62,6 +70,10 @@ render(){
         members={chat.participants}
     />
     })
+  }else {
+    console.log(" else chats")
+    aciveChats = null;
+  }
     return(
         <div id="sidepanel">
         <div id="profile">
@@ -99,13 +111,14 @@ const mapStateToProps=(state)=>{
     isAuthenticated:state.auth.token !== null,
     token :state.auth.token,
     username :state.auth.username,
-    chats:[]
+    chats:state.message.chats ? state.message.chats : []
   }      
 }
 const mapDispatchToProps=(dispatch)=>{
   return {
       onLogout:()=>dispatch(authActions.logout()),
-      addChat : () =>dispatch(navActions.openAddChatPopup())
+      addChat : () =>dispatch(navActions.openAddChatPopup()),
+      getChats : (username,token) =>dispatch(messageActions.getUserChats(username,token))
 
   }
 }

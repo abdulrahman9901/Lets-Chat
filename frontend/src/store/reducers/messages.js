@@ -17,6 +17,8 @@ const setMessages =(state,action)=>{
     return updateObject(state,{
         messages: action.messages.reverse(),
         participants:action.participants,
+        admins:action.admins,
+        participantsCount:action.participantsCount,
         name: action.name
     })
 }

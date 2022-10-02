@@ -7,6 +7,7 @@ from chat.models import Chat, Contact, Message
 from django.contrib.auth import get_user_model
 from .views import load_last_messages , get_user_contact ,get_current_chat
 from django.shortcuts import get_object_or_404
+from chat.api.serializers import ContactSerializer
 User=get_user_model()
 
 class ChatConsumer(WebsocketConsumer):
@@ -43,13 +44,38 @@ class ChatConsumer(WebsocketConsumer):
     def load_messages(self,data):
         messages=load_last_messages(data['chatId'])
         chat = get_current_chat(data['chatId'])
-        print(chat.name)
-        content={
-            'command':'messages',
-            'messages':self.messages_to_json(messages),
-            'participants' :len(chat.participants.all()),
-            'name' : chat.name
-        }
+        username = data['username']
+        print(chat.admins.all())
+        memebers=[]
+        admins=[]
+        # memebers =admins = [] will inialize both as empty lists but they will be assocaiated after that and if the had
+        # differebt values the values will be mreged such as admnis=['admin'] , memeber=['admin', 'ahmed'] then both 
+        # admins and memebers will be equal to memebers =admins=['admin', 'ahmed', 'admin']
+        for contact in chat.participants.all() :
+            memebers.append(contact.user.username)
+        for admin in chat.admins.all() :
+            print('admin # ',admin.user.username)
+            admins.append(admin.user.username)
+
+        print('admins after loop ',admins)
+
+        if username in memebers :
+            content={
+                'command':'messages',
+                'messages':self.messages_to_json(messages),
+                'participants' :memebers,
+                'admins' :admins,
+                'name' : chat.name
+            }
+        else :
+            content={
+                'command':'messages',
+                'messages':[],
+                'participants' :memebers,
+                'admins' :[],
+                'name' : chat.name
+            }
+        print(content)
         self.send_message(content)       
 
 

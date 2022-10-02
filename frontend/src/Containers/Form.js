@@ -1,10 +1,12 @@
-import { Button, Form, Input ,Select } from 'antd';
+import { Button, Form, Input ,Select , message } from 'antd';
 import React, { useState } from 'react';
 import axios from 'axios';
 import * as navActions from '../store/actions/nav' 
 import * as messageActions from '../store/actions/messages' 
 import { connect } from 'react-redux';
 import { useHistory , useNavigate} from 'react-router-dom';
+import webSocketInstance from '../websocket';
+
 const AddChatForm = (props) => {
 
   const [usernames ,SetUsernames] = useState([])
@@ -33,16 +35,21 @@ const AddChatForm = (props) => {
     }
     axios.post('http://127.0.0.1:8000/chat/create/',
             {
-              messages: [],
-              participants:[props.username,...values.Contacts],
-              name:values.Chat_name
+              "messages": [],
+              "admins":[props.username],
+              "participants":[props.username,...values.Contacts],
+              "name":values.Chat_name
             }
         ).then(res=>{
             console.log(res.data)
+            //message.success('Chat created successfully',5)
+            props.getuserChats(props.username,props.token)
+            webSocketInstance.fetchMessages(props.username,res.data.id);
             navigate(`/${res.data.id}`)
         }).catch(err =>{
             console.log(`error at create chat ${err}`)
-        });
+            message.error('something went wrong olease try again later...! ',5)
+          });
   }
   const onFinish = (values) => {
     console.log('participants: ',[localStorage.getItem('username'),...values.Contacts]);

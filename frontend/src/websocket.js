@@ -44,14 +44,14 @@ class WebSocketService{
             return;
         }
         if(command === 'messages'){
-            this.callbacks[command]([parsedData.messages,parsedData.participants,parsedData.name])
+            this.callbacks[command]([parsedData.messages,parsedData.participants,parsedData.name,parsedData.admins])
         }
         if(command === 'new_message'){
             this.callbacks[command](parsedData.message)
     }
 }
     fetchMessages(username,chatId){
-        this.sendMessage({ command:"load_messages",username:username ,chatId:chatId})
+        this.sendMessage({ command:"load_messages",username:username,chatId:chatId})
     }
     newChatMessage(message){
         this.sendMessage({ command:"new_message",from:message.from , message:message.content , chatId:message.chatId})
@@ -63,6 +63,7 @@ class WebSocketService{
     }
     sendMessage(data){
         try{
+            console.log('at socket data ',data)
             this.socketRef.send(JSON.stringify({...data}))
         }catch(e){
             console.log(e.message)
