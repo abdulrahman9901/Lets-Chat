@@ -17,6 +17,7 @@ class ChatConsumer(WebsocketConsumer):
             'author':message.contact.user.username,
             'content':message.content,
             'timestamp':str(message.created_at),
+            'system_message':message.system_message
         }
 
     def messages_to_json(self,messages):
@@ -87,7 +88,7 @@ class ChatConsumer(WebsocketConsumer):
     def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'chat_%s' % self.room_name
-
+        print('channel name ',self.room_name,self.room_group_name)
         # Join room group
         async_to_sync(self.channel_layer.group_add)(
             self.room_group_name,

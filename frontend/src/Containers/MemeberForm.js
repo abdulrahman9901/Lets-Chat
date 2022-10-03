@@ -36,21 +36,21 @@ const AddMemeberForm = (props) => {
     let content;
     if (value === 'Participant')
       content =  {
-        "name": "new name",
+        "username": props.username,
         "messages": [],
         "participants":[...props.participants,...values.Contacts],
         'admins':[]
         }
       else if (value === 'Admin')
         content =  {
-          "name": "new name",
+          "username": props.username,
           "messages": [],
           "participants":[...props.participants,...values.Contacts],
           'admins':[...values.Contacts]
           }
         else 
           content = null
-
+    console.log(content)
     axios.put(`http://127.0.0.1:8000/chat/${chatId}/update/`,content
         ).then(res=>{
             console.log(res.data)
@@ -154,7 +154,8 @@ const AddMemeberForm = (props) => {
 const mapStateToProps=(state)=>{
   return{
     token :state.auth.token,
-    participants :state.message.participants
+    participants :state.message.participants,
+    username :state.auth.username
 }      
 }
 const mapDispatchToProps=(dispatch)=>{

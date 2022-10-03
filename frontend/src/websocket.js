@@ -17,7 +17,14 @@ class WebSocketService{
     connect(chatURL){
         console.log('url : ',chatURL)
         const path=`ws://127.0.0.1:8000/ws/chat/${chatURL}/`;
+
+    
+        
         this.socketRef=new WebSocket(path);
+
+        this.socketRef.addEventListener('message', (event) => {
+        console.log('Message from server ', event);
+         });
         this.socketRef.onopen = ()=>{
             console.log("Wensocket is open")
         };
@@ -26,7 +33,7 @@ class WebSocketService{
         }))
         this.socketRef.onmessage=(e)=>{
             this.socketNewMessage(e.data)
-            console.log(e.data)
+            console.log('Message from server ', e.data);
         }
         this.socketRef.onerror=(e)=>{
             console.log(e.message);
@@ -44,7 +51,7 @@ class WebSocketService{
             return;
         }
         if(command === 'messages'){
-            this.callbacks[command]([parsedData.messages,parsedData.participants,parsedData.name,parsedData.admins])
+            this.callbacks[command]([parsedData.messages,parsedData.participants,parsedData.name,parsedData.admins,parsedData.system_message])
         }
         if(command === 'new_message'){
             this.callbacks[command](parsedData.message)

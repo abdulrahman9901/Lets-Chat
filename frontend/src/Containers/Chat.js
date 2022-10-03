@@ -136,7 +136,15 @@ class Chat extends React.Component {
         https://www.javascripttutorial.net/array/javascript-remove-duplicates-from-array/
         */
         messages = [...new Map(messages.map((m) => [m.id, m])).values()]
-        return messages.map(message =>(
+        return messages.map(message => {
+            if (message.system_message == true){
+                return(
+                <div>
+                <li class="sys"><p class="sys" id="193">{message.content}</p></li>
+                </div>
+                )
+            }else{
+            return(
             <div>
             <li key={message.id}  className={participants.includes(message.author) ? currentUser === message.author ? 'sent' :'replies' : 'replies out'}>
             {participantsCount > 1 ?
@@ -160,7 +168,8 @@ class Chat extends React.Component {
                 </small>
             </li>
             </div>
-        ))
+        )}
+    })
     }
     waitForSocketConnection(callback){
         const component =this;
