@@ -205378,7 +205378,6 @@ var AddChatForm = function AddChatForm(props) {
       usernames = _useState2[0],
       SetUsernames = _useState2[1];
   /**https://github.com/pmndrs/react-three-fiber/issues/2134 */
-  // const { history } = useHistory();
 
 
   var navigate = (0, _reactRouterDom.useNavigate)();
@@ -205923,7 +205922,7 @@ var Chat = /*#__PURE__*/function (_React$Component) {
       message: ''
     });
 
-    _defineProperty(_assertThisInitialized(_this), "pathname", location.pathname);
+    _defineProperty(_assertThisInitialized(_this), "pathname", null);
 
     _defineProperty(_assertThisInitialized(_this), "messagesEndRef", /*#__PURE__*/_react.default.createRef());
 
@@ -206032,7 +206031,9 @@ var Chat = /*#__PURE__*/function (_React$Component) {
     _this.initializeChat();
 
     var CheckUrlChange = function CheckUrlChange() {
-      if (location.pathname != _this.pathname) {
+      console.log('in event handler ', location.pathname, _this.pathname);
+
+      if (location.pathname !== _this.pathname) {
         console.log(_this.pathname, location.pathname);
         _this.pathname = location.pathname;
 
@@ -206050,15 +206051,7 @@ var Chat = /*#__PURE__*/function (_React$Component) {
     // };
 
     return _this;
-  } // componentWillReceiveProps(newProps){
-  //     console.log('newProps',newProps.messages,'Props',this.props.messages)
-  //     console.log('componentWillReceiveProps')
-  //     if((this.props.messages !=undefined && newProps.messages.length !== this.props.messages.length) ||(this.props.messages == undefined && newProps.messages.length >0) ){
-  //     const chatId =window.location.pathname.slice(1);
-  //     webSocketInstance.fetchMessages(this.props.currentUser,chatId);
-  //     }
-  // }
-
+  }
 
   _createClass(Chat, [{
     key: "initializeChat",
@@ -206071,14 +206064,20 @@ var Chat = /*#__PURE__*/function (_React$Component) {
 
       if (chatId != '') {
         this.waitForSocketConnection(function () {
-          // webSocketInstance.addCallbacks(
-          //     this.setMessages.bind(this),
-          //     this.addMessage.bind(this),
-          // );
           _websocket.default.fetchMessages(_this2.props.currentUser, chatId);
         });
 
         _websocket.default.connect(chatId);
+      }
+    }
+  }, {
+    key: "componentWillReceiveProps",
+    value: function componentWillReceiveProps(newProps) {
+      console.log('newProps', newProps.messages, 'Props', this.props.messages);
+      console.log('componentWillReceiveProps');
+
+      if (newProps && newProps.messages) {
+        if (newProps.messages.length == 1 && newProps.messages[0].system_message) this.pathname = location.pathname;
       }
     }
   }, {
@@ -206091,9 +206090,7 @@ var Chat = /*#__PURE__*/function (_React$Component) {
     key: "componentDidUpdate",
     value: function componentDidUpdate() {
       this.scrollToBottom();
-      this.submitOnEnter();
-      this.pathname = location.pathname;
-      console.log(this.pathname);
+      this.submitOnEnter(); // console.log(this.pathname)
     }
   }, {
     key: "timestampDisplay",
@@ -206183,19 +206180,7 @@ var Chat = /*#__PURE__*/function (_React$Component) {
           component.waitForSocketConnection(callback);
         }
       }, 100);
-    } // addMessage(message){
-    //     this.setState({
-    //         messages:[...this.state.messages,message]
-    //     })
-    // }
-    // setMessages(messages){
-    //     console.log("running",messages)
-    //     if (messages)
-    //         this.setState({
-    //             messages:messages.reverse()
-    //         })
-    // }
-
+    }
   }, {
     key: "render",
     value: function render() {
@@ -211912,7 +211897,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "6204" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "1262" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

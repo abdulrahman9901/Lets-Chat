@@ -39,6 +39,23 @@ class ContactSerializer(serializers.StringRelatedField):
         print(value)
         return value
 
+
+def send_socket_message(instance,message):
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)('chat_{}'.format(instance.id),{
+                    'type': 'chat_message',
+                    'message': {
+                    'command': 'new_message',
+                    'message':{
+                    'id':message.id,
+                    'author':message.contact.user.username,
+                    'content':message.content,
+                    'timestamp':str(message.created_at),
+                    'system_message':message.system_message    
+                    }
+                }       
+                })
+
 class ChatSerializer(serializers.ModelSerializer):
     participants = ContactSerializer(many=True)
     admins = ContactSerializer(many=True)
@@ -62,14 +79,16 @@ class ChatSerializer(serializers.ModelSerializer):
         for username in participants:
             contact = get_user_contact(username)
             chat.participants.add(contact)
+
         chat.admins.add(get_user_contact(admins[0]))
 
-        message = Message.objects.create(contact=admins[0],content='{} created the chat .'.format(admins[0].user.username),system_message=True)
+        message = Message.objects.create(contact=get_user_contact(admins[0]),content='{} created the chat .'.format(admins[0]),system_message=True)
         chat.messages.add(message)
 
         chat.save()
         return chat
-    
+
+        
     def update(self, instance, validated_data):
 
         # https://stackoverflow.com/questions/30203652/how-to-get-request-user-in-django-rest-framework-serializer
@@ -110,19 +129,7 @@ class ChatSerializer(serializers.ModelSerializer):
             print(new[0])     
             message = Message.objects.create(contact=new[0],content='{} left the chat .'.format(new[0].user.username),system_message=True)
             instance.messages.add(message)
-            async_to_sync(channel_layer.group_send)('chat_{}'.format(instance.id),{
-                        'type': 'chat_message',
-                        'message': {
-                        'command': 'new_message',
-                        'message':{
-                        'id':message.id,
-                        'author':message.contact.user.username,
-                        'content':message.content,
-                        'timestamp':str(message.created_at),
-                        'system_message':message.system_message    
-                        }
-                    }       
-                    })
+            send_socket_message(instance,message)
             instance.participants.remove(new[0])
             if new[0] in instance.admins.all():
                 instance.admins.remove(new[0])  
@@ -135,38 +142,15 @@ class ChatSerializer(serializers.ModelSerializer):
                     instance.participants.add(contact)
                     message = Message.objects.create(contact=get_user_contact(currentUser),content='{} added {} to the chat .'.format(currentUser,contact.user.username),system_message=True)
                     instance.messages.add(message)
-                    async_to_sync(channel_layer.group_send)('chat_{}'.format(instance.id),{
-                        'type': 'chat_message',
-                        'message': {
-                        'command': 'new_message',
-                        'message':{
-                        'id':message.id,
-                        'author':message.contact.user.username,
-                        'content':message.content,
-                        'timestamp':str(message.created_at),
-                        'system_message':message.system_message    
-                        }
-                    }       
-                    })
+                    send_socket_message(instance,message)
+
 
             for admin in new_admins :
                 if admin not in instance.admins.all():
                     instance.admins.add(admin)
                     message = Message.objects.create(contact=get_user_contact(currentUser),content='{} made {} an admin in the chat .'.format(currentUser,admin.user.username),system_message=True)
                     instance.messages.add(message)
-                    async_to_sync(channel_layer.group_send)('chat_{}'.format(instance.id),{
-                        'type': 'chat_message',
-                        'message': {
-                        'command': 'new_message',
-                        'message':{
-                        'id':message.id,
-                        'author':message.contact.user.username,
-                        'content':message.content,
-                        'timestamp':str(message.created_at),
-                        'system_message':message.system_message    
-                        }
-                    }       
-                    })
+                    send_socket_message(instance,message)
 
 
         return instance

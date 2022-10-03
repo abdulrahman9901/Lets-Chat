@@ -13,7 +13,6 @@ const AddChatForm = (props) => {
 
   /**https://github.com/pmndrs/react-three-fiber/issues/2134 */
 
-  // const { history } = useHistory();
 
   const navigate = useNavigate()
 

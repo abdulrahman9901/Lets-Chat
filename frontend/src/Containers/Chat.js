@@ -23,25 +23,22 @@ class Chat extends React.Component {
         console.log('==============>match',chatId)
         if(chatId!=''){
         this.waitForSocketConnection(()=>{
-            // webSocketInstance.addCallbacks(
-            //     this.setMessages.bind(this),
-            //     this.addMessage.bind(this),
-            // );
             webSocketInstance.fetchMessages(this.props.currentUser,chatId);
         });
             webSocketInstance.connect(chatId);
         }
     }
-    pathname = location.pathname;
+    pathname = null;
     constructor(props){
         super(props)
         console.log('constructor')
         this.initializeChat()
         const CheckUrlChange = () => {
-            if (location.pathname != this.pathname) {
+            console.log('in event handler ',location.pathname ,this.pathname)
+            if (location.pathname !== this.pathname) {
                 console.log(this.pathname,location.pathname)
                 this.pathname = location.pathname;
-                this.initializeChat()
+                    this.initializeChat()
             }
         }
         // https://stackoverflow.com/a/68371679
@@ -56,14 +53,14 @@ class Chat extends React.Component {
         
     }
 
-    // componentWillReceiveProps(newProps){
-    //     console.log('newProps',newProps.messages,'Props',this.props.messages)
-    //     console.log('componentWillReceiveProps')
-    //     if((this.props.messages !=undefined && newProps.messages.length !== this.props.messages.length) ||(this.props.messages == undefined && newProps.messages.length >0) ){
-    //     const chatId =window.location.pathname.slice(1);
-    //     webSocketInstance.fetchMessages(this.props.currentUser,chatId);
-    //     }
-    // }
+    componentWillReceiveProps(newProps){
+        console.log('newProps',newProps.messages,'Props',this.props.messages)
+        console.log('componentWillReceiveProps')
+        if (newProps && newProps.messages){
+            if (newProps.messages.length == 1 && newProps.messages[0].system_message)
+                this.pathname = location.pathname;
+        }
+    }
 
     messagesEndRef = React.createRef()
     textareaRef = React.createRef()
@@ -81,8 +78,7 @@ class Chat extends React.Component {
       componentDidUpdate() {
         this.scrollToBottom();
         this.submitOnEnter();
-        this.pathname = location.pathname;
-        console.log(this.pathname)
+        // console.log(this.pathname)
     }
     timestampDisplay(timestamp){
         let prefix = "";
@@ -116,6 +112,7 @@ class Chat extends React.Component {
             }
             return prefix;
     }
+
     changeVisibility=(e,timestamp) => {
         console.log(e.target.id)
         var ele=document.getElementById(e.target.id+'s')
@@ -185,18 +182,7 @@ class Chat extends React.Component {
             }
             ,100)
     }
-    // addMessage(message){
-    //     this.setState({
-    //         messages:[...this.state.messages,message]
-    //     })
-    // }
-    // setMessages(messages){
-    //     console.log("running",messages)
-    //     if (messages)
-    //         this.setState({
-    //             messages:messages.reverse()
-    //         })
-    // }
+   
     sendMessageHandler= e =>{
         e.preventDefault();
         if (this.state.message.length && this.state.message.length > 0){

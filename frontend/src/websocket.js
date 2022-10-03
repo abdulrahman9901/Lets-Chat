@@ -17,14 +17,13 @@ class WebSocketService{
     connect(chatURL){
         console.log('url : ',chatURL)
         const path=`ws://127.0.0.1:8000/ws/chat/${chatURL}/`;
-
     
-        
         this.socketRef=new WebSocket(path);
 
         this.socketRef.addEventListener('message', (event) => {
         console.log('Message from server ', event);
          });
+         
         this.socketRef.onopen = ()=>{
             console.log("Wensocket is open")
         };
