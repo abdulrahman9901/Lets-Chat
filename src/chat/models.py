@@ -34,7 +34,7 @@ class Message(models.Model):
     contact=models.ForeignKey(Contact,on_delete=models.CASCADE,related_name="auther_messages")
     content=models.TextField(null=False,max_length=200)
     created_at=models.DateTimeField(auto_now_add=True)
-
+    system_message = models.BooleanField(default=False)
     def __str__(self):
         return self.contact.user.username
 

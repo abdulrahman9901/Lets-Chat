@@ -19,7 +19,8 @@ const setMessages =(state,action)=>{
         participants:action.participants,
         admins:action.admins,
         participantsCount:action.participantsCount,
-        name: action.name
+        name: action.name,
+        system_message:action.system_message
     })
 }
 

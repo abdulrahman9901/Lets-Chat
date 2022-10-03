@@ -18,6 +18,7 @@ export const setMessages =(messages)=>{
         participants:messages[1],
         name:messages[2],
         admins:messages[3],
+        system_message:messages[4],
         participantsCount:messages[1].length
     }
 }

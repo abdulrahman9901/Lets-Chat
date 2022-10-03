@@ -28111,7 +28111,7 @@ body {
     background: #e6eaea;
     font-size: 1em !important;
     display: inline;
-    margin-left: 63%;
+    margin-left: 64%;
     }
 
   #frame .content .messages ul li.replies {
@@ -28379,6 +28379,23 @@ small.out {
   margin-right: 3%;
   font-weight: bold;
   color: gray !important;
+}
+
+p.sys{
+  font-size: small !important;
+  font-weight: bolder;
+  font-style: oblique;
+  background: #a7a7a7;
+  width: 100% !important;
+  margin: 0 !important;
+  margin-bottom: 0px;
+  padding: 5px !important;
+  border-radius: 10px !important;
+  color: #1c2a43;
+}
+li.sys {
+  width: 100% !important;
+  text-align: center;
 }
 
 /*# sourceMappingURL=/style.1f0df735.css.map */

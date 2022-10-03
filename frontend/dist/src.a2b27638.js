@@ -197730,6 +197730,7 @@ var setMessages = function setMessages(messages) {
     participants: messages[1],
     name: messages[2],
     admins: messages[3],
+    system_message: messages[4],
     participantsCount: messages[1].length
   };
 };
@@ -205011,6 +205012,9 @@ var WebSocketService = /*#__PURE__*/function () {
       console.log('url : ', chatURL);
       var path = "ws://127.0.0.1:8000/ws/chat/".concat(chatURL, "/");
       this.socketRef = new WebSocket(path);
+      this.socketRef.addEventListener('message', function (event) {
+        console.log('Message from server ', event);
+      });
 
       this.socketRef.onopen = function () {
         console.log("Wensocket is open");
@@ -205023,7 +205027,7 @@ var WebSocketService = /*#__PURE__*/function () {
       this.socketRef.onmessage = function (e) {
         _this.socketNewMessage(e.data);
 
-        console.log(e.data);
+        console.log('Message from server ', e.data);
       };
 
       this.socketRef.onerror = function (e) {
@@ -205047,7 +205051,7 @@ var WebSocketService = /*#__PURE__*/function () {
       }
 
       if (command === 'messages') {
-        this.callbacks[command]([parsedData.messages, parsedData.participants, parsedData.name, parsedData.admins]);
+        this.callbacks[command]([parsedData.messages, parsedData.participants, parsedData.name, parsedData.admins, parsedData.system_message]);
       }
 
       if (command === 'new_message') {
@@ -205643,16 +205647,17 @@ var AddMemeberForm = function AddMemeberForm(props) {
     console.log('rule is ', value);
     var content;
     if (value === 'Participant') content = {
-      "name": "new name",
+      "username": props.username,
       "messages": [],
       "participants": [].concat(_toConsumableArray(props.participants), _toConsumableArray(values.Contacts)),
       'admins': []
     };else if (value === 'Admin') content = {
-      "name": "new name",
+      "username": props.username,
       "messages": [],
       "participants": [].concat(_toConsumableArray(props.participants), _toConsumableArray(values.Contacts)),
       'admins': _toConsumableArray(values.Contacts)
     };else content = null;
+    console.log(content);
 
     _axios.default.put("http://127.0.0.1:8000/chat/".concat(chatId, "/update/"), content).then(function (res) {
       console.log(res.data);
@@ -205740,7 +205745,8 @@ var AddMemeberForm = function AddMemeberForm(props) {
 var mapStateToProps = function mapStateToProps(state) {
   return {
     token: state.auth.token,
-    participants: state.message.participants
+    participants: state.message.participants,
+    username: state.auth.username
   };
 };
 
@@ -206133,26 +206139,35 @@ var Chat = /*#__PURE__*/function (_React$Component) {
         return [m.id, m];
       })).values());
       return messages.map(function (message) {
-        return /*#__PURE__*/_react.default.createElement("div", null, /*#__PURE__*/_react.default.createElement("li", {
-          key: message.id,
-          className: participants.includes(message.author) ? currentUser === message.author ? 'sent' : 'replies' : 'replies out'
-        }, participantsCount > 1 ? /*#__PURE__*/_react.default.createElement("small", {
-          id: message.id + 'p',
-          className: participants.includes(message.author) ? currentUser === message.author ? 'sender' : 'reciever' : 'out'
-        }, message.author) : null, /*#__PURE__*/_react.default.createElement("br", null), /*#__PURE__*/_react.default.createElement("img", {
-          src: "https://img.icons8.com/glyph-neue/128/".concat(participants.includes(message.author) ? currentUser === message.author ? '00008B' : 'DC143C' : '808080', "/user-male-circle.png")
-        }), /*#__PURE__*/_react.default.createElement("p", {
-          onClick: function onClick(e) {
-            return _this3.changeVisibility(e, message.timestamp);
-          },
-          id: message.id
-        }, message.content), /*#__PURE__*/_react.default.createElement("br", null), /*#__PURE__*/_react.default.createElement("small", {
-          id: message.id + 's',
-          className: currentUser === message.author ? 'sent' : 'replies',
-          style: {
-            visibility: "hidden"
-          }
-        }, _this3.timestampDisplay(message.timestamp))));
+        if (message.system_message == true) {
+          return /*#__PURE__*/_react.default.createElement("div", null, /*#__PURE__*/_react.default.createElement("li", {
+            class: "sys"
+          }, /*#__PURE__*/_react.default.createElement("p", {
+            class: "sys",
+            id: "193"
+          }, message.content)));
+        } else {
+          return /*#__PURE__*/_react.default.createElement("div", null, /*#__PURE__*/_react.default.createElement("li", {
+            key: message.id,
+            className: participants.includes(message.author) ? currentUser === message.author ? 'sent' : 'replies' : 'replies out'
+          }, participantsCount > 1 ? /*#__PURE__*/_react.default.createElement("small", {
+            id: message.id + 'p',
+            className: participants.includes(message.author) ? currentUser === message.author ? 'sender' : 'reciever' : 'out'
+          }, message.author) : null, /*#__PURE__*/_react.default.createElement("br", null), /*#__PURE__*/_react.default.createElement("img", {
+            src: "https://img.icons8.com/glyph-neue/128/".concat(participants.includes(message.author) ? currentUser === message.author ? '00008B' : 'DC143C' : '808080', "/user-male-circle.png")
+          }), /*#__PURE__*/_react.default.createElement("p", {
+            onClick: function onClick(e) {
+              return _this3.changeVisibility(e, message.timestamp);
+            },
+            id: message.id
+          }, message.content), /*#__PURE__*/_react.default.createElement("br", null), /*#__PURE__*/_react.default.createElement("small", {
+            id: message.id + 's',
+            className: currentUser === message.author ? 'sent' : 'replies',
+            style: {
+              visibility: "hidden"
+            }
+          }, _this3.timestampDisplay(message.timestamp))));
+        }
       });
     }
   }, {
@@ -211791,7 +211806,8 @@ var setMessages = function setMessages(state, action) {
     participants: action.participants,
     admins: action.admins,
     participantsCount: action.participantsCount,
-    name: action.name
+    name: action.name,
+    system_message: action.system_message
   });
 };
 
