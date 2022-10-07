@@ -50,7 +50,7 @@ const mapDispatchToProps=(dispatch)=>{
         closeAddMemeberPopup :()=>{dispatch(navActions.closeAddMemeberPopup())},
         closeJoinChatPopup :()=>{dispatch(navActions.closeJoinChatPopup())},
         addMessage :(message)=>{dispatch(messagesActions.addMessages(message))},
-        setMessages :(messages)=>{dispatch(messagesActions.setMessages(messages))}
+        setMessages :(messages)=>{dispatch(messagesActions.setMessages(messages));dispatch(messagesActions.getUserChats())}
     }
 }
 export default connect(mapStateToProps,mapDispatchToProps)(App);
