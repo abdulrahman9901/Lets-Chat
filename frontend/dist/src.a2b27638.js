@@ -195023,6 +195023,8 @@ exports.checkAuthTimeout = checkAuthTimeout;
 var authLogin = function authLogin(username, password) {
   return function (dispatch) {
     dispatch(authStart());
+    _axios.default.defaults.xsrfHeaderName = "X-CSRFTOKEN";
+    _axios.default.defaults.xsrfCookieName = "csrftoken";
 
     _axios.default.post('http://127.0.0.1:8000/rest-auth/login/', {
       username: username,
@@ -195046,6 +195048,8 @@ exports.authLogin = authLogin;
 var authSignup = function authSignup(username, email, password1, password2, gender, phone_number) {
   return function (dispatch) {
     dispatch(authStart());
+    _axios.default.defaults.xsrfHeaderName = "X-CSRFTOKEN";
+    _axios.default.defaults.xsrfCookieName = "csrftoken";
 
     _axios.default.post('http://127.0.0.1:8000/rest-auth/registration/', {
       username: username,
@@ -206317,7 +206321,7 @@ var Chat = /*#__PURE__*/function (_React$Component) {
       var chatId = window.location.pathname.slice(1);
       console.log('==============>match', chatId);
 
-      if (chatId != '') {
+      if (chatId != '' && Number.isInteger(parseInt(chatId))) {
         this.waitForSocketConnection(function () {
           _websocket.default.fetchMessages(_this2.props.currentUser, chatId);
         });
@@ -206527,8 +206531,9 @@ var Chat = /*#__PURE__*/function (_React$Component) {
           "aria-hidden": "true"
         })))))) : null) : null));
       } else {
-        return /*#__PURE__*/_react.default.createElement(_Login.default, null);
-      }
+        window.location.pathname = '/login';
+      } // else { return <Login />}     
+
     }
   }]);
 
@@ -206942,7 +206947,6 @@ var mapDispatchToProps = function mapDispatchToProps(dispatch) {
     },
     setMessages: function setMessages(messages) {
       dispatch(messagesActions.setMessages(messages));
-      dispatch(messagesActions.getUserChats());
     }
   };
 };
@@ -212182,7 +212186,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "9351" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "1600" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

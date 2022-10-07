@@ -23,7 +23,7 @@ class Chat extends React.Component {
         console.log('==============> initializeChat <=============')
         const chatId =window.location.pathname.slice(1);
         console.log('==============>match',chatId)
-        if(chatId!=''){
+        if(chatId!='' && Number.isInteger(parseInt(chatId))){
         this.waitForSocketConnection(()=>{
             webSocketInstance.fetchMessages(this.props.currentUser,chatId);
         });
@@ -357,7 +357,8 @@ class Chat extends React.Component {
                 </div>
               </div>        
             )}
-        else { return <Login />}     
+        else {window.location.pathname = '/login'}
+        // else { return <Login />}     
       
     }
 }
