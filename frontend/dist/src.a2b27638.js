@@ -190699,7 +190699,7 @@ exports.IconProvider = IconProvider;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.SET_MESSAGES = exports.RESET_AUTH_STATE = exports.OPEN_ADD_MEMEBER_POPUP = exports.OPEN_ADD_CHAT_POPUP = exports.GET_CHATS_SUCCESS = exports.CLOSE_ADD_MEMEBER_POPUP = exports.CLOSE_ADD_CHAT_POPUP = exports.AUTH_SUCCESS = exports.AUTH_START = exports.AUTH_LOGOUT = exports.AUTH_FAIL = exports.ADD_MESSAGE = void 0;
+exports.SET_MESSAGES = exports.RESET_AUTH_STATE = exports.OPEN_JOIN_CHAT_POPUP = exports.OPEN_ADD_MEMEBER_POPUP = exports.OPEN_ADD_CHAT_POPUP = exports.GET_CHATS_SUCCESS = exports.CLOSE_JOIN_CHAT_POPUP = exports.CLOSE_ADD_MEMEBER_POPUP = exports.CLOSE_ADD_CHAT_POPUP = exports.AUTH_SUCCESS = exports.AUTH_START = exports.AUTH_LOGOUT = exports.AUTH_FAIL = exports.ADD_MESSAGE = void 0;
 var AUTH_START = "AUTH_START";
 exports.AUTH_START = AUTH_START;
 var AUTH_SUCCESS = "AUTH_SUCCESS";
@@ -190712,6 +190712,10 @@ var OPEN_ADD_CHAT_POPUP = "OPEN_ADD_CHAT_POPUP";
 exports.OPEN_ADD_CHAT_POPUP = OPEN_ADD_CHAT_POPUP;
 var CLOSE_ADD_CHAT_POPUP = "CLOSE_ADD_CHAT_POPUP";
 exports.CLOSE_ADD_CHAT_POPUP = CLOSE_ADD_CHAT_POPUP;
+var OPEN_JOIN_CHAT_POPUP = "OPEN_JOIN_CHAT_POPUP";
+exports.OPEN_JOIN_CHAT_POPUP = OPEN_JOIN_CHAT_POPUP;
+var CLOSE_JOIN_CHAT_POPUP = "CLOSE_JOIN_CHAT_POPUP";
+exports.CLOSE_JOIN_CHAT_POPUP = CLOSE_JOIN_CHAT_POPUP;
 var OPEN_ADD_MEMEBER_POPUP = "OPEN_ADD_MEMEBER_POPUP";
 exports.OPEN_ADD_MEMEBER_POPUP = OPEN_ADD_MEMEBER_POPUP;
 var CLOSE_ADD_MEMEBER_POPUP = "CLOSE_ADD_MEMEBER_POPUP";
@@ -197655,7 +197659,7 @@ exports.default = _default;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.openAddMemeberPopup = exports.openAddChatPopup = exports.closeAddMemeberPopup = exports.closeAddChatPopup = void 0;
+exports.openJoinChatPopup = exports.openAddMemeberPopup = exports.openAddChatPopup = exports.closeJoinChatPopup = exports.closeAddMemeberPopup = exports.closeAddChatPopup = void 0;
 
 var actions = _interopRequireWildcard(require("./actionTypes"));
 
@@ -197678,6 +197682,22 @@ var closeAddChatPopup = function closeAddChatPopup() {
 };
 
 exports.closeAddChatPopup = closeAddChatPopup;
+
+var openJoinChatPopup = function openJoinChatPopup() {
+  return {
+    type: actions.OPEN_JOIN_CHAT_POPUP
+  };
+};
+
+exports.openJoinChatPopup = openJoinChatPopup;
+
+var closeJoinChatPopup = function closeJoinChatPopup() {
+  return {
+    type: actions.CLOSE_JOIN_CHAT_POPUP
+  };
+};
+
+exports.closeJoinChatPopup = closeJoinChatPopup;
 
 var openAddMemeberPopup = function openAddMemeberPopup() {
   return {
@@ -204843,6 +204863,10 @@ var Sidepanel = /*#__PURE__*/function (_React$Component) {
       _this.props.addChat();
     });
 
+    _defineProperty(_assertThisInitialized(_this), "openJoinChatPopup", function () {
+      _this.props.joinChat();
+    });
+
     return _this;
   }
 
@@ -204936,12 +204960,15 @@ var Sidepanel = /*#__PURE__*/function (_React$Component) {
       }, /*#__PURE__*/_react.default.createElement("i", {
         className: "fa fa-user-plus fa-fw",
         "aria-hidden": "true"
-      }), " ", /*#__PURE__*/_react.default.createElement("span", null, "Add Chat")), /*#__PURE__*/_react.default.createElement("button", {
-        id: "settings"
+      }), " ", /*#__PURE__*/_react.default.createElement("span", null, "Create Chat")), /*#__PURE__*/_react.default.createElement("button", {
+        id: "joinChat",
+        onClick: function onClick() {
+          return _this2.openJoinChatPopup();
+        }
       }, /*#__PURE__*/_react.default.createElement("i", {
         className: "fa fa-cog fa-fw",
         "aria-hidden": "true"
-      }), " ", /*#__PURE__*/_react.default.createElement("span", null, "Settings"))));
+      }), " ", /*#__PURE__*/_react.default.createElement("span", null, "Join chat "))));
     }
   }]);
 
@@ -204965,6 +204992,9 @@ var mapDispatchToProps = function mapDispatchToProps(dispatch) {
     },
     addChat: function addChat() {
       return dispatch(navActions.openAddChatPopup());
+    },
+    joinChat: function joinChat() {
+      return dispatch(navActions.openJoinChatPopup());
     },
     getChats: function getChats(username, token) {
       return dispatch(messageActions.getUserChats(username, token));
@@ -205555,7 +205585,8 @@ var AddChatModal = function AddChatModal(props) {
     centered: true,
     footer: null,
     open: props.isVisible,
-    onCancel: handleCancel
+    onCancel: handleCancel,
+    onOk: handleOk
   }, /*#__PURE__*/_react.default.createElement(_Form.default, null));
 };
 
@@ -205646,11 +205677,13 @@ var AddMemeberForm = function AddMemeberForm(props) {
     console.log('rule is ', value);
     var content;
     if (value === 'Participant') content = {
+      "command": "addParticipant",
       "username": props.username,
       "messages": [],
       "participants": [].concat(_toConsumableArray(props.participants), _toConsumableArray(values.Contacts)),
       'admins': []
     };else if (value === 'Admin') content = {
+      "command": "addAdmin",
       "username": props.username,
       "messages": [],
       "participants": [].concat(_toConsumableArray(props.participants), _toConsumableArray(values.Contacts)),
@@ -205828,7 +205861,226 @@ var AddMemeberModal = function AddMemeberModal(props) {
 
 var _default = AddMemeberModal;
 exports.default = _default;
-},{"antd":"node_modules/antd/es/index.js","react":"node_modules/react/index.js","./MemeberForm":"src/containers/MemeberForm.js"}],"node_modules/url-change-event/dist/url-change-event.min.js":[function(require,module,exports) {
+},{"antd":"node_modules/antd/es/index.js","react":"node_modules/react/index.js","./MemeberForm":"src/containers/MemeberForm.js"}],"src/containers/JoinForm.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _antd = require("antd");
+
+var _react = _interopRequireWildcard(require("react"));
+
+var _axios = _interopRequireDefault(require("axios"));
+
+var navActions = _interopRequireWildcard(require("../store/actions/nav"));
+
+var messageActions = _interopRequireWildcard(require("../store/actions/messages"));
+
+var _reactRedux = require("react-redux");
+
+var _reactRouterDom = require("react-router-dom");
+
+var _websocket = _interopRequireDefault(require("../websocket"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]; if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+var JoinChatForm = function JoinChatForm(props) {
+  var _useState = (0, _react.useState)([]),
+      _useState2 = _slicedToArray(_useState, 2),
+      usernames = _useState2[0],
+      SetUsernames = _useState2[1];
+  /**https://github.com/pmndrs/react-three-fiber/issues/2134 */
+
+
+  var navigate = (0, _reactRouterDom.useNavigate)();
+  /*** https://stackoverflow.com/questions/53919499/clear-form-input-field-values-after-submitting-in-react-js-with-ant-design */
+
+  var _Form$useForm = _antd.Form.useForm(),
+      _Form$useForm2 = _slicedToArray(_Form$useForm, 1),
+      form = _Form$useForm2[0];
+
+  var handleChange = function handleChange(value) {
+    SetUsernames(value);
+  };
+
+  var joinChat = function joinChat(values, token) {
+    console.log(values.Contacts, token, props.username);
+    _axios.default.defaults.xsrfHeaderName = "X-CSRFTOKEN";
+    _axios.default.defaults.xsrfCookieName = "csrftoken";
+    _axios.default.defaults.headers = {
+      'Content-Type': 'application/json',
+      Authorization: "Token ".concat(props.token)
+    };
+
+    _axios.default.post("http://127.0.0.1:8000/chat/join/", {
+      "command": "join",
+      "username": props.username,
+      "id": values.Chat_id
+    }).then(function (res) {
+      console.log(res.data.data.id);
+
+      _antd.message.success('Chat created successfully', 5);
+
+      props.getuserChats(props.username, props.token);
+
+      _websocket.default.fetchMessages(props.username, res.data.data.id);
+
+      navigate("/".concat(res.data.data.id));
+    }).catch(function (err) {
+      console.log("error at create chat ".concat(err));
+
+      _antd.message.error('something went wrong olease try again later...! ', 5);
+    });
+  };
+
+  var onFinish = function onFinish(values) {
+    joinChat(values, props.token);
+    form.resetFields();
+    props.closeOnSubmit();
+  };
+
+  var onFinishFailed = function onFinishFailed(errorInfo) {
+    console.log('Failed:', errorInfo);
+  };
+
+  return /*#__PURE__*/_react.default.createElement(_antd.Form, {
+    name: "basic",
+    form: form,
+    labelCol: {
+      span: 8
+    },
+    wrapperCol: {
+      span: 16
+    },
+    onFinish: onFinish,
+    onFinishFailed: onFinishFailed,
+    autoComplete: "off"
+  }, /*#__PURE__*/_react.default.createElement(_antd.Form.Item, {
+    label: "Chat ID",
+    name: "Chat_id",
+    rules: [{
+      required: true,
+      message: 'Please input the Chat ID !'
+    }]
+  }, /*#__PURE__*/_react.default.createElement(_antd.Input, null)), /*#__PURE__*/_react.default.createElement(_antd.Form.Item, {
+    wrapperCol: {
+      offset: 8,
+      span: 16
+    }
+  }, /*#__PURE__*/_react.default.createElement(_antd.Button, {
+    type: "primary",
+    htmlType: "submit"
+  }, "Join")));
+};
+
+var mapStateToProps = function mapStateToProps(state) {
+  return {
+    token: state.auth.token,
+    username: localStorage.getItem('username'),
+    participants: state.message.participants
+  };
+};
+
+var mapDispatchToProps = function mapDispatchToProps(dispatch) {
+  return {
+    closeOnSubmit: function closeOnSubmit() {
+      dispatch(navActions.closeJoinChatPopup());
+    },
+    getuserChats: function getuserChats(username, token) {
+      dispatch(messageActions.getUserChats(username, token));
+    }
+  };
+};
+
+var _default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(JoinChatForm);
+
+exports.default = _default;
+},{"antd":"node_modules/antd/es/index.js","react":"node_modules/react/index.js","axios":"node_modules/axios/index.js","../store/actions/nav":"src/store/actions/nav.js","../store/actions/messages":"src/store/actions/messages.js","react-redux":"node_modules/react-redux/es/index.js","react-router-dom":"node_modules/react-router-dom/dist/index.js","../websocket":"src/websocket.js"}],"src/containers/joinPopup.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _antd = require("antd");
+
+var _react = _interopRequireWildcard(require("react"));
+
+var _JoinForm = _interopRequireDefault(require("./JoinForm"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]; if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+var JoinChatModal = function JoinChatModal(props) {
+  var _useState = (0, _react.useState)(false),
+      _useState2 = _slicedToArray(_useState, 2),
+      confirmLoading = _useState2[0],
+      setConfirmLoading = _useState2[1];
+
+  console.log('at modal ', props);
+
+  var handleOk = function handleOk() {
+    setConfirmLoading(true);
+    setTimeout(function () {
+      setConfirmLoading(false);
+      props.close();
+    }, 2000);
+  };
+
+  var handleCancel = function handleCancel() {
+    setTimeout(function () {
+      props.close();
+    }, 10);
+  };
+
+  return /*#__PURE__*/_react.default.createElement(_antd.Modal, {
+    title: "Adding a New Chat ",
+    centered: true,
+    footer: null,
+    open: props.isVisible,
+    onCancel: handleCancel,
+    onOk: handleOk
+  }, /*#__PURE__*/_react.default.createElement(_JoinForm.default, null));
+};
+
+var _default = JoinChatModal;
+exports.default = _default;
+},{"antd":"node_modules/antd/es/index.js","react":"node_modules/react/index.js","./JoinForm":"src/containers/JoinForm.js"}],"node_modules/url-change-event/dist/url-change-event.min.js":[function(require,module,exports) {
 var define;
 !function(t){"function"==typeof define&&define.amd?define(t):t()}(function(){"use strict";function r(t,e){for(var n=0;n<e.length;n++){var o=e[n];o.enumerable=o.enumerable||!1,o.configurable=!0,"value"in o&&(o.writable=!0),Object.defineProperty(t,o.key,o)}}function e(e,t){var n=Object.keys(e);if(Object.getOwnPropertySymbols){var o=Object.getOwnPropertySymbols(e);t&&(o=o.filter(function(t){return Object.getOwnPropertyDescriptor(e,t).enumerable})),n.push.apply(n,o)}return n}function i(r){for(var t=1;t<arguments.length;t++){var i=null!=arguments[t]?arguments[t]:{};t%2?e(i,!0).forEach(function(t){var e,n,o;e=r,o=i[n=t],n in e?Object.defineProperty(e,n,{value:o,enumerable:!0,configurable:!0,writable:!0}):e[n]=o}):Object.getOwnPropertyDescriptors?Object.defineProperties(r,Object.getOwnPropertyDescriptors(i)):e(i).forEach(function(t){Object.defineProperty(r,t,Object.getOwnPropertyDescriptor(i,t))})}return r}function c(t){return(c=Object.setPrototypeOf?Object.getPrototypeOf:function(t){return t.__proto__||Object.getPrototypeOf(t)})(t)}function u(t,e){return(u=Object.setPrototypeOf||function(t,e){return t.__proto__=e,t})(t,e)}function a(t,e,n){return(a=function(){if("undefined"==typeof Reflect||!Reflect.construct)return!1;if(Reflect.construct.sham)return!1;if("function"==typeof Proxy)return!0;try{return Date.prototype.toString.call(Reflect.construct(Date,[],function(){})),!0}catch(t){return!1}}()?Reflect.construct:function(t,e,n){var o=[null];o.push.apply(o,e);var r=new(Function.bind.apply(t,o));return n&&u(r,n.prototype),r}).apply(null,arguments)}function f(t){var o="function"==typeof Map?new Map:void 0;return(f=function(t){if(null===t||(e=t,-1===Function.toString.call(e).indexOf("[native code]")))return t;var e;if("function"!=typeof t)throw new TypeError("Super expression must either be null or a function");if(void 0!==o){if(o.has(t))return o.get(t);o.set(t,n)}function n(){return a(t,arguments,c(this).constructor)}return n.prototype=Object.create(t.prototype,{constructor:{value:n,enumerable:!1,writable:!0,configurable:!0}}),u(n,t)})(t)}function l(t,e){return!e||"object"!=typeof e&&"function"!=typeof e?function(t){if(void 0===t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return t}(t):e}var p=function(){function n(){var t,e=0<arguments.length&&void 0!==arguments[0]?arguments[0]:{};return function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,n),(t=l(this,c(n).call(this,"urlchangeevent",i({cancelable:!0},e)))).newURL=e.newURL,t.oldURL=e.oldURL,t.action=e.action,t}var t,e,o;return function(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function");t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,writable:!0,configurable:!0}}),e&&u(t,e)}(n,f(Event)),t=n,(e=[{key:Symbol.toStringTag,get:function(){return"UrlChangeEvent"}}])&&r(t.prototype,e),o&&r(t,o),n}(),w=window.history.pushState.bind(window.history);window.history.pushState=function(t,e,n){var o=new URL(n||"",window.location.href);window.dispatchEvent(new p({newURL:o,oldURL:s,action:"pushState"}))&&(w(i({_index:d+1},t),e,n),h())};var s,d,y=window.history.replaceState.bind(window.history);function o(){var t=window.history.state;t&&"number"==typeof t._index||y(i({_index:window.history.length},t),null,null)}function h(){s=new URL(window.location.href),d=window.history.state._index}window.history.replaceState=function(t,e,n){var o=new URL(n||"",window.location.href);window.dispatchEvent(new p({newURL:o,oldURL:s,action:"replaceState"}))&&(y(i({_index:d},t),e,n),h())},o(),h(),window.addEventListener("popstate",function(t){o();var e=window.history.state._index,n=new URL(window.location);if(e!==d){if(!window.dispatchEvent(new p({oldURL:s,newURL:n,action:"popstate"})))return t.stopImmediatePropagation(),void window.history.go(d-e);h()}else t.stopImmediatePropagation()}),window.addEventListener("beforeunload",function(t){if(!window.dispatchEvent(new p({oldURL:s,newURL:null,action:"beforeunload"}))){t.preventDefault();return t.returnValue="o/"}})});
 
@@ -205861,6 +206113,8 @@ var _MemeberPopup = _interopRequireDefault(require("./MemeberPopup"));
 var navActions = _interopRequireWildcard(require("../store/actions/nav"));
 
 var messageActions = _interopRequireWildcard(require("../store/actions/messages"));
+
+var _joinPopup = _interopRequireDefault(require("./joinPopup"));
 
 require("url-change-event");
 
@@ -206019,6 +206273,8 @@ var Chat = /*#__PURE__*/function (_React$Component) {
         _this.props.getChats(localStorage.getItem('username'), _this.props.token);
 
         _this.initializeChat();
+
+        window.history.pushState('', 'Home page', '/'); //window.location.pathname = "/"
       }).catch(function (err) {
         console.log("error at create chat ".concat(err));
 
@@ -206204,6 +206460,11 @@ var Chat = /*#__PURE__*/function (_React$Component) {
           close: function close() {
             return _this4.props.closeAddMemeberPopup();
           }
+        }), /*#__PURE__*/_react.default.createElement(_joinPopup.default, {
+          isVisible: this.props.showJoinChatPopup,
+          close: function close() {
+            return _this4.props.closeJoinChatPopup();
+          }
         }), /*#__PURE__*/_react.default.createElement(_sidepanel.default, null), /*#__PURE__*/_react.default.createElement("div", {
           className: "content"
         }, /*#__PURE__*/_react.default.createElement("div", {
@@ -206300,7 +206561,7 @@ var mapStateToProps = function mapStateToProps(state) {
 var _default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(Chat);
 
 exports.default = _default;
-},{"react":"node_modules/react/index.js","antd":"node_modules/antd/es/index.js","./sidepanel":"src/containers/sidepanel.js","../websocket":"src/websocket.js","./Login":"src/containers/Login.js","./Popup":"src/containers/Popup.js","react-redux":"node_modules/react-redux/es/index.js","axios":"node_modules/axios/index.js","./MemeberPopup":"src/containers/MemeberPopup.js","../store/actions/nav":"src/store/actions/nav.js","../store/actions/messages":"src/store/actions/messages.js","url-change-event":"node_modules/url-change-event/dist/url-change-event.min.js"}],"src/containers/Register.js":[function(require,module,exports) {
+},{"react":"node_modules/react/index.js","antd":"node_modules/antd/es/index.js","./sidepanel":"src/containers/sidepanel.js","../websocket":"src/websocket.js","./Login":"src/containers/Login.js","./Popup":"src/containers/Popup.js","react-redux":"node_modules/react-redux/es/index.js","axios":"node_modules/axios/index.js","./MemeberPopup":"src/containers/MemeberPopup.js","../store/actions/nav":"src/store/actions/nav.js","../store/actions/messages":"src/store/actions/messages.js","./joinPopup":"src/containers/joinPopup.js","url-change-event":"node_modules/url-change-event/dist/url-change-event.min.js"}],"src/containers/Register.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -206657,7 +206918,8 @@ var mapStateToProps = function mapStateToProps(state) {
   return {
     isAuthenticated: state.auth.token !== null,
     showAddChatPopup: state.nav.showAddChatPopup,
-    showAddMemeberPopup: state.nav.showAddMemeberPopup
+    showAddMemeberPopup: state.nav.showAddMemeberPopup,
+    showJoinChatPopup: state.nav.showJoinChatPopup
   };
 };
 
@@ -206671,6 +206933,9 @@ var mapDispatchToProps = function mapDispatchToProps(dispatch) {
     },
     closeAddMemeberPopup: function closeAddMemeberPopup() {
       dispatch(navActions.closeAddMemeberPopup());
+    },
+    closeJoinChatPopup: function closeJoinChatPopup() {
+      dispatch(navActions.closeJoinChatPopup());
     },
     addMessage: function addMessage(message) {
       dispatch(messagesActions.addMessages(message));
@@ -211692,7 +211957,8 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
 
 var initialState = {
   showAddChatPopup: false,
-  showAddMemeberPopup: false
+  showAddMemeberPopup: false,
+  showJoinChatPopup: false
 };
 
 var openAddChatPopup = function openAddChatPopup(state, action) {
@@ -211704,6 +211970,18 @@ var openAddChatPopup = function openAddChatPopup(state, action) {
 var closeAddChatPopup = function closeAddChatPopup(state, action) {
   return (0, _utility.updateObject)(state, {
     showAddChatPopup: false
+  });
+};
+
+var openJoinChatPopup = function openJoinChatPopup(state, action) {
+  return (0, _utility.updateObject)(state, {
+    showJoinChatPopup: true
+  });
+};
+
+var closeJoinChatPopup = function closeJoinChatPopup(state, action) {
+  return (0, _utility.updateObject)(state, {
+    showJoinChatPopup: false
   });
 };
 
@@ -211737,6 +212015,12 @@ var reducer = function reducer() {
 
     case actionTypes.CLOSE_ADD_MEMEBER_POPUP:
       return closeAddMemeberPopup(state, action);
+
+    case actionTypes.OPEN_JOIN_CHAT_POPUP:
+      return openJoinChatPopup(state, action);
+
+    case actionTypes.CLOSE_JOIN_CHAT_POPUP:
+      return closeJoinChatPopup(state, action);
 
     default:
       return state;
@@ -211897,7 +212181,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "1262" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "9351" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

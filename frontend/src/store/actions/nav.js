@@ -12,6 +12,19 @@ export const closeAddChatPopup =()=>{
     }
 }
 
+export const openJoinChatPopup =()=>{
+    return {
+        type : actions.OPEN_JOIN_CHAT_POPUP
+    }
+}
+
+export const closeJoinChatPopup =()=>{
+    return {
+        type : actions.CLOSE_JOIN_CHAT_POPUP
+    }
+}
+
+
 export const openAddMemeberPopup =()=>{
     return {
         type : actions.OPEN_ADD_MEMEBER_POPUP

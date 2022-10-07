@@ -9,5 +9,6 @@ urlpatterns = [
     path('create/',ChatCreateView.as_view()),
     path('<int:pk>/update/',ChatUpdateView.as_view()),
     path('<int:pk>/delete/',ChatDeleteView.as_view()),
-    path('<int:pk>/',ChatDetailView.as_view())
+    path('<int:pk>/',ChatDetailView.as_view()),
+    path('join/',joinChatView.as_view())
 ]

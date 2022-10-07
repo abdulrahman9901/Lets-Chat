@@ -1,7 +1,7 @@
 import {Modal ,Button } from 'antd';
 import React, { useState } from 'react';
-import AddChatForm from './Form';
-const AddChatModal = (props) => {
+import JoinChatForm from './JoinForm';
+const JoinChatModal = (props) => {
   const [confirmLoading, setConfirmLoading] = useState(false);
 
   console.log('at modal ',props)
@@ -29,9 +29,9 @@ return (
         onCancel={handleCancel}
         onOk = {handleOk}
       >
-        <AddChatForm />
+        <JoinChatForm />
       </Modal>
   );
 };
 
-export default AddChatModal;
+export default JoinChatModal;
