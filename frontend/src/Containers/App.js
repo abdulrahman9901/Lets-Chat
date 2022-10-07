@@ -27,6 +27,7 @@ class App extends React.Component {
             <Route path="/register" element={ <Register /> } />
             <Route path="/:chatID" element={<Chat {...this.props}  main={false}/>} />
             <Route path="/" element={<Chat {...this.props} main={true} />} />
+            {/* <Route path="*" element={<PageNotFound />} /> */}
             </Routes>
             </div>
         )
@@ -38,7 +39,8 @@ const mapStateToProps=(state)=>{
     return{
         isAuthenticated:state.auth.token !== null,
         showAddChatPopup :state.nav.showAddChatPopup,
-        showAddMemeberPopup :state.nav.showAddMemeberPopup
+        showAddMemeberPopup :state.nav.showAddMemeberPopup,
+        showJoinChatPopup :state.nav.showJoinChatPopup
     }
 }
 const mapDispatchToProps=(dispatch)=>{
@@ -46,6 +48,7 @@ const mapDispatchToProps=(dispatch)=>{
         onTryAutoSignup:()=>{dispatch(authActions.authCheckState())},
         closeAddChatPopup :()=>{dispatch(navActions.closeAddChatPopup())},
         closeAddMemeberPopup :()=>{dispatch(navActions.closeAddMemeberPopup())},
+        closeJoinChatPopup :()=>{dispatch(navActions.closeJoinChatPopup())},
         addMessage :(message)=>{dispatch(messagesActions.addMessages(message))},
         setMessages :(messages)=>{dispatch(messagesActions.setMessages(messages))}
     }

@@ -36,6 +36,7 @@ const AddMemeberForm = (props) => {
     let content;
     if (value === 'Participant')
       content =  {
+        "command" :"addParticipant",
         "username": props.username,
         "messages": [],
         "participants":[...props.participants,...values.Contacts],
@@ -43,6 +44,7 @@ const AddMemeberForm = (props) => {
         }
       else if (value === 'Admin')
         content =  {
+          "command" :"addAdmin",
           "username": props.username,
           "messages": [],
           "participants":[...props.participants,...values.Contacts],

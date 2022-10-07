@@ -6,8 +6,11 @@ from rest_framework.generics import (
     UpdateAPIView,
     DestroyAPIView
 )
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 from .serializers import ChatSerializer
-from chat.models import Chat ,Contact ,CustomUser
+from chat.models import Chat ,Contact ,CustomUser,Message
 
 from django.shortcuts import get_object_or_404
 
@@ -52,3 +55,17 @@ class ChatDeleteView(DestroyAPIView):
     queryset = Chat.objects.all()
     serializer_class = ChatSerializer
     permission_classes = (permissions.IsAuthenticated,)
+
+class joinChatView(APIView):
+    def post(self, request):
+            chat = get_object_or_404(Chat,id=request.data["id"])
+            username = get_user_contact(request.data["username"])
+            print(username)
+            if username not in chat.participants.all() :
+                chat.participants.add(username)
+                message = Message.objects.create(contact=username,content='{} has joined the chat .'.format(username.user.username),system_message=True)
+                chat.messages.add(message)
+                chat.save()
+            schat = ChatSerializer(chat)
+            print(schat.data)
+            return Response({"status": "success", "data": schat.data}, status=status.HTTP_200_OK)

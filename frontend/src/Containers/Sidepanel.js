@@ -34,6 +34,11 @@ class Sidepanel extends React.Component{
 openAddChatPopup = ()=>{
   this.props.addChat()
 }
+
+openJoinChatPopup = ()=>{
+  this.props.joinChat()
+}
+
 componentWillReceiveProps(newProps) {
   console.log(`newProps = ${newProps}`)
   console.log(newProps.chats.length , this.props.chats.length)
@@ -98,8 +103,8 @@ render(){
           </ul>
         </div>
         <div id="bottom-bar">
-          <button id="addcontact" onClick={() => this.openAddChatPopup()}><i className="fa fa-user-plus fa-fw" aria-hidden="true"></i> <span>Add Chat</span></button>
-          <button id="settings"><i className="fa fa-cog fa-fw" aria-hidden="true"></i> <span>Settings</span></button>
+          <button id="addcontact" onClick={() => this.openAddChatPopup()}><i className="fa fa-user-plus fa-fw" aria-hidden="true"></i> <span>Create Chat</span></button>
+          <button id="joinChat" onClick={() => this.openJoinChatPopup()} ><i className="fa fa-cog fa-fw" aria-hidden="true"></i> <span>Join chat </span></button>
         </div>
       </div>
     )
@@ -118,6 +123,7 @@ const mapDispatchToProps=(dispatch)=>{
   return {
       onLogout:()=>dispatch(authActions.logout()),
       addChat : () =>dispatch(navActions.openAddChatPopup()),
+      joinChat : () =>dispatch(navActions.openJoinChatPopup()),
       getChats : (username,token) =>dispatch(messageActions.getUserChats(username,token))
 
   }

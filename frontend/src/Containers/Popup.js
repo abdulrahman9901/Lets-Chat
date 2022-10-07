@@ -27,6 +27,7 @@ return (
         footer={null}
         open={props.isVisible}
         onCancel={handleCancel}
+        onOk = {handleOk}
       >
         <AddChatForm />
       </Modal>

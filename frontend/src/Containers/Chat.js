@@ -10,9 +10,11 @@ import axios from 'axios';
 import AddMemberModal from './MemeberPopup'
 import * as navActions from '../store/actions/nav'
 import * as messageActions from '../store/actions/messages'
+import JoinChatModal from './joinPopup';
 import 'url-change-event'
-class Chat extends React.Component {
 
+class Chat extends React.Component {
+    
     state={
         message:''
     }
@@ -252,6 +254,8 @@ class Chat extends React.Component {
             message.success('You have left the chat successfully',5)
             this.props.getChats(localStorage.getItem('username'),this.props.token)
             this.initializeChat();
+            window.history.pushState('', 'Home page', '/');
+            //window.location.pathname = "/"
             }).catch(err =>{
                 console.log(`error at create chat ${err}`)
                 message.error('something went wrong olease try again later...! ',5)
@@ -273,6 +277,10 @@ class Chat extends React.Component {
                 <AddMemberModal 
                 isVisible={this.props.showAddMemeberPopup}
                 close={() => this.props.closeAddMemeberPopup()}
+                />
+                <JoinChatModal 
+                isVisible={this.props.showJoinChatPopup}
+                close={() => this.props.closeJoinChatPopup()}
                 />
                 <Sidepanel />
                 <div className="content">
