@@ -58,6 +58,7 @@ class Chat extends React.Component {
     componentWillReceiveProps(newProps){
         console.log('newProps',newProps.messages,'Props',this.props.messages)
         console.log('componentWillReceiveProps')
+        this.props.getChats()
         if (newProps && newProps.messages){
             if (newProps.messages.length == 1 && newProps.messages[0].system_message)
                 this.pathname = location.pathname;
@@ -254,8 +255,8 @@ class Chat extends React.Component {
             message.success('You have left the chat successfully',5)
             this.props.getChats(localStorage.getItem('username'),this.props.token)
             this.initializeChat();
-            window.history.pushState('', 'Home page', '/');
-            //window.location.pathname = "/"
+            // window.history.pushState('', 'Home page', '/');
+            window.location.pathname = "/"
             }).catch(err =>{
                 console.log(`error at create chat ${err}`)
                 message.error('something went wrong olease try again later...! ',5)
@@ -284,7 +285,8 @@ class Chat extends React.Component {
                 />
                 <Sidepanel />
                 <div className="content">
-                  <div className="contact-profile">
+                {this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?
+                  (<div className="contact-profile">
                     <img src="https://img.icons8.com/pastel-glyph/128/2C3E50/communication--v1.png"/>
                     <p> {this.props.name ? this.props.name : window.location.pathname.slice(1) ? `Chat # ${window.location.pathname.slice(1)}`:null} </p>
                     {this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?   <div className="social-media">
@@ -302,7 +304,7 @@ class Chat extends React.Component {
                         </Button>
                     : null}
                     </div>: null}
-                  </div>
+                  </div>) : null}
                   {! this.props.main ?<div>
                   <div className="messages">
                     <ul id="chat-log"> 

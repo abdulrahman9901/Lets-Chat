@@ -204811,8 +204811,6 @@ var messageActions = _interopRequireWildcard(require("../store/actions/messages"
 
 var _Contacts = _interopRequireDefault(require("../Components/Contacts"));
 
-var _axios = _interopRequireDefault(require("axios"));
-
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -205005,7 +205003,7 @@ var mapDispatchToProps = function mapDispatchToProps(dispatch) {
 var _default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(Sidepanel);
 
 exports.default = _default;
-},{"react":"node_modules/react/index.js","./Dropdown":"src/containers/Dropdown.js","react-redux":"node_modules/react-redux/es/index.js","../store/actions/auth":"src/store/actions/auth.js","../store/actions/nav":"src/store/actions/nav.js","../store/actions/messages":"src/store/actions/messages.js","../Components/Contacts":"src/Components/Contacts.js","axios":"node_modules/axios/index.js"}],"src/websocket.js":[function(require,module,exports) {
+},{"react":"node_modules/react/index.js","./Dropdown":"src/containers/Dropdown.js","react-redux":"node_modules/react-redux/es/index.js","../store/actions/auth":"src/store/actions/auth.js","../store/actions/nav":"src/store/actions/nav.js","../store/actions/messages":"src/store/actions/messages.js","../Components/Contacts":"src/Components/Contacts.js"}],"src/websocket.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -206272,9 +206270,10 @@ var Chat = /*#__PURE__*/function (_React$Component) {
 
         _this.props.getChats(localStorage.getItem('username'), _this.props.token);
 
-        _this.initializeChat();
+        _this.initializeChat(); // window.history.pushState('', 'Home page', '/');
 
-        window.history.pushState('', 'Home page', '/'); //window.location.pathname = "/"
+
+        window.location.pathname = "/";
       }).catch(function (err) {
         console.log("error at create chat ".concat(err));
 
@@ -206331,6 +206330,7 @@ var Chat = /*#__PURE__*/function (_React$Component) {
     value: function componentWillReceiveProps(newProps) {
       console.log('newProps', newProps.messages, 'Props', this.props.messages);
       console.log('componentWillReceiveProps');
+      this.props.getChats();
 
       if (newProps && newProps.messages) {
         if (newProps.messages.length == 1 && newProps.messages[0].system_message) this.pathname = location.pathname;
@@ -206467,7 +206467,7 @@ var Chat = /*#__PURE__*/function (_React$Component) {
           }
         }), /*#__PURE__*/_react.default.createElement(_sidepanel.default, null), /*#__PURE__*/_react.default.createElement("div", {
           className: "content"
-        }, /*#__PURE__*/_react.default.createElement("div", {
+        }, this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ? /*#__PURE__*/_react.default.createElement("div", {
           className: "contact-profile"
         }, /*#__PURE__*/_react.default.createElement("img", {
           src: "https://img.icons8.com/pastel-glyph/128/2C3E50/communication--v1.png"
@@ -206490,7 +206490,7 @@ var Chat = /*#__PURE__*/function (_React$Component) {
         }, "Leave"), this.props.admins && this.props.admins.includes(this.props.currentUser) ? /*#__PURE__*/_react.default.createElement(_antd.Button, {
           type: "primary",
           danger: true
-        }, "Delete") : null) : null), !this.props.main ? /*#__PURE__*/_react.default.createElement("div", null, /*#__PURE__*/_react.default.createElement("div", {
+        }, "Delete") : null) : null) : null, !this.props.main ? /*#__PURE__*/_react.default.createElement("div", null, /*#__PURE__*/_react.default.createElement("div", {
           className: "messages"
         }, /*#__PURE__*/_react.default.createElement("ul", {
           id: "chat-log"
@@ -206942,6 +206942,7 @@ var mapDispatchToProps = function mapDispatchToProps(dispatch) {
     },
     setMessages: function setMessages(messages) {
       dispatch(messagesActions.setMessages(messages));
+      dispatch(messagesActions.getUserChats());
     }
   };
 };
