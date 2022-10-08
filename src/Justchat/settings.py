@@ -199,3 +199,8 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     )
 }
+
+CSRF_COOKIE_NAME = 'XSRF-TOKEN'
+
+CSRF_HEADER_NAME = 'HTTP_X_XSRF_TOKEN'
+

@@ -34,8 +34,7 @@ export const logout=()=>{
     localStorage.removeItem('token');
     localStorage.removeItem('expirationDate');
     localStorage.removeItem('username');
-    // localStorage.clear();
-    // sessionStorage.clear();
+    
 
     const cookies = document.cookie;
     for (const myCookie of cookies.split(";")) {
@@ -43,6 +42,15 @@ export const logout=()=>{
     const name = pos > -1 ? myCookie.substr(0, pos) : myCookie;
     document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
     }
+    
+    axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
+    axios.defaults.xsrfCookieName = "csrftoken";
+    axios.post('http://127.0.0.1:8000/rest-auth/logout/',{}
+    ).then((res)=>{
+        console.log("err at actions ",res.data)
+    }).catch(err =>{
+        console.log("err at logout ",err.message)
+    });
 
     return{
         type:actionTypes.AUTH_LOGOUT,
@@ -63,6 +71,9 @@ export const authLogin =(username,password)=>{
         dispatch(authStart());
         axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
         axios.defaults.xsrfCookieName = "csrftoken";
+        axios.defaults.headers = {
+            'Content-Type' : 'application/json',
+          }
         axios.post('http://127.0.0.1:8000/rest-auth/login/',
             {
                 username:username,

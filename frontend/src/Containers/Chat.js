@@ -1,5 +1,5 @@
 import React from 'react';
-import {message} from 'antd'
+import {message, Upload} from 'antd'
 import Sidepanel from './sidepanel';
 import webSocketInstance from '../websocket';
 import Login from './Login';
@@ -12,11 +12,12 @@ import * as navActions from '../store/actions/nav'
 import * as messageActions from '../store/actions/messages'
 import JoinChatModal from './joinPopup';
 import 'url-change-event'
-
+import UploadModal from './UploadPopup';
 class Chat extends React.Component {
-    
+
     state={
-        message:''
+        message:'',
+        upload:false
     }
 
     initializeChat(){
@@ -213,6 +214,21 @@ class Chat extends React.Component {
             console.log('state is : ' ,this.state);
         });
     }
+    showModal= e =>{
+        this.setState({
+            upload:true,
+        },function () {
+            console.log('state is : ' ,this.state);
+        });
+    }
+
+    handleCancel = () => {
+        this.setState({
+            upload:false,
+        },function () {
+            console.log('state is : ' ,this.state);
+        });
+      };
 
     /** https://stackoverflow.com/questions/38093760/how-to-access-a-dom-element-in-react-what-is-the-equilvalent-of-document-getele/38093981#38093981 */
 
@@ -283,6 +299,7 @@ class Chat extends React.Component {
                 isVisible={this.props.showJoinChatPopup}
                 close={() => this.props.closeJoinChatPopup()}
                 />
+                <UploadModal open={this.state.upload} cancel={this.handleCancel}/>
                 <Sidepanel />
                 <div className="content">
                 {this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?
@@ -341,13 +358,14 @@ class Chat extends React.Component {
                      id="chat-message-input" type="text" placeholder="Write your message..." />  */}
 
         
-                        <button id="chat-message-submit" className="submit">
+                    <button id="chat-message-submit" className="submit">
                      <i className="fa fa-paper-plane" aria-hidden="true"></i>
                     </button>
-                    <button id="chat-message-attach" >
+            
+                    <button id="chat-message-attach" onClick={this.showModal}>
                     <i className="fa fa-paperclip attachment" aria-hidden="true"></i>
-                    </button>                   
-                    
+                    </button>     
+
                     </div>
                   </div>
                   </form>
@@ -357,8 +375,14 @@ class Chat extends React.Component {
                 </div>
               </div>        
             )}
-        else {window.location.pathname = '/login'}
-        //else { return <Login />}     
+        //else {
+            // console.log("to logout in chat")
+            // window.location.pathname = '/login'}
+        else {
+            {console.log("in login page ")}
+            window.history.pushState({}, '', '/login');
+            return <Login />
+        }     
       
     }
 }

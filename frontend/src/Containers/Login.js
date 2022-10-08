@@ -8,6 +8,8 @@ import { useNavigate } from "react-router-dom"
 
 const Login = (props) => {
 
+console.log("in login page ")
+
 const navigate = useNavigate();
 
 const [form] = Form.useForm();

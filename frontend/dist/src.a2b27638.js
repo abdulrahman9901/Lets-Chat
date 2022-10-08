@@ -40701,8 +40701,13 @@ function stringify(value) {
 }
 
 function useWatch() {
-  var dependencies = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-  var form = arguments.length > 1 ? arguments[1] : undefined;
+  for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
+
+  var _args$ = args[0],
+      dependencies = _args$ === void 0 ? [] : _args$,
+      form = args[1];
 
   var _useState = (0, _react.useState)(),
       _useState2 = (0, _slicedToArray2.default)(_useState, 2),
@@ -40719,7 +40724,7 @@ function useWatch() {
   var isValidForm = formInstance && formInstance._init; // Warning if not exist form instance
 
   if ("development" !== 'production') {
-    (0, _warning.default)(isValidForm, 'useWatch requires a form instance since it can not auto detect from context.');
+    (0, _warning.default)(args.length === 2 ? form ? isValidForm : true : isValidForm, 'useWatch requires a form instance since it can not auto detect from context.');
   }
 
   var namePath = (0, _valueUtil.getNamePath)(dependencies);
@@ -40752,7 +40757,7 @@ function useWatch() {
     return cancelRegister;
   }, // We do not need re-register since namePath content is the same
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  []);
+  [isValidForm]);
   return value;
 }
 
@@ -47023,7 +47028,7 @@ typeList.forEach(function (type) {
 });
 api.warn = api.warning;
 api.useMessage = (0, _useMessage.default)(getRCNotificationInstance, getRCNoticeProps);
-/** @private test Only function. Not work on production */
+/** @internal test Only function. Not work on production */
 
 var getInstance = function getInstance() {
   return "development" === 'test' ? messageInstance : null;
@@ -47785,7 +47790,7 @@ var api = {
 });
 api.warn = api.warning;
 api.useNotification = (0, _useNotification.default)(getNotificationInstance, getRCNoticeProps);
-/** @private test Only function. Not work on production */
+/** @internal test Only function. Not work on production */
 
 var getInstance = function getInstance(cacheKey) {
   return __awaiter(void 0, void 0, void 0, /*#__PURE__*/(0, _regeneratorRuntime2.default)().mark(function _callee() {
@@ -49495,6 +49500,7 @@ var Anchor = /*#__PURE__*/function (_React$Component) {
     };
 
     _this.setCurrentActiveLink = function (link) {
+      var triggerChange = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
       var activeLink = _this.state.activeLink;
       var _this$props2 = _this.props,
           onChange = _this$props2.onChange,
@@ -49509,7 +49515,9 @@ var Anchor = /*#__PURE__*/function (_React$Component) {
         activeLink: typeof getCurrentAnchor === 'function' ? getCurrentAnchor(link) : link
       });
 
-      onChange === null || onChange === void 0 ? void 0 : onChange(link);
+      if (triggerChange) {
+        onChange === null || onChange === void 0 ? void 0 : onChange(link);
+      }
     };
 
     _this.handleScroll = function () {
@@ -49562,6 +49570,9 @@ var Anchor = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate() {
+      var getCurrentAnchor = this.props.getCurrentAnchor;
+      var activeLink = this.state.activeLink;
+
       if (this.scrollEvent) {
         var currentContainer = this.getContainer();
 
@@ -49571,6 +49582,10 @@ var Anchor = /*#__PURE__*/function (_React$Component) {
           this.scrollEvent = (0, _addEventListener.default)(this.scrollContainer, 'scroll', this.handleScroll);
           this.handleScroll();
         }
+      }
+
+      if (typeof getCurrentAnchor === 'function') {
+        this.setCurrentActiveLink(getCurrentAnchor(activeLink || ''), false);
       }
 
       this.updateInk();
@@ -62743,11 +62758,11 @@ var Empty = function Empty(_a) {
 
   return /*#__PURE__*/React.createElement(_LocaleReceiver.default, {
     componentName: "Empty"
-  }, function (locale) {
+  }, function (contextLocale) {
     var _classNames;
 
     var prefixCls = getPrefixCls('empty', customizePrefixCls);
-    var des = typeof description !== 'undefined' ? description : locale.description;
+    var des = typeof description !== 'undefined' ? description : contextLocale.description;
     var alt = typeof des === 'string' ? des : 'empty';
     var imageNode = null;
 
@@ -63889,8 +63904,8 @@ var InternalAvatar = function InternalAvatar(props, ref) {
       isImgExist = _React$useState6[0],
       setIsImgExist = _React$useState6[1];
 
-  var avatarNodeRef = React.useRef();
-  var avatarChildrenRef = React.useRef();
+  var avatarNodeRef = React.useRef(null);
+  var avatarChildrenRef = React.useRef(null);
   var avatarNodeMergeRef = (0, _ref.composeRef)(ref, avatarNodeRef);
 
   var _React$useContext = React.useContext(_configProvider.ConfigContext),
@@ -63936,8 +63951,10 @@ var InternalAvatar = function InternalAvatar(props, ref) {
   };
 
   var customizePrefixCls = props.prefixCls,
-      shape = props.shape,
-      customSize = props.size,
+      _props$shape = props.shape,
+      shape = _props$shape === void 0 ? 'circle' : _props$shape,
+      _props$size = props.size,
+      customSize = _props$size === void 0 ? 'default' : _props$size,
       src = props.src,
       srcSet = props.srcSet,
       icon = props.icon,
@@ -64010,9 +64027,7 @@ var InternalAvatar = function InternalAvatar(props, ref) {
       onResize: setScaleParam
     }, /*#__PURE__*/React.createElement("span", {
       className: "".concat(prefixCls, "-string"),
-      ref: function ref(node) {
-        avatarChildrenRef.current = node;
-      },
+      ref: avatarChildrenRef,
       style: (0, _extends2.default)((0, _extends2.default)({}, sizeChildrenStyle), childrenStyle)
     }, children));
   } else {
@@ -64021,9 +64036,7 @@ var InternalAvatar = function InternalAvatar(props, ref) {
       style: {
         opacity: 0
       },
-      ref: function ref(node) {
-        avatarChildrenRef.current = node;
-      }
+      ref: avatarChildrenRef
     }, children);
   } // The event is triggered twice from bubbling up the DOM tree.
   // see https://codesandbox.io/s/kind-snow-9lidz
@@ -64044,10 +64057,6 @@ if ("development" !== 'production') {
   Avatar.displayName = 'Avatar';
 }
 
-Avatar.defaultProps = {
-  shape: 'circle',
-  size: 'default'
-};
 var _default = Avatar;
 exports.default = _default;
 },{"@babel/runtime/helpers/esm/extends":"node_modules/@babel/runtime/helpers/esm/extends.js","@babel/runtime/helpers/esm/defineProperty":"node_modules/@babel/runtime/helpers/esm/defineProperty.js","@babel/runtime/helpers/esm/typeof":"node_modules/@babel/runtime/helpers/esm/typeof.js","@babel/runtime/helpers/esm/slicedToArray":"node_modules/@babel/runtime/helpers/esm/slicedToArray.js","classnames":"node_modules/classnames/index.js","rc-resize-observer":"node_modules/rc-resize-observer/es/index.js","rc-util/es/ref":"node_modules/rc-util/es/ref.js","react":"node_modules/react/index.js","../config-provider":"node_modules/antd/es/config-provider/index.js","../grid/hooks/useBreakpoint":"node_modules/antd/es/grid/hooks/useBreakpoint.js","../_util/responsiveObserve":"node_modules/antd/es/_util/responsiveObserve.js","../_util/warning":"node_modules/antd/es/_util/warning.js","./SizeContext":"node_modules/antd/es/avatar/SizeContext.js"}],"node_modules/rc-tooltip/es/placements.js":[function(require,module,exports) {
@@ -64776,31 +64785,58 @@ var __rest = void 0 && (void 0).__rest || function (s, e) {
   return t;
 };
 
-var Popover = /*#__PURE__*/React.forwardRef(function (_a, ref) {
-  var customizePrefixCls = _a.prefixCls,
-      title = _a.title,
-      content = _a.content,
-      _overlay = _a._overlay,
-      otherProps = __rest(_a, ["prefixCls", "title", "content", "_overlay"]);
+var Overlay = function Overlay(_ref) {
+  var title = _ref.title,
+      content = _ref.content,
+      prefixCls = _ref.prefixCls;
+
+  if (!title && !content) {
+    return null;
+  }
+
+  return /*#__PURE__*/React.createElement(React.Fragment, null, title && /*#__PURE__*/React.createElement("div", {
+    className: "".concat(prefixCls, "-title")
+  }, (0, _getRenderPropValue.getRenderPropValue)(title)), /*#__PURE__*/React.createElement("div", {
+    className: "".concat(prefixCls, "-inner-content")
+  }, (0, _getRenderPropValue.getRenderPropValue)(content)));
+};
+
+var Popover = /*#__PURE__*/React.forwardRef(function (props, ref) {
+  var customizePrefixCls = props.prefixCls,
+      title = props.title,
+      content = props.content,
+      _overlay = props._overlay,
+      _props$placement = props.placement,
+      placement = _props$placement === void 0 ? 'top' : _props$placement,
+      _props$trigger = props.trigger,
+      trigger = _props$trigger === void 0 ? 'hover' : _props$trigger,
+      _props$mouseEnterDela = props.mouseEnterDelay,
+      mouseEnterDelay = _props$mouseEnterDela === void 0 ? 0.1 : _props$mouseEnterDela,
+      _props$mouseLeaveDela = props.mouseLeaveDelay,
+      mouseLeaveDelay = _props$mouseLeaveDela === void 0 ? 0.1 : _props$mouseLeaveDela,
+      _props$overlayStyle = props.overlayStyle,
+      overlayStyle = _props$overlayStyle === void 0 ? {} : _props$overlayStyle,
+      otherProps = __rest(props, ["prefixCls", "title", "content", "_overlay", "placement", "trigger", "mouseEnterDelay", "mouseLeaveDelay", "overlayStyle"]);
 
   var _React$useContext = React.useContext(_configProvider.ConfigContext),
       getPrefixCls = _React$useContext.getPrefixCls;
 
-  var getOverlay = function getOverlay(prefixCls) {
-    if (!title && !content) return undefined;
-    return /*#__PURE__*/React.createElement(React.Fragment, null, title && /*#__PURE__*/React.createElement("div", {
-      className: "".concat(prefixCls, "-title")
-    }, (0, _getRenderPropValue.getRenderPropValue)(title)), /*#__PURE__*/React.createElement("div", {
-      className: "".concat(prefixCls, "-inner-content")
-    }, (0, _getRenderPropValue.getRenderPropValue)(content)));
-  };
-
   var prefixCls = getPrefixCls('popover', customizePrefixCls);
   var rootPrefixCls = getPrefixCls();
-  return /*#__PURE__*/React.createElement(_tooltip.default, (0, _extends2.default)({}, otherProps, {
+  return /*#__PURE__*/React.createElement(_tooltip.default, (0, _extends2.default)({
+    placement: placement,
+    trigger: trigger,
+    mouseEnterDelay: mouseEnterDelay,
+    mouseLeaveDelay: mouseLeaveDelay,
+    overlayStyle: overlayStyle
+  }, otherProps, {
     prefixCls: prefixCls,
     ref: ref,
-    overlay: _overlay || getOverlay(prefixCls),
+    overlay: _overlay || /*#__PURE__*/React.createElement(Overlay, {
+      prefixCls: prefixCls,
+      title: title,
+      content: content
+    }),
     transitionName: (0, _motion.getTransitionName)(rootPrefixCls, 'zoom-big', otherProps.transitionName)
   }));
 });
@@ -64809,13 +64845,6 @@ if ("development" !== 'production') {
   Popover.displayName = 'Popover';
 }
 
-Popover.defaultProps = {
-  placement: 'top',
-  trigger: 'hover',
-  mouseEnterDelay: 0.1,
-  mouseLeaveDelay: 0.1,
-  overlayStyle: {}
-};
 var _default = Popover;
 exports.default = _default;
 },{"@babel/runtime/helpers/esm/extends":"node_modules/@babel/runtime/helpers/esm/extends.js","react":"node_modules/react/index.js","../config-provider":"node_modules/antd/es/config-provider/index.js","../tooltip":"node_modules/antd/es/tooltip/index.js","../_util/getRenderPropValue":"node_modules/antd/es/_util/getRenderPropValue.js","../_util/motion":"node_modules/antd/es/_util/motion.js"}],"node_modules/antd/es/avatar/group.js":[function(require,module,exports) {
@@ -65076,7 +65105,8 @@ var BackTop = function BackTop(props) {
   };
 
   var handleScroll = (0, _throttleByAnimationFrame.throttleByAnimationFrame)(function (e) {
-    var visibilityHeight = props.visibilityHeight;
+    var _props$visibilityHeig = props.visibilityHeight,
+        visibilityHeight = _props$visibilityHeig === void 0 ? 400 : _props$visibilityHeig;
     var scrollTop = (0, _getScroll.default)(e.target, true);
     setVisible(scrollTop > visibilityHeight);
   });
@@ -65140,10 +65170,6 @@ var BackTop = function BackTop(props) {
     rootPrefixCls: rootPrefixCls,
     visible: visible
   }, props.children));
-};
-
-BackTop.defaultProps = {
-  visibilityHeight: 400
 };
 
 var _default = /*#__PURE__*/React.memo(BackTop);
@@ -65633,7 +65659,7 @@ var Badge = function Badge(_a) {
     }), /*#__PURE__*/React.createElement("span", {
       className: statusCls,
       style: statusStyle
-    }), /*#__PURE__*/React.createElement("span", {
+    }), text && /*#__PURE__*/React.createElement("span", {
       style: {
         color: statusTextColor
       },
@@ -69473,9 +69499,9 @@ var __rest = void 0 && (void 0).__rest || function (s, e) {
   return t;
 };
 
-/** @private Internal Usage. Only used for Dropdown component. Do not use this in your production. */
+/** @internal Only used for Dropdown component. Do not use this in your production. */
 var OverrideContext = /*#__PURE__*/React.createContext(null);
-/** @private Internal Usage. Only used for Dropdown component. Do not use this in your production. */
+/** @internal Only used for Dropdown component. Do not use this in your production. */
 
 var OverrideProvider = function OverrideProvider(_a) {
   var children = _a.children,
@@ -70172,6 +70198,16 @@ function isHidden(element) {
   return !element || element.offsetParent === null || element.hidden;
 }
 
+function getValidateContainer(nodeRoot) {
+  if (nodeRoot instanceof Document) {
+    return nodeRoot.body;
+  }
+
+  return Array.from(nodeRoot.childNodes).find(function (ele) {
+    return (ele === null || ele === void 0 ? void 0 : ele.nodeType) === Node.ELEMENT_NODE;
+  });
+}
+
 function isNotGrey(color) {
   // eslint-disable-next-line no-useless-escape
   var match = (color || '').match(/rgba?\((\d*), (\d*), (\d*)(, [\d.]*)?\)/);
@@ -70224,7 +70260,7 @@ var InternalWave = /*#__PURE__*/function (_React$Component) {
       waveColor !== 'transparent') {
         extraNode.style.borderColor = waveColor;
         var nodeRoot = ((_a = node.getRootNode) === null || _a === void 0 ? void 0 : _a.call(node)) || node.ownerDocument;
-        var nodeBody = nodeRoot instanceof Document ? nodeRoot.body : (_b = nodeRoot.firstChild) !== null && _b !== void 0 ? _b : nodeRoot;
+        var nodeBody = (_b = getValidateContainer(nodeRoot)) !== null && _b !== void 0 ? _b : nodeRoot;
         styleForPseudo = (0, _dynamicCSS.updateCSS)("\n      [".concat(getPrefixCls(''), "-click-animating-without-extra-node='true']::after, .").concat(getPrefixCls(''), "-click-animating-node {\n        --antd-wave-shadow-color: ").concat(waveColor, ";\n      }"), 'antd-wave', {
           csp: _this.csp,
           attachTo: nodeBody
@@ -71084,7 +71120,7 @@ var Dropdown = function Dropdown(props) {
       return transitionName;
     }
 
-    if (placement.indexOf('top') >= 0) {
+    if (placement.includes('top')) {
       return "".concat(rootPrefixCls, "-slide-down");
     }
 
@@ -71117,7 +71153,11 @@ var Dropdown = function Dropdown(props) {
       visible = props.visible,
       open = props.open,
       onVisibleChange = props.onVisibleChange,
-      onOpenChange = props.onOpenChange;
+      onOpenChange = props.onOpenChange,
+      _props$mouseEnterDela = props.mouseEnterDelay,
+      mouseEnterDelay = _props$mouseEnterDela === void 0 ? 0.15 : _props$mouseEnterDela,
+      _props$mouseLeaveDela = props.mouseLeaveDelay,
+      mouseLeaveDelay = _props$mouseLeaveDela === void 0 ? 0.1 : _props$mouseLeaveDela;
   var prefixCls = getPrefixCls('dropdown', customizePrefixCls);
   var child = React.Children.only(children);
   var dropdownTrigger = (0, _reactNode.cloneElement)(child, {
@@ -71127,7 +71167,7 @@ var Dropdown = function Dropdown(props) {
   var triggerActions = disabled ? [] : trigger;
   var alignPoint;
 
-  if (triggerActions && triggerActions.indexOf('contextMenu') !== -1) {
+  if (triggerActions && triggerActions.includes('contextMenu')) {
     alignPoint = true;
   } // =========================== Visible ============================
 
@@ -71189,6 +71229,8 @@ var Dropdown = function Dropdown(props) {
   return /*#__PURE__*/React.createElement(_rcDropdown.default, (0, _extends2.default)({
     alignPoint: alignPoint
   }, props, {
+    mouseEnterDelay: mouseEnterDelay,
+    mouseLeaveDelay: mouseLeaveDelay,
     visible: mergedOpen,
     builtinPlacements: builtinPlacements,
     arrow: !!arrow,
@@ -71204,10 +71246,6 @@ var Dropdown = function Dropdown(props) {
 };
 
 Dropdown.Button = _dropdownButton.default;
-Dropdown.defaultProps = {
-  mouseEnterDelay: 0.15,
-  mouseLeaveDelay: 0.1
-};
 var _default = Dropdown;
 exports.default = _default;
 },{"@babel/runtime/helpers/esm/extends":"node_modules/@babel/runtime/helpers/esm/extends.js","@babel/runtime/helpers/esm/typeof":"node_modules/@babel/runtime/helpers/esm/typeof.js","@babel/runtime/helpers/esm/defineProperty":"node_modules/@babel/runtime/helpers/esm/defineProperty.js","@babel/runtime/helpers/esm/slicedToArray":"node_modules/@babel/runtime/helpers/esm/slicedToArray.js","@ant-design/icons/es/icons/RightOutlined":"node_modules/@ant-design/icons/es/icons/RightOutlined.js","classnames":"node_modules/classnames/index.js","rc-dropdown":"node_modules/rc-dropdown/es/index.js","rc-util/es/hooks/useEvent":"node_modules/rc-util/es/hooks/useEvent.js","rc-util/es/hooks/useMergedState":"node_modules/rc-util/es/hooks/useMergedState.js","react":"node_modules/react/index.js","../config-provider":"node_modules/antd/es/config-provider/index.js","../menu/OverrideContext":"node_modules/antd/es/menu/OverrideContext.js","../_util/placements":"node_modules/antd/es/_util/placements.js","../_util/reactNode":"node_modules/antd/es/_util/reactNode.js","../_util/type":"node_modules/antd/es/_util/type.js","../_util/warning":"node_modules/antd/es/_util/warning.js","./dropdown-button":"node_modules/antd/es/dropdown/dropdown-button.js"}],"node_modules/antd/es/breadcrumb/BreadcrumbItem.js":[function(require,module,exports) {
@@ -84783,7 +84821,7 @@ function generateCalendar(generateConfig) {
     return /*#__PURE__*/React.createElement(_LocaleReceiver.default, {
       componentName: "Calendar",
       defaultLocale: getDefaultLocale
-    }, function (mergedLocale) {
+    }, function (contextLocale) {
       var _classNames3;
 
       return /*#__PURE__*/React.createElement("div", {
@@ -84800,18 +84838,18 @@ function generateCalendar(generateConfig) {
         generateConfig: generateConfig,
         mode: mergedMode,
         fullscreen: fullscreen,
-        locale: mergedLocale.lang,
+        locale: contextLocale.lang,
         validRange: validRange,
         onChange: onInternalSelect,
         onModeChange: triggerModeChange
       }), /*#__PURE__*/React.createElement(_rcPicker.PickerPanel, {
         value: mergedValue,
         prefixCls: prefixCls,
-        locale: mergedLocale.lang,
+        locale: contextLocale.lang,
         generateConfig: generateConfig,
         dateRender: dateRender,
         monthCellRender: function monthCellRender(date) {
-          return monthRender(date, mergedLocale.lang);
+          return monthRender(date, contextLocale.lang);
         },
         onSelect: onInternalSelect,
         mode: panelMode,
@@ -84876,11 +84914,13 @@ var Element = function Element(props) {
       shape = props.shape;
   var sizeCls = (0, _classnames.default)((_classNames = {}, (0, _defineProperty2.default)(_classNames, "".concat(prefixCls, "-lg"), size === 'large'), (0, _defineProperty2.default)(_classNames, "".concat(prefixCls, "-sm"), size === 'small'), _classNames));
   var shapeCls = (0, _classnames.default)((_classNames2 = {}, (0, _defineProperty2.default)(_classNames2, "".concat(prefixCls, "-circle"), shape === 'circle'), (0, _defineProperty2.default)(_classNames2, "".concat(prefixCls, "-square"), shape === 'square'), (0, _defineProperty2.default)(_classNames2, "".concat(prefixCls, "-round"), shape === 'round'), _classNames2));
-  var sizeStyle = typeof size === 'number' ? {
-    width: size,
-    height: size,
-    lineHeight: "".concat(size, "px")
-  } : {};
+  var sizeStyle = React.useMemo(function () {
+    return typeof size === 'number' ? {
+      width: size,
+      height: size,
+      lineHeight: "".concat(size, "px")
+    } : {};
+  }, [size]);
   return /*#__PURE__*/React.createElement("span", {
     className: (0, _classnames.default)(prefixCls, sizeCls, shapeCls, className),
     style: (0, _extends2.default)((0, _extends2.default)({}, sizeStyle), style)
@@ -84920,7 +84960,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var SkeletonAvatar = function SkeletonAvatar(props) {
   var customizePrefixCls = props.prefixCls,
       className = props.className,
-      active = props.active;
+      active = props.active,
+      _props$shape = props.shape,
+      shape = _props$shape === void 0 ? 'circle' : _props$shape,
+      _props$size = props.size,
+      size = _props$size === void 0 ? 'default' : _props$size;
 
   var _React$useContext = React.useContext(_configProvider.ConfigContext),
       getPrefixCls = _React$useContext.getPrefixCls;
@@ -84931,14 +84975,12 @@ var SkeletonAvatar = function SkeletonAvatar(props) {
   return /*#__PURE__*/React.createElement("div", {
     className: cls
   }, /*#__PURE__*/React.createElement(_Element.default, (0, _extends2.default)({
-    prefixCls: "".concat(prefixCls, "-avatar")
+    prefixCls: "".concat(prefixCls, "-avatar"),
+    shape: shape,
+    size: size
   }, otherProps)));
 };
 
-SkeletonAvatar.defaultProps = {
-  size: 'default',
-  shape: 'circle'
-};
 var _default = SkeletonAvatar;
 exports.default = _default;
 },{"@babel/runtime/helpers/esm/extends":"node_modules/@babel/runtime/helpers/esm/extends.js","@babel/runtime/helpers/esm/defineProperty":"node_modules/@babel/runtime/helpers/esm/defineProperty.js","classnames":"node_modules/classnames/index.js","rc-util/es/omit":"node_modules/rc-util/es/omit.js","react":"node_modules/react/index.js","../config-provider":"node_modules/antd/es/config-provider/index.js","./Element":"node_modules/antd/es/skeleton/Element.js"}],"node_modules/antd/es/skeleton/Button.js":[function(require,module,exports) {
@@ -84976,7 +85018,9 @@ var SkeletonButton = function SkeletonButton(props) {
       className = props.className,
       active = props.active,
       _props$block = props.block,
-      block = _props$block === void 0 ? false : _props$block;
+      block = _props$block === void 0 ? false : _props$block,
+      _props$size = props.size,
+      size = _props$size === void 0 ? 'default' : _props$size;
 
   var _React$useContext = React.useContext(_configProvider.ConfigContext),
       getPrefixCls = _React$useContext.getPrefixCls;
@@ -84987,13 +85031,11 @@ var SkeletonButton = function SkeletonButton(props) {
   return /*#__PURE__*/React.createElement("div", {
     className: cls
   }, /*#__PURE__*/React.createElement(_Element.default, (0, _extends2.default)({
-    prefixCls: "".concat(prefixCls, "-button")
+    prefixCls: "".concat(prefixCls, "-button"),
+    size: size
   }, otherProps)));
 };
 
-SkeletonButton.defaultProps = {
-  size: 'default'
-};
 var _default = SkeletonButton;
 exports.default = _default;
 },{"@babel/runtime/helpers/esm/extends":"node_modules/@babel/runtime/helpers/esm/extends.js","@babel/runtime/helpers/esm/defineProperty":"node_modules/@babel/runtime/helpers/esm/defineProperty.js","classnames":"node_modules/classnames/index.js","rc-util/es/omit":"node_modules/rc-util/es/omit.js","react":"node_modules/react/index.js","../config-provider":"node_modules/antd/es/config-provider/index.js","./Element":"node_modules/antd/es/skeleton/Element.js"}],"node_modules/@ant-design/icons-svg/es/asn/DotChartOutlined.js":[function(require,module,exports) {
@@ -85084,19 +85126,18 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var SkeletonNode = function SkeletonNode(props) {
-  var _a;
-
   var customizePrefixCls = props.prefixCls,
       className = props.className,
       style = props.style,
-      active = props.active;
+      active = props.active,
+      children = props.children;
 
   var _React$useContext = React.useContext(_configProvider.ConfigContext),
       getPrefixCls = _React$useContext.getPrefixCls;
 
   var prefixCls = getPrefixCls('skeleton', customizePrefixCls);
   var cls = (0, _classnames.default)(prefixCls, "".concat(prefixCls, "-element"), (0, _defineProperty2.default)({}, "".concat(prefixCls, "-active"), active), className);
-  var content = (_a = props.children) !== null && _a !== void 0 ? _a : /*#__PURE__*/React.createElement(_DotChartOutlined.default, null);
+  var content = children !== null && children !== void 0 ? children : /*#__PURE__*/React.createElement(_DotChartOutlined.default, null);
   return /*#__PURE__*/React.createElement("div", {
     className: cls
   }, /*#__PURE__*/React.createElement("div", {
@@ -85193,7 +85234,9 @@ var SkeletonInput = function SkeletonInput(props) {
   var customizePrefixCls = props.prefixCls,
       className = props.className,
       active = props.active,
-      block = props.block;
+      block = props.block,
+      _props$size = props.size,
+      size = _props$size === void 0 ? 'default' : _props$size;
 
   var _React$useContext = React.useContext(_configProvider.ConfigContext),
       getPrefixCls = _React$useContext.getPrefixCls;
@@ -85204,13 +85247,11 @@ var SkeletonInput = function SkeletonInput(props) {
   return /*#__PURE__*/React.createElement("div", {
     className: cls
   }, /*#__PURE__*/React.createElement(_Element.default, (0, _extends2.default)({
-    prefixCls: "".concat(prefixCls, "-input")
+    prefixCls: "".concat(prefixCls, "-input"),
+    size: size
   }, otherProps)));
 };
 
-SkeletonInput.defaultProps = {
-  size: 'default'
-};
 var _default = SkeletonInput;
 exports.default = _default;
 },{"@babel/runtime/helpers/esm/extends":"node_modules/@babel/runtime/helpers/esm/extends.js","@babel/runtime/helpers/esm/defineProperty":"node_modules/@babel/runtime/helpers/esm/defineProperty.js","classnames":"node_modules/classnames/index.js","rc-util/es/omit":"node_modules/rc-util/es/omit.js","react":"node_modules/react/index.js","../config-provider":"node_modules/antd/es/config-provider/index.js","./Element":"node_modules/antd/es/skeleton/Element.js"}],"node_modules/antd/es/skeleton/Paragraph.js":[function(require,module,exports) {
@@ -85415,9 +85456,12 @@ var Skeleton = function Skeleton(props) {
       className = props.className,
       style = props.style,
       children = props.children,
-      avatar = props.avatar,
-      title = props.title,
-      paragraph = props.paragraph,
+      _props$avatar = props.avatar,
+      avatar = _props$avatar === void 0 ? false : _props$avatar,
+      _props$title = props.title,
+      title = _props$title === void 0 ? true : _props$title,
+      _props$paragraph = props.paragraph,
+      paragraph = _props$paragraph === void 0 ? true : _props$paragraph,
       active = props.active,
       round = props.round;
 
@@ -85484,11 +85528,6 @@ var Skeleton = function Skeleton(props) {
   return typeof children !== 'undefined' ? children : null;
 };
 
-Skeleton.defaultProps = {
-  avatar: false,
-  title: true,
-  paragraph: true
-};
 Skeleton.Button = _Button.default;
 Skeleton.Avatar = _Avatar.default;
 Skeleton.Input = _Input.default;
@@ -87450,7 +87489,7 @@ function useAnimateConfig(prefixCls) {
   } else if (animated === true) {
     mergedAnimated = {
       inkBar: true,
-      tabPane: false
+      tabPane: true
     };
   } else {
     mergedAnimated = (0, _extends2.default)({
@@ -97735,6 +97774,8 @@ var React = _interopRequireWildcard(require("react"));
 
 var _configProvider = require("../config-provider");
 
+var _warning = _interopRequireDefault(require("../_util/warning"));
+
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -97783,12 +97824,17 @@ var Divider = function Divider(props) {
     marginLeft: orientationMargin
   }), hasCustomMarginRight && {
     marginRight: orientationMargin
-  });
+  }); // Warning children not work in vertical mode
+
+  if ("development" !== 'production') {
+    "development" !== "production" ? (0, _warning.default)(!children || type !== 'vertical', 'Divider', '`children` not working in `vertical` mode.') : void 0;
+  }
+
   return /*#__PURE__*/React.createElement("div", (0, _extends2.default)({
     className: classString
   }, restProps, {
     role: "separator"
-  }), children && /*#__PURE__*/React.createElement("span", {
+  }), children && type !== 'vertical' && /*#__PURE__*/React.createElement("span", {
     className: "".concat(prefixCls, "-inner-text"),
     style: innerStyle
   }, children));
@@ -97796,7 +97842,7 @@ var Divider = function Divider(props) {
 
 var _default = Divider;
 exports.default = _default;
-},{"@babel/runtime/helpers/esm/extends":"node_modules/@babel/runtime/helpers/esm/extends.js","@babel/runtime/helpers/esm/defineProperty":"node_modules/@babel/runtime/helpers/esm/defineProperty.js","classnames":"node_modules/classnames/index.js","react":"node_modules/react/index.js","../config-provider":"node_modules/antd/es/config-provider/index.js"}],"node_modules/rc-util/es/getScrollBarSize.js":[function(require,module,exports) {
+},{"@babel/runtime/helpers/esm/extends":"node_modules/@babel/runtime/helpers/esm/extends.js","@babel/runtime/helpers/esm/defineProperty":"node_modules/@babel/runtime/helpers/esm/defineProperty.js","classnames":"node_modules/classnames/index.js","react":"node_modules/react/index.js","../config-provider":"node_modules/antd/es/config-provider/index.js","../_util/warning":"node_modules/antd/es/_util/warning.js"}],"node_modules/rc-util/es/getScrollBarSize.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -103839,7 +103885,10 @@ function resolveOnChange(target, e, onChange, targetValue) {
 }
 
 function triggerFocus(element, option) {
-  if (!element) return;
+  if (!element) {
+    return;
+  }
+
   element.focus(option); // Selection content
 
   var _ref = option || {},
@@ -103859,6 +103908,7 @@ function triggerFocus(element, option) {
 
       default:
         element.setSelectionRange(0, len);
+        break;
     }
   }
 }
@@ -103878,7 +103928,8 @@ var Input = /*#__PURE__*/(0, _react.forwardRef)(function (props, ref) {
       allowClear = props.allowClear,
       addonAfter = props.addonAfter,
       addonBefore = props.addonBefore,
-      rest = __rest(props, ["prefixCls", "bordered", "status", "size", "disabled", "onBlur", "onFocus", "suffix", "allowClear", "addonAfter", "addonBefore"]);
+      onChange = props.onChange,
+      rest = __rest(props, ["prefixCls", "bordered", "status", "size", "disabled", "onBlur", "onFocus", "suffix", "allowClear", "addonAfter", "addonBefore", "onChange"]);
 
   var _React$useContext = _react.default.useContext(_configProvider.ConfigContext),
       getPrefixCls = _React$useContext.getPrefixCls,
@@ -103946,6 +103997,11 @@ var Input = /*#__PURE__*/(0, _react.forwardRef)(function (props, ref) {
     onFocus === null || onFocus === void 0 ? void 0 : onFocus(e);
   };
 
+  var handleChange = function handleChange(e) {
+    removePasswordTimeout();
+    onChange === null || onChange === void 0 ? void 0 : onChange(e);
+  };
+
   var suffixNode = (hasFeedback || suffix) && /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, suffix, hasFeedback && feedbackIcon); // Allow clear
 
 
@@ -103969,6 +104025,7 @@ var Input = /*#__PURE__*/(0, _react.forwardRef)(function (props, ref) {
     onFocus: handleFocus,
     suffix: suffixNode,
     allowClear: mergedAllowClear,
+    onChange: handleChange,
     addonAfter: addonAfter && /*#__PURE__*/_react.default.createElement(_context.NoFormStyle, {
       override: true,
       status: true
@@ -104100,6 +104157,10 @@ var __rest = void 0 && (void 0).__rest || function (s, e) {
   return t;
 };
 
+var defaultIconRender = function defaultIconRender(visible) {
+  return visible ? /*#__PURE__*/React.createElement(_EyeOutlined.default, null) : /*#__PURE__*/React.createElement(_EyeInvisibleOutlined.default, null);
+};
+
 var ActionMap = {
   click: 'onClick',
   hover: 'onMouseOver'
@@ -104117,17 +104178,18 @@ var Password = /*#__PURE__*/React.forwardRef(function (props, ref) {
       return;
     }
 
-    setVisible(!visible);
+    setVisible(function (prevState) {
+      return !prevState;
+    });
   };
 
   var getIcon = function getIcon(prefixCls) {
     var _iconProps;
 
-    var action = props.action,
+    var _props$action = props.action,
+        action = _props$action === void 0 ? 'click' : _props$action,
         _props$iconRender = props.iconRender,
-        iconRender = _props$iconRender === void 0 ? function () {
-      return null;
-    } : _props$iconRender;
+        iconRender = _props$iconRender === void 0 ? defaultIconRender : _props$iconRender;
     var iconTrigger = ActionMap[action] || '';
     var icon = iconRender(visible);
     var iconProps = (_iconProps = {}, (0, _defineProperty2.default)(_iconProps, iconTrigger, onVisibleChange), (0, _defineProperty2.default)(_iconProps, "className", "".concat(prefixCls, "-icon")), (0, _defineProperty2.default)(_iconProps, "key", 'passwordIcon'), (0, _defineProperty2.default)(_iconProps, "onMouseDown", function onMouseDown(e) {
@@ -104149,7 +104211,8 @@ var Password = /*#__PURE__*/React.forwardRef(function (props, ref) {
         customizePrefixCls = props.prefixCls,
         customizeInputPrefixCls = props.inputPrefixCls,
         size = props.size,
-        visibilityToggle = props.visibilityToggle,
+        _props$visibilityTogg = props.visibilityToggle,
+        visibilityToggle = _props$visibilityTogg === void 0 ? true : _props$visibilityTogg,
         restProps = __rest(props, ["className", "prefixCls", "inputPrefixCls", "size", "visibilityToggle"]);
 
     var inputPrefixCls = getPrefixCls('input', customizeInputPrefixCls);
@@ -104174,13 +104237,6 @@ var Password = /*#__PURE__*/React.forwardRef(function (props, ref) {
 
   return /*#__PURE__*/React.createElement(_configProvider.ConfigConsumer, null, renderPassword);
 });
-Password.defaultProps = {
-  action: 'click',
-  visibilityToggle: true,
-  iconRender: function iconRender(visible) {
-    return visible ? /*#__PURE__*/React.createElement(_EyeOutlined.default, null) : /*#__PURE__*/React.createElement(_EyeInvisibleOutlined.default, null);
-  }
-};
 
 if ("development" !== 'production') {
   Password.displayName = 'Password';
@@ -108126,7 +108182,10 @@ var Pagination = function Pagination(_a) {
     };
   };
 
-  var renderPagination = function renderPagination(contextLocale) {
+  return /*#__PURE__*/React.createElement(_LocaleReceiver.default, {
+    componentName: "Pagination",
+    defaultLocale: _en_US.default
+  }, function (contextLocale) {
     var _classNames;
 
     var locale = (0, _extends2.default)((0, _extends2.default)({}, contextLocale), customLocale);
@@ -108141,12 +108200,7 @@ var Pagination = function Pagination(_a) {
       locale: locale,
       showSizeChanger: mergedShowSizeChanger
     }));
-  };
-
-  return /*#__PURE__*/React.createElement(_LocaleReceiver.default, {
-    componentName: "Pagination",
-    defaultLocale: _en_US.default
-  }, renderPagination);
+  });
 };
 
 var _default = Pagination;
@@ -110150,19 +110204,6 @@ var Modal = function Modal(props) {
 
   "development" !== "production" ? (0, _warning.default)(!('visible' in props), 'Modal', "`visible` will be removed in next major version, please use `open` instead.") : void 0;
 
-  var renderFooter = function renderFooter(locale) {
-    var okText = props.okText,
-        okType = props.okType,
-        cancelText = props.cancelText,
-        confirmLoading = props.confirmLoading;
-    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(_button.default, (0, _extends2.default)({
-      onClick: handleCancel
-    }, props.cancelButtonProps), cancelText || locale.cancelText), /*#__PURE__*/React.createElement(_button.default, (0, _extends2.default)({}, (0, _button2.convertLegacyProps)(okType), {
-      loading: confirmLoading,
-      onClick: handleOk
-    }, props.okButtonProps), okText || locale.okText));
-  };
-
   var customizePrefixCls = props.prefixCls,
       footer = props.footer,
       visible = props.visible,
@@ -110180,7 +110221,18 @@ var Modal = function Modal(props) {
   var defaultFooter = /*#__PURE__*/React.createElement(_LocaleReceiver.default, {
     componentName: "Modal",
     defaultLocale: (0, _locale.getConfirmLocale)()
-  }, renderFooter);
+  }, function (contextLocale) {
+    var okText = props.okText,
+        okType = props.okType,
+        cancelText = props.cancelText,
+        confirmLoading = props.confirmLoading;
+    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(_button.default, (0, _extends2.default)({
+      onClick: handleCancel
+    }, props.cancelButtonProps), cancelText || contextLocale.cancelText), /*#__PURE__*/React.createElement(_button.default, (0, _extends2.default)({}, (0, _button2.convertLegacyProps)(okType), {
+      loading: confirmLoading,
+      onClick: handleOk
+    }, props.okButtonProps), okText !== null && okText !== void 0 ? okText : contextLocale.okText));
+  });
   var closeIconToRender = /*#__PURE__*/React.createElement("span", {
     className: "".concat(prefixCls, "-close-x")
   }, closeIcon || /*#__PURE__*/React.createElement(_CloseOutlined.default, {
@@ -110271,7 +110323,12 @@ var ConfirmDialog = function ConfirmDialog(props) {
       closeIcon = props.closeIcon,
       modalRender = props.modalRender,
       focusTriggerAfterClose = props.focusTriggerAfterClose;
-  "development" !== "production" ? (0, _warning.default)(!(typeof icon === 'string' && icon.length > 2), 'Modal', "`icon` is using ReactNode instead of string naming in v4. Please check `".concat(icon, "` at https://ant.design/components/icon")) : void 0; // 支持传入{ icon: null }来隐藏`Modal.confirm`默认的Icon
+
+  if ("development" !== 'production') {
+    "development" !== "production" ? (0, _warning.default)(!(typeof icon === 'string' && icon.length > 2), 'Modal', "`icon` is using ReactNode instead of string naming in v4. Please check `".concat(icon, "` at https://ant.design/components/icon")) : void 0;
+    "development" !== "production" ? (0, _warning.default)(visible === undefined, 'Modal', "`visible` is deprecated, please use `open` instead.") : void 0;
+  } // 支持传入{ icon: null }来隐藏`Modal.confirm`默认的Icon
+
 
   var okType = props.okType || 'primary';
   var contentPrefixCls = "".concat(prefixCls, "-confirm"); // 默认为 true，保持向下兼容
@@ -110459,9 +110516,7 @@ function confirm(config) {
     var okText = _a.okText,
         cancelText = _a.cancelText,
         customizePrefixCls = _a.prefixCls,
-        open = _a.open,
-        visible = _a.visible,
-        props = __rest(_a, ["okText", "cancelText", "prefixCls", "open", "visible"]);
+        props = __rest(_a, ["okText", "cancelText", "prefixCls"]);
     /**
      * https://github.com/ant-design/ant-design/issues/23623
      *
@@ -110481,7 +110536,6 @@ function confirm(config) {
       var prefixCls = customizePrefixCls || "".concat(rootPrefixCls, "-modal");
       var iconPrefixCls = getIconPrefixCls();
       (0, _render.render)( /*#__PURE__*/React.createElement(_ConfirmDialog.default, (0, _extends2.default)({}, props, {
-        open: open !== null && open !== void 0 ? open : visible,
         prefixCls: prefixCls,
         rootPrefixCls: rootPrefixCls,
         iconPrefixCls: iconPrefixCls,
@@ -110507,7 +110561,12 @@ function confirm(config) {
 
         destroy.apply(_this, args);
       }
-    });
+    }); // Legacy support
+
+    if (currentConfig.visible) {
+      delete currentConfig.visible;
+    }
+
     render(currentConfig);
   }
 
@@ -110704,7 +110763,7 @@ var HookModal = function HookModal(_ref, ref) {
   return /*#__PURE__*/React.createElement(_LocaleReceiver.default, {
     componentName: "Modal",
     defaultLocale: _default2.default.Modal
-  }, function (modalLocale) {
+  }, function (contextLocale) {
     return /*#__PURE__*/React.createElement(_ConfirmDialog.default, (0, _extends2.default)({
       prefixCls: prefixCls,
       rootPrefixCls: rootPrefixCls
@@ -110712,9 +110771,9 @@ var HookModal = function HookModal(_ref, ref) {
       close: close,
       open: open,
       afterClose: afterClose,
-      okText: innerConfig.okText || (innerConfig.okCancel ? modalLocale.okText : modalLocale.justOkText),
+      okText: innerConfig.okText || (innerConfig.okCancel ? contextLocale.okText : contextLocale.justOkText),
       direction: direction,
-      cancelText: innerConfig.cancelText || modalLocale.cancelText
+      cancelText: innerConfig.cancelText || contextLocale.cancelText
     }));
   });
 };
@@ -111400,8 +111459,7 @@ var renderBack = function renderBack(prefixCls, backIcon, onBack) {
 
   return /*#__PURE__*/React.createElement(_LocaleReceiver.default, {
     componentName: "PageHeader"
-  }, function (_ref) {
-    var back = _ref.back;
+  }, function (contextLocale) {
     return /*#__PURE__*/React.createElement("div", {
       className: "".concat(prefixCls, "-back")
     }, /*#__PURE__*/React.createElement(_transButton.default, {
@@ -111409,7 +111467,7 @@ var renderBack = function renderBack(prefixCls, backIcon, onBack) {
         onBack === null || onBack === void 0 ? void 0 : onBack(e);
       },
       className: "".concat(prefixCls, "-back-button"),
-      "aria-label": back
+      "aria-label": contextLocale.back
     }, backIcon));
   });
 };
@@ -111485,17 +111543,17 @@ var PageHeader = function PageHeader(props) {
       compact = _useState2[0],
       updateCompact = _useState2[1];
 
-  var onResize = function onResize(_ref2) {
-    var width = _ref2.width;
+  var onResize = function onResize(_ref) {
+    var width = _ref.width;
     updateCompact(width < 768, true);
   };
 
-  return /*#__PURE__*/React.createElement(_configProvider.ConfigConsumer, null, function (_ref3) {
+  return /*#__PURE__*/React.createElement(_configProvider.ConfigConsumer, null, function (_ref2) {
     var _classNames;
 
-    var getPrefixCls = _ref3.getPrefixCls,
-        pageHeader = _ref3.pageHeader,
-        direction = _ref3.direction;
+    var getPrefixCls = _ref2.getPrefixCls,
+        pageHeader = _ref2.pageHeader,
+        direction = _ref2.direction;
 
     var _a;
 
@@ -111550,7 +111608,7 @@ exports.default = _default;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Overlay = Overlay;
+exports.Overlay = void 0;
 
 var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/extends"));
 
@@ -111576,7 +111634,7 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function Overlay(props) {
+var Overlay = function Overlay(props) {
   var prefixCls = props.prefixCls,
       okButtonProps = props.okButtonProps,
       cancelButtonProps = props.cancelButtonProps,
@@ -111597,7 +111655,7 @@ function Overlay(props) {
   return /*#__PURE__*/React.createElement(_LocaleReceiver.default, {
     componentName: "Popconfirm",
     defaultLocale: _default.default.Popconfirm
-  }, function (popconfirmLocale) {
+  }, function (contextLocale) {
     return /*#__PURE__*/React.createElement("div", {
       className: "".concat(prefixCls, "-inner-content")
     }, /*#__PURE__*/React.createElement("div", {
@@ -111609,7 +111667,7 @@ function Overlay(props) {
     }, showCancel && /*#__PURE__*/React.createElement(_button.default, (0, _extends2.default)({
       onClick: onCancel,
       size: "small"
-    }, cancelButtonProps), cancelText || popconfirmLocale.cancelText), /*#__PURE__*/React.createElement(_ActionButton.default, {
+    }, cancelButtonProps), cancelText !== null && cancelText !== void 0 ? cancelText : contextLocale.cancelText), /*#__PURE__*/React.createElement(_ActionButton.default, {
       buttonProps: (0, _extends2.default)((0, _extends2.default)({
         size: 'small'
       }, (0, _button2.convertLegacyProps)(okType)), okButtonProps),
@@ -111618,9 +111676,11 @@ function Overlay(props) {
       prefixCls: getPrefixCls('btn'),
       quitOnNullishReturnValue: true,
       emitEvent: true
-    }, okText || popconfirmLocale.okText)));
+    }, okText !== null && okText !== void 0 ? okText : contextLocale.okText)));
   });
-}
+};
+
+exports.Overlay = Overlay;
 },{"@babel/runtime/helpers/esm/extends":"node_modules/@babel/runtime/helpers/esm/extends.js","react":"node_modules/react/index.js","../button":"node_modules/antd/es/button/index.js","../button/button":"node_modules/antd/es/button/button.js","../_util/ActionButton":"node_modules/antd/es/_util/ActionButton.js","../locale-provider/LocaleReceiver":"node_modules/antd/es/locale-provider/LocaleReceiver.js","../locale/default":"node_modules/antd/es/locale/default.js","../_util/getRenderPropValue":"node_modules/antd/es/_util/getRenderPropValue.js","../config-provider":"node_modules/antd/es/config-provider/index.js"}],"node_modules/antd/es/popconfirm/index.js":[function(require,module,exports) {
 "use strict";
 
@@ -111717,7 +111777,8 @@ var Popconfirm = /*#__PURE__*/React.forwardRef(function (props, ref) {
   };
 
   var onOpenChange = function onOpenChange(value) {
-    var disabled = props.disabled;
+    var _props$disabled = props.disabled,
+        disabled = _props$disabled === void 0 ? false : _props$disabled;
 
     if (disabled) {
       return;
@@ -111727,27 +111788,38 @@ var Popconfirm = /*#__PURE__*/React.forwardRef(function (props, ref) {
   };
 
   var customizePrefixCls = props.prefixCls,
-      placement = props.placement,
+      _props$placement = props.placement,
+      placement = _props$placement === void 0 ? 'top' : _props$placement,
+      _props$trigger = props.trigger,
+      trigger = _props$trigger === void 0 ? 'click' : _props$trigger,
+      _props$okType = props.okType,
+      okType = _props$okType === void 0 ? 'primary' : _props$okType,
+      _props$icon = props.icon,
+      icon = _props$icon === void 0 ? /*#__PURE__*/React.createElement(_ExclamationCircleFilled.default, null) : _props$icon,
       children = props.children,
       overlayClassName = props.overlayClassName,
-      restProps = __rest(props, ["prefixCls", "placement", "children", "overlayClassName"]);
+      restProps = __rest(props, ["prefixCls", "placement", "trigger", "okType", "icon", "children", "overlayClassName"]);
 
   var prefixCls = getPrefixCls('popover', customizePrefixCls);
   var prefixClsConfirm = getPrefixCls('popconfirm', customizePrefixCls);
   var overlayClassNames = (0, _classnames.default)(prefixClsConfirm, overlayClassName);
   return /*#__PURE__*/React.createElement(_popover.default, (0, _extends2.default)({}, restProps, {
+    trigger: trigger,
     prefixCls: prefixCls,
     placement: placement,
     onOpenChange: onOpenChange,
     open: open,
-    _overlay: /*#__PURE__*/React.createElement(_PurePanel.Overlay, (0, _extends2.default)({}, props, {
+    ref: ref,
+    overlayClassName: overlayClassNames,
+    _overlay: /*#__PURE__*/React.createElement(_PurePanel.Overlay, (0, _extends2.default)({
+      okType: okType,
+      icon: icon
+    }, props, {
       prefixCls: prefixCls,
       close: close,
       onConfirm: onConfirm,
       onCancel: onCancel
-    })),
-    overlayClassName: overlayClassNames,
-    ref: ref
+    }))
   }), (0, _reactNode.cloneElement)(children, {
     onKeyDown: function onKeyDown(e) {
       var _a, _b;
@@ -111760,13 +111832,6 @@ var Popconfirm = /*#__PURE__*/React.forwardRef(function (props, ref) {
     }
   }));
 });
-Popconfirm.defaultProps = {
-  placement: 'top',
-  trigger: 'click',
-  okType: 'primary',
-  icon: /*#__PURE__*/React.createElement(_ExclamationCircleFilled.default, null),
-  disabled: false
-};
 var _default = Popconfirm;
 exports.default = _default;
 },{"@babel/runtime/helpers/esm/extends":"node_modules/@babel/runtime/helpers/esm/extends.js","@babel/runtime/helpers/esm/slicedToArray":"node_modules/@babel/runtime/helpers/esm/slicedToArray.js","@ant-design/icons/es/icons/ExclamationCircleFilled":"node_modules/@ant-design/icons/es/icons/ExclamationCircleFilled.js","classnames":"node_modules/classnames/index.js","rc-util/es/hooks/useMergedState":"node_modules/rc-util/es/hooks/useMergedState.js","rc-util/es/KeyCode":"node_modules/rc-util/es/KeyCode.js","react":"node_modules/react/index.js","../config-provider":"node_modules/antd/es/config-provider/index.js","../popover":"node_modules/antd/es/popover/index.js","../_util/reactNode":"node_modules/antd/es/_util/reactNode.js","./PurePanel":"node_modules/antd/es/popconfirm/PurePanel.js"}],"node_modules/rc-progress/es/common.js":[function(require,module,exports) {
@@ -113379,14 +113444,20 @@ var __rest = void 0 && (void 0).__rest || function (s, e) {
   return t;
 };
 
-var Rate = /*#__PURE__*/React.forwardRef(function (_a, ref) {
-  var prefixCls = _a.prefixCls,
-      tooltips = _a.tooltips,
-      props = __rest(_a, ["prefixCls", "tooltips"]);
+var Rate = /*#__PURE__*/React.forwardRef(function (props, ref) {
+  var prefixCls = props.prefixCls,
+      tooltips = props.tooltips,
+      _props$character = props.character,
+      character = _props$character === void 0 ? /*#__PURE__*/React.createElement(_StarFilled.default, null) : _props$character,
+      rest = __rest(props, ["prefixCls", "tooltips", "character"]);
 
   var characterRender = function characterRender(node, _ref) {
     var index = _ref.index;
-    if (!tooltips) return node;
+
+    if (!tooltips) {
+      return node;
+    }
+
     return /*#__PURE__*/React.createElement(_tooltip.default, {
       title: tooltips[index]
     }, node);
@@ -113399,8 +113470,9 @@ var Rate = /*#__PURE__*/React.forwardRef(function (_a, ref) {
   var ratePrefixCls = getPrefixCls('rate', prefixCls);
   return /*#__PURE__*/React.createElement(_rcRate.default, (0, _extends2.default)({
     ref: ref,
+    character: character,
     characterRender: characterRender
-  }, props, {
+  }, rest, {
     prefixCls: ratePrefixCls,
     direction: direction
   }));
@@ -113410,9 +113482,6 @@ if ("development" !== 'production') {
   Rate.displayName = 'Rate';
 }
 
-Rate.defaultProps = {
-  character: /*#__PURE__*/React.createElement(_StarFilled.default, null)
-};
 var _default = Rate;
 exports.default = _default;
 },{"@babel/runtime/helpers/esm/extends":"node_modules/@babel/runtime/helpers/esm/extends.js","@ant-design/icons/es/icons/StarFilled":"node_modules/@ant-design/icons/es/icons/StarFilled.js","rc-rate":"node_modules/rc-rate/es/index.js","react":"node_modules/react/index.js","../config-provider":"node_modules/antd/es/config-provider/index.js","../tooltip":"node_modules/antd/es/tooltip/index.js"}],"node_modules/@ant-design/icons-svg/es/asn/WarningFilled.js":[function(require,module,exports) {
@@ -114793,7 +114862,8 @@ var Segmented = /*#__PURE__*/React.forwardRef(function (props, ref) {
   var customizePrefixCls = props.prefixCls,
       className = props.className,
       block = props.block,
-      options = props.options,
+      _props$options = props.options,
+      options = _props$options === void 0 ? [] : _props$options,
       _props$size = props.size,
       customSize = _props$size === void 0 ? 'middle' : _props$size,
       restProps = __rest(props, ["prefixCls", "className", "block", "options", "size"]);
@@ -114837,9 +114907,6 @@ if ("development" !== 'production') {
   Segmented.displayName = 'Segmented';
 }
 
-Segmented.defaultProps = {
-  options: []
-};
 var _default = Segmented;
 exports.default = _default;
 },{"@babel/runtime/helpers/esm/defineProperty":"node_modules/@babel/runtime/helpers/esm/defineProperty.js","@babel/runtime/helpers/esm/extends":"node_modules/@babel/runtime/helpers/esm/extends.js","@babel/runtime/helpers/esm/typeof":"node_modules/@babel/runtime/helpers/esm/typeof.js","classnames":"node_modules/classnames/index.js","rc-segmented":"node_modules/rc-segmented/es/index.js","react":"node_modules/react/index.js","../config-provider":"node_modules/antd/es/config-provider/index.js","../config-provider/SizeContext":"node_modules/antd/es/config-provider/SizeContext.js"}],"node_modules/rc-slider/es/context.js":[function(require,module,exports) {
@@ -116792,11 +116859,19 @@ var Statistic = function Statistic(props) {
       valueRender = props.valueRender,
       prefix = props.prefix,
       suffix = props.suffix,
-      loading = props.loading,
+      _props$loading = props.loading,
+      loading = _props$loading === void 0 ? false : _props$loading,
       direction = props.direction,
       onMouseEnter = props.onMouseEnter,
-      onMouseLeave = props.onMouseLeave;
-  var valueNode = /*#__PURE__*/React.createElement(_Number.default, (0, _extends2.default)({}, props, {
+      onMouseLeave = props.onMouseLeave,
+      _props$decimalSeparat = props.decimalSeparator,
+      decimalSeparator = _props$decimalSeparat === void 0 ? '.' : _props$decimalSeparat,
+      _props$groupSeparator = props.groupSeparator,
+      groupSeparator = _props$groupSeparator === void 0 ? ',' : _props$groupSeparator;
+  var valueNode = /*#__PURE__*/React.createElement(_Number.default, (0, _extends2.default)({
+    decimalSeparator: decimalSeparator,
+    groupSeparator: groupSeparator
+  }, props, {
     value: value
   }));
   var cls = (0, _classnames.default)(prefixCls, (0, _defineProperty2.default)({}, "".concat(prefixCls, "-rtl"), direction === 'rtl'), className);
@@ -116821,11 +116896,6 @@ var Statistic = function Statistic(props) {
   }, suffix))));
 };
 
-Statistic.defaultProps = {
-  decimalSeparator: '.',
-  groupSeparator: ',',
-  loading: false
-};
 var WrapperStatistic = (0, _context.withConfigConsumer)({
   prefixCls: 'statistic'
 })(Statistic);
@@ -117471,8 +117541,11 @@ var Steps = function Steps(props) {
       size = props.size,
       className = props.className,
       direction = props.direction,
-      responsive = props.responsive,
-      restProps = __rest(props, ["percent", "size", "className", "direction", "responsive"]);
+      _props$responsive = props.responsive,
+      responsive = _props$responsive === void 0 ? true : _props$responsive,
+      _props$current = props.current,
+      current = _props$current === void 0 ? 0 : _props$current,
+      restProps = __rest(props, ["percent", "size", "className", "direction", "responsive", "current"]);
 
   var _useBreakpoint = (0, _useBreakpoint2.default)(responsive),
       xs = _useBreakpoint.xs;
@@ -117523,6 +117596,7 @@ var Steps = function Steps(props) {
   return /*#__PURE__*/React.createElement(_rcSteps.default, (0, _extends2.default)({
     icons: icons
   }, restProps, {
+    current: current,
     size: size,
     direction: getDirection(),
     stepIcon: stepIconRender,
@@ -117533,10 +117607,6 @@ var Steps = function Steps(props) {
 };
 
 Steps.Step = _rcSteps.default.Step;
-Steps.defaultProps = {
-  current: 0,
-  responsive: true
-};
 var _default = Steps;
 exports.default = _default;
 },{"@babel/runtime/helpers/esm/extends":"node_modules/@babel/runtime/helpers/esm/extends.js","@babel/runtime/helpers/esm/defineProperty":"node_modules/@babel/runtime/helpers/esm/defineProperty.js","@ant-design/icons/es/icons/CheckOutlined":"node_modules/@ant-design/icons/es/icons/CheckOutlined.js","@ant-design/icons/es/icons/CloseOutlined":"node_modules/@ant-design/icons/es/icons/CloseOutlined.js","classnames":"node_modules/classnames/index.js","rc-steps":"node_modules/rc-steps/es/index.js","react":"node_modules/react/index.js","../config-provider":"node_modules/antd/es/config-provider/index.js","../grid/hooks/useBreakpoint":"node_modules/antd/es/grid/hooks/useBreakpoint.js","../progress":"node_modules/antd/es/progress/index.js"}],"node_modules/rc-switch/es/index.js":[function(require,module,exports) {
@@ -124164,19 +124234,28 @@ function renderSwitcherIcon(prefixCls, switcherIcon, showLine, treeNodeProps) {
   }
 
   if (isLeaf) {
-    if (showLine) {
-      if ((0, _typeof2.default)(showLine) === 'object' && !showLeafIcon) {
-        return /*#__PURE__*/React.createElement("span", {
-          className: "".concat(prefixCls, "-switcher-leaf-line")
+    if (!showLine) {
+      return null;
+    }
+
+    if (typeof showLeafIcon !== 'boolean' && !!showLeafIcon) {
+      var leafIcon = typeof showLeafIcon === 'function' ? showLeafIcon(treeNodeProps) : showLeafIcon;
+      var leafCls = "".concat(prefixCls, "-switcher-line-custom-icon");
+
+      if ((0, _reactNode.isValidElement)(leafIcon)) {
+        return (0, _reactNode.cloneElement)(leafIcon, {
+          className: (0, _classnames.default)(leafIcon.props.className || '', leafCls)
         });
       }
 
-      return /*#__PURE__*/React.createElement(_FileOutlined.default, {
-        className: "".concat(prefixCls, "-switcher-line-icon")
-      });
+      return leafIcon;
     }
 
-    return null;
+    return showLeafIcon ? /*#__PURE__*/React.createElement(_FileOutlined.default, {
+      className: "".concat(prefixCls, "-switcher-line-icon")
+    }) : /*#__PURE__*/React.createElement("span", {
+      className: "".concat(prefixCls, "-switcher-leaf-line")
+    });
   }
 
   var switcherCls = "".concat(prefixCls, "-switcher-icon");
@@ -124385,7 +124464,7 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var FilterSearch = function FilterSearch(_ref) {
+function FilterSearch(_ref) {
   var value = _ref.value,
       onChange = _ref.onChange,
       filterSearch = _ref.filterSearch,
@@ -124407,7 +124486,7 @@ var FilterSearch = function FilterSearch(_ref) {
     htmlSize: 1,
     className: "".concat(tablePrefixCls, "-filter-dropdown-search-input")
   }));
-};
+}
 
 var _default = FilterSearch;
 exports.default = _default;
@@ -124443,6 +124522,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
+
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/extends"));
 
 var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/defineProperty"));
 
@@ -124769,6 +124850,18 @@ function FilterDropdown(props) {
     });
   };
 
+  var getFilterData = function getFilterData(node) {
+    var _a;
+
+    return (0, _extends2.default)((0, _extends2.default)({}, node), {
+      text: node.title,
+      value: node.key,
+      children: ((_a = node.children) === null || _a === void 0 ? void 0 : _a.map(function (item) {
+        return getFilterData(item);
+      })) || []
+    });
+  };
+
   var dropdownContent;
 
   if (typeof column.filterDropdown === 'function') {
@@ -124837,7 +124930,7 @@ function FilterDropdown(props) {
           defaultExpandAll: true,
           filterTreeNode: searchValue.trim() ? function (node) {
             if (typeof filterSearch === 'function') {
-              return filterSearch(searchValue, node);
+              return filterSearch(searchValue, getFilterData(node));
             }
 
             return searchValueMatched(searchValue, node.title);
@@ -124947,7 +125040,7 @@ function FilterDropdown(props) {
 
 var _default = FilterDropdown;
 exports.default = _default;
-},{"@babel/runtime/helpers/esm/defineProperty":"node_modules/@babel/runtime/helpers/esm/defineProperty.js","@babel/runtime/helpers/esm/slicedToArray":"node_modules/@babel/runtime/helpers/esm/slicedToArray.js","@ant-design/icons/es/icons/FilterFilled":"node_modules/@ant-design/icons/es/icons/FilterFilled.js","classnames":"node_modules/classnames/index.js","lodash/isEqual":"node_modules/lodash/isEqual.js","react":"node_modules/react/index.js",".":"node_modules/antd/es/table/hooks/useFilter/index.js","../../../button":"node_modules/antd/es/button/index.js","../../../checkbox":"node_modules/antd/es/checkbox/index.js","../../../config-provider/context":"node_modules/antd/es/config-provider/context.js","../../../dropdown":"node_modules/antd/es/dropdown/index.js","../../../empty":"node_modules/antd/es/empty/index.js","../../../menu":"node_modules/antd/es/menu/index.js","../../../menu/OverrideContext":"node_modules/antd/es/menu/OverrideContext.js","../../../radio":"node_modules/antd/es/radio/index.js","../../../tree":"node_modules/antd/es/tree/index.js","../../../_util/hooks/useSyncState":"node_modules/antd/es/_util/hooks/useSyncState.js","./FilterSearch":"node_modules/antd/es/table/hooks/useFilter/FilterSearch.js","./FilterWrapper":"node_modules/antd/es/table/hooks/useFilter/FilterWrapper.js"}],"node_modules/antd/es/table/hooks/useFilter/index.js":[function(require,module,exports) {
+},{"@babel/runtime/helpers/esm/extends":"node_modules/@babel/runtime/helpers/esm/extends.js","@babel/runtime/helpers/esm/defineProperty":"node_modules/@babel/runtime/helpers/esm/defineProperty.js","@babel/runtime/helpers/esm/slicedToArray":"node_modules/@babel/runtime/helpers/esm/slicedToArray.js","@ant-design/icons/es/icons/FilterFilled":"node_modules/@ant-design/icons/es/icons/FilterFilled.js","classnames":"node_modules/classnames/index.js","lodash/isEqual":"node_modules/lodash/isEqual.js","react":"node_modules/react/index.js",".":"node_modules/antd/es/table/hooks/useFilter/index.js","../../../button":"node_modules/antd/es/button/index.js","../../../checkbox":"node_modules/antd/es/checkbox/index.js","../../../config-provider/context":"node_modules/antd/es/config-provider/context.js","../../../dropdown":"node_modules/antd/es/dropdown/index.js","../../../empty":"node_modules/antd/es/empty/index.js","../../../menu":"node_modules/antd/es/menu/index.js","../../../menu/OverrideContext":"node_modules/antd/es/menu/OverrideContext.js","../../../radio":"node_modules/antd/es/radio/index.js","../../../tree":"node_modules/antd/es/tree/index.js","../../../_util/hooks/useSyncState":"node_modules/antd/es/_util/hooks/useSyncState.js","./FilterSearch":"node_modules/antd/es/table/hooks/useFilter/FilterSearch.js","./FilterWrapper":"node_modules/antd/es/table/hooks/useFilter/FilterWrapper.js"}],"node_modules/antd/es/table/hooks/useFilter/index.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -125157,7 +125250,7 @@ function useFilter(_ref4) {
     "development" !== "production" ? (0, _warning.default)(filteredKeysIsAllControlled, 'Table', 'Columns should all contain `filteredValue` or not contain `filteredValue`.') : void 0;
     return collectedStates;
   }, [mergedColumns, filterStates]);
-  var getFilters = React.useCallback(function () {
+  var filters = React.useMemo(function () {
     return generateFilterInfo(mergedFilterStates);
   }, [mergedFilterStates]);
 
@@ -125175,7 +125268,7 @@ function useFilter(_ref4) {
     return injectFilter(prefixCls, dropdownPrefixCls, innerColumns, mergedFilterStates, triggerFilter, getPopupContainer, tableLocale);
   };
 
-  return [transformColumns, mergedFilterStates, getFilters];
+  return [transformColumns, mergedFilterStates, filters];
 }
 
 var _default = useFilter;
@@ -126653,7 +126746,8 @@ function InternalTable(props, ref) {
       dataSource = props.dataSource,
       pagination = props.pagination,
       rowSelection = props.rowSelection,
-      rowKey = props.rowKey,
+      _props$rowKey = props.rowKey,
+      rowKey = _props$rowKey === void 0 ? 'key' : _props$rowKey,
       rowClassName = props.rowClassName,
       columns = props.columns,
       children = props.children,
@@ -126789,7 +126883,8 @@ function InternalTable(props, ref) {
   /**
    * Controlled state in `columns` is not a good idea that makes too many code (1000+ line?) to read
    * state out and then put it back to title render. Move these code into `hooks` but still too
-   * complex. We should provides Table props like `sorter` & `filter` to handle control in next big version.
+   * complex. We should provides Table props like `sorter` & `filter` to handle control in next big
+   * version.
    */
   // ============================ Sorter =============================
 
@@ -126839,15 +126934,23 @@ function InternalTable(props, ref) {
       _useFilter2 = (0, _slicedToArray2.default)(_useFilter, 3),
       transformFilterColumns = _useFilter2[0],
       filterStates = _useFilter2[1],
-      getFilters = _useFilter2[2];
+      filters = _useFilter2[2];
 
   var mergedData = (0, _useFilter3.getFilterData)(sortedData, filterStates);
-  changeEventInfo.filters = getFilters();
+  changeEventInfo.filters = filters;
   changeEventInfo.filterStates = filterStates; // ============================ Column ============================
 
   var columnTitleProps = React.useMemo(function () {
-    return (0, _extends2.default)({}, sorterTitleProps);
-  }, [sorterTitleProps]);
+    var mergedFilters = {};
+    Object.keys(filters).forEach(function (filterKey) {
+      if (filters[filterKey] !== null) {
+        mergedFilters[filterKey] = filters[filterKey];
+      }
+    });
+    return (0, _extends2.default)((0, _extends2.default)({}, sorterTitleProps), {
+      filters: mergedFilters
+    });
+  }, [sorterTitleProps, filters]);
 
   var _useTitleColumns = (0, _useTitleColumns3.default)(columnTitleProps),
       _useTitleColumns2 = (0, _slicedToArray2.default)(_useTitleColumns, 1),
@@ -127031,9 +127134,6 @@ function InternalTable(props, ref) {
 
 var ForwardTable = /*#__PURE__*/React.forwardRef(InternalTable);
 var Table = ForwardTable;
-Table.defaultProps = {
-  rowKey: 'key'
-};
 Table.SELECTION_COLUMN = _useSelection3.SELECTION_COLUMN;
 Table.EXPAND_COLUMN = _rcTable.default.EXPAND_COLUMN;
 Table.SELECTION_ALL = _useSelection3.SELECTION_ALL;
@@ -127466,7 +127566,7 @@ var ListItem = function ListItem(props) {
   return /*#__PURE__*/React.createElement(_LocaleReceiver.default, {
     componentName: "Transfer",
     defaultLocale: _default2.default.Transfer
-  }, function (transferLocale) {
+  }, function (contextLocale) {
     var liProps = {
       className: className,
       title: title
@@ -127479,7 +127579,7 @@ var ListItem = function ListItem(props) {
       return /*#__PURE__*/React.createElement("li", (0, _extends2.default)({}, liProps), labelNode, /*#__PURE__*/React.createElement(_transButton.default, {
         disabled: disabled || item.disabled,
         className: "".concat(prefixCls, "-content-item-remove"),
-        "aria-label": transferLocale.remove,
+        "aria-label": contextLocale.remove,
         onClick: function onClick() {
           onRemove === null || onRemove === void 0 ? void 0 : onRemove(item);
         }
@@ -128484,119 +128584,6 @@ var Transfer = /*#__PURE__*/function (_React$Component) {
       return listStyle;
     };
 
-    _this.renderTransfer = function (transferLocale) {
-      return /*#__PURE__*/React.createElement(_configProvider.ConfigConsumer, null, function (_ref3) {
-        var getPrefixCls = _ref3.getPrefixCls,
-            renderEmpty = _ref3.renderEmpty,
-            direction = _ref3.direction;
-        return /*#__PURE__*/React.createElement(_context.FormItemInputContext.Consumer, null, function (_ref4) {
-          var _classNames;
-
-          var hasFeedback = _ref4.hasFeedback,
-              contextStatus = _ref4.status;
-          var _this$props3 = _this.props,
-              customizePrefixCls = _this$props3.prefixCls,
-              className = _this$props3.className,
-              disabled = _this$props3.disabled,
-              _this$props3$operatio = _this$props3.operations,
-              operations = _this$props3$operatio === void 0 ? [] : _this$props3$operatio,
-              showSearch = _this$props3.showSearch,
-              footer = _this$props3.footer,
-              style = _this$props3.style,
-              listStyle = _this$props3.listStyle,
-              operationStyle = _this$props3.operationStyle,
-              filterOption = _this$props3.filterOption,
-              render = _this$props3.render,
-              children = _this$props3.children,
-              showSelectAll = _this$props3.showSelectAll,
-              oneWay = _this$props3.oneWay,
-              pagination = _this$props3.pagination,
-              customStatus = _this$props3.status;
-          var prefixCls = getPrefixCls('transfer', customizePrefixCls);
-
-          var locale = _this.getLocale(transferLocale, renderEmpty || _defaultRenderEmpty.default);
-
-          var _this$state3 = _this.state,
-              sourceSelectedKeys = _this$state3.sourceSelectedKeys,
-              targetSelectedKeys = _this$state3.targetSelectedKeys;
-          var mergedStatus = (0, _statusUtils.getMergedStatus)(contextStatus, customStatus);
-          var mergedPagination = !children && pagination;
-
-          var _this$separateDataSou = _this.separateDataSource(),
-              leftDataSource = _this$separateDataSou.leftDataSource,
-              rightDataSource = _this$separateDataSou.rightDataSource;
-
-          var leftActive = targetSelectedKeys.length > 0;
-          var rightActive = sourceSelectedKeys.length > 0;
-          var cls = (0, _classnames.default)(prefixCls, (_classNames = {}, (0, _defineProperty2.default)(_classNames, "".concat(prefixCls, "-disabled"), disabled), (0, _defineProperty2.default)(_classNames, "".concat(prefixCls, "-customize-list"), !!children), (0, _defineProperty2.default)(_classNames, "".concat(prefixCls, "-rtl"), direction === 'rtl'), _classNames), (0, _statusUtils.getStatusClassNames)(prefixCls, mergedStatus, hasFeedback), className);
-
-          var titles = _this.getTitles(locale);
-
-          var selectAllLabels = _this.props.selectAllLabels || [];
-          return /*#__PURE__*/React.createElement("div", {
-            className: cls,
-            style: style
-          }, /*#__PURE__*/React.createElement(_list.default, (0, _extends2.default)({
-            prefixCls: "".concat(prefixCls, "-list"),
-            titleText: titles[0],
-            dataSource: leftDataSource,
-            filterOption: filterOption,
-            style: _this.handleListStyle(listStyle, 'left'),
-            checkedKeys: sourceSelectedKeys,
-            handleFilter: _this.handleLeftFilter,
-            handleClear: _this.handleLeftClear,
-            onItemSelect: _this.onLeftItemSelect,
-            onItemSelectAll: _this.onLeftItemSelectAll,
-            render: render,
-            showSearch: showSearch,
-            renderList: children,
-            footer: footer,
-            onScroll: _this.handleLeftScroll,
-            disabled: disabled,
-            direction: direction === 'rtl' ? 'right' : 'left',
-            showSelectAll: showSelectAll,
-            selectAllLabel: selectAllLabels[0],
-            pagination: mergedPagination
-          }, locale)), /*#__PURE__*/React.createElement(_operation.default, {
-            className: "".concat(prefixCls, "-operation"),
-            rightActive: rightActive,
-            rightArrowText: operations[0],
-            moveToRight: _this.moveToRight,
-            leftActive: leftActive,
-            leftArrowText: operations[1],
-            moveToLeft: _this.moveToLeft,
-            style: operationStyle,
-            disabled: disabled,
-            direction: direction,
-            oneWay: oneWay
-          }), /*#__PURE__*/React.createElement(_list.default, (0, _extends2.default)({
-            prefixCls: "".concat(prefixCls, "-list"),
-            titleText: titles[1],
-            dataSource: rightDataSource,
-            filterOption: filterOption,
-            style: _this.handleListStyle(listStyle, 'right'),
-            checkedKeys: targetSelectedKeys,
-            handleFilter: _this.handleRightFilter,
-            handleClear: _this.handleRightClear,
-            onItemSelect: _this.onRightItemSelect,
-            onItemSelectAll: _this.onRightItemSelectAll,
-            onItemRemove: _this.onRightItemRemove,
-            render: render,
-            showSearch: showSearch,
-            renderList: children,
-            footer: footer,
-            onScroll: _this.handleRightScroll,
-            disabled: disabled,
-            direction: direction === 'rtl' ? 'left' : 'right',
-            showSelectAll: showSelectAll,
-            selectAllLabel: selectAllLabels[1],
-            showRemove: oneWay,
-            pagination: mergedPagination
-          }, locale)));
-        });
-      });
-    };
-
     var _props$selectedKeys = props.selectedKeys,
         selectedKeys = _props$selectedKeys === void 0 ? [] : _props$selectedKeys,
         _props$targetKeys = props.targetKeys,
@@ -128615,16 +128602,16 @@ var Transfer = /*#__PURE__*/function (_React$Component) {
   (0, _createClass2.default)(Transfer, [{
     key: "getTitles",
     value: function getTitles(transferLocale) {
-      var _a;
+      var _a, _b;
 
-      return (_a = this.props.titles) !== null && _a !== void 0 ? _a : transferLocale.titles;
+      return (_b = (_a = this.props.titles) !== null && _a !== void 0 ? _a : transferLocale.titles) !== null && _b !== void 0 ? _b : [];
     }
   }, {
     key: "handleSelectChange",
     value: function handleSelectChange(direction, holder) {
-      var _this$state4 = this.state,
-          sourceSelectedKeys = _this$state4.sourceSelectedKeys,
-          targetSelectedKeys = _this$state4.targetSelectedKeys;
+      var _this$state3 = this.state,
+          sourceSelectedKeys = _this$state3.sourceSelectedKeys,
+          targetSelectedKeys = _this$state3.targetSelectedKeys;
       var onSelectChange = this.props.onSelectChange;
 
       if (!onSelectChange) {
@@ -128640,11 +128627,11 @@ var Transfer = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "separateDataSource",
     value: function separateDataSource() {
-      var _this$props4 = this.props,
-          dataSource = _this$props4.dataSource,
-          rowKey = _this$props4.rowKey,
-          _this$props4$targetKe = _this$props4.targetKeys,
-          targetKeys = _this$props4$targetKe === void 0 ? [] : _this$props4$targetKe;
+      var _this$props3 = this.props,
+          dataSource = _this$props3.dataSource,
+          rowKey = _this$props3.rowKey,
+          _this$props3$targetKe = _this$props3.targetKeys,
+          targetKeys = _this$props3$targetKe === void 0 ? [] : _this$props3$targetKe;
       var leftDataSource = [];
       var rightDataSource = new Array(targetKeys.length);
       dataSource.forEach(function (record) {
@@ -128672,10 +128659,123 @@ var Transfer = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "render",
     value: function render() {
+      var _this2 = this;
+
       return /*#__PURE__*/React.createElement(_LocaleReceiver.default, {
         componentName: "Transfer",
         defaultLocale: _default2.default.Transfer
-      }, this.renderTransfer);
+      }, function (contextLocale) {
+        return /*#__PURE__*/React.createElement(_configProvider.ConfigConsumer, null, function (_ref3) {
+          var getPrefixCls = _ref3.getPrefixCls,
+              renderEmpty = _ref3.renderEmpty,
+              direction = _ref3.direction;
+          return /*#__PURE__*/React.createElement(_context.FormItemInputContext.Consumer, null, function (_ref4) {
+            var _classNames;
+
+            var hasFeedback = _ref4.hasFeedback,
+                contextStatus = _ref4.status;
+            var _this2$props = _this2.props,
+                customizePrefixCls = _this2$props.prefixCls,
+                className = _this2$props.className,
+                disabled = _this2$props.disabled,
+                _this2$props$operatio = _this2$props.operations,
+                operations = _this2$props$operatio === void 0 ? [] : _this2$props$operatio,
+                showSearch = _this2$props.showSearch,
+                footer = _this2$props.footer,
+                style = _this2$props.style,
+                listStyle = _this2$props.listStyle,
+                operationStyle = _this2$props.operationStyle,
+                filterOption = _this2$props.filterOption,
+                render = _this2$props.render,
+                children = _this2$props.children,
+                showSelectAll = _this2$props.showSelectAll,
+                oneWay = _this2$props.oneWay,
+                pagination = _this2$props.pagination,
+                customStatus = _this2$props.status;
+            var prefixCls = getPrefixCls('transfer', customizePrefixCls);
+
+            var locale = _this2.getLocale(contextLocale, renderEmpty || _defaultRenderEmpty.default);
+
+            var _this2$state = _this2.state,
+                sourceSelectedKeys = _this2$state.sourceSelectedKeys,
+                targetSelectedKeys = _this2$state.targetSelectedKeys;
+            var mergedStatus = (0, _statusUtils.getMergedStatus)(contextStatus, customStatus);
+            var mergedPagination = !children && pagination;
+
+            var _this2$separateDataSo = _this2.separateDataSource(),
+                leftDataSource = _this2$separateDataSo.leftDataSource,
+                rightDataSource = _this2$separateDataSo.rightDataSource;
+
+            var leftActive = targetSelectedKeys.length > 0;
+            var rightActive = sourceSelectedKeys.length > 0;
+            var cls = (0, _classnames.default)(prefixCls, (_classNames = {}, (0, _defineProperty2.default)(_classNames, "".concat(prefixCls, "-disabled"), disabled), (0, _defineProperty2.default)(_classNames, "".concat(prefixCls, "-customize-list"), !!children), (0, _defineProperty2.default)(_classNames, "".concat(prefixCls, "-rtl"), direction === 'rtl'), _classNames), (0, _statusUtils.getStatusClassNames)(prefixCls, mergedStatus, hasFeedback), className);
+
+            var titles = _this2.getTitles(locale);
+
+            var selectAllLabels = _this2.props.selectAllLabels || [];
+            return /*#__PURE__*/React.createElement("div", {
+              className: cls,
+              style: style
+            }, /*#__PURE__*/React.createElement(_list.default, (0, _extends2.default)({
+              prefixCls: "".concat(prefixCls, "-list"),
+              titleText: titles[0],
+              dataSource: leftDataSource,
+              filterOption: filterOption,
+              style: _this2.handleListStyle(listStyle, 'left'),
+              checkedKeys: sourceSelectedKeys,
+              handleFilter: _this2.handleLeftFilter,
+              handleClear: _this2.handleLeftClear,
+              onItemSelect: _this2.onLeftItemSelect,
+              onItemSelectAll: _this2.onLeftItemSelectAll,
+              render: render,
+              showSearch: showSearch,
+              renderList: children,
+              footer: footer,
+              onScroll: _this2.handleLeftScroll,
+              disabled: disabled,
+              direction: direction === 'rtl' ? 'right' : 'left',
+              showSelectAll: showSelectAll,
+              selectAllLabel: selectAllLabels[0],
+              pagination: mergedPagination
+            }, locale)), /*#__PURE__*/React.createElement(_operation.default, {
+              className: "".concat(prefixCls, "-operation"),
+              rightActive: rightActive,
+              rightArrowText: operations[0],
+              moveToRight: _this2.moveToRight,
+              leftActive: leftActive,
+              leftArrowText: operations[1],
+              moveToLeft: _this2.moveToLeft,
+              style: operationStyle,
+              disabled: disabled,
+              direction: direction,
+              oneWay: oneWay
+            }), /*#__PURE__*/React.createElement(_list.default, (0, _extends2.default)({
+              prefixCls: "".concat(prefixCls, "-list"),
+              titleText: titles[1],
+              dataSource: rightDataSource,
+              filterOption: filterOption,
+              style: _this2.handleListStyle(listStyle, 'right'),
+              checkedKeys: targetSelectedKeys,
+              handleFilter: _this2.handleRightFilter,
+              handleClear: _this2.handleRightClear,
+              onItemSelect: _this2.onRightItemSelect,
+              onItemSelectAll: _this2.onRightItemSelectAll,
+              onItemRemove: _this2.onRightItemRemove,
+              render: render,
+              showSearch: showSearch,
+              renderList: children,
+              footer: footer,
+              onScroll: _this2.handleRightScroll,
+              disabled: disabled,
+              direction: direction === 'rtl' ? 'left' : 'right',
+              showSelectAll: showSelectAll,
+              selectAllLabel: selectAllLabels[1],
+              showRemove: oneWay,
+              pagination: mergedPagination
+            }, locale)));
+          });
+        });
+      });
     }
   }], [{
     key: "getDerivedStateFromProps",
@@ -131197,6 +131297,7 @@ var Ellipsis = function Ellipsis(_ref) {
       children = _ref.children,
       text = _ref.text,
       width = _ref.width,
+      fontSize = _ref.fontSize,
       rows = _ref.rows,
       onEllipsis = _ref.onEllipsis;
 
@@ -131237,11 +131338,11 @@ var Ellipsis = function Ellipsis(_ref) {
   }, [enabledMeasure, walkingState, children, nodeList, midLen, totalLen]); // ======================== Walk ========================
 
   (0, _useLayoutEffect.default)(function () {
-    if (enabledMeasure && width && totalLen) {
+    if (enabledMeasure && width && fontSize && totalLen) {
       setWalkingState(PREPARE);
       setCutLength([0, Math.ceil(totalLen / 2), totalLen]);
     }
-  }, [enabledMeasure, width, text, totalLen, rows]);
+  }, [enabledMeasure, width, fontSize, text, totalLen, rows]);
   (0, _useLayoutEffect.default)(function () {
     var _a;
 
@@ -131309,7 +131410,8 @@ var Ellipsis = function Ellipsis(_ref) {
         top: 0,
         zIndex: -9999,
         visibility: 'hidden',
-        pointerEvents: 'none'
+        pointerEvents: 'none',
+        fontSize: Math.floor(fontSize / 2) * 2
       }, style)
     }, content);
   };
@@ -131487,6 +131589,10 @@ function getNode(dom, defaultNode, needDom) {
 }
 
 function toList(val) {
+  if (val === false) {
+    return [false, false];
+  }
+
   return Array.isArray(val) ? val : [val];
 }
 
@@ -131692,9 +131798,18 @@ var Base = /*#__PURE__*/React.forwardRef(function (props, ref) {
       ellipsisWidth = _React$useState16[0],
       setEllipsisWidth = _React$useState16[1];
 
-  var onResize = function onResize(_ref2) {
+  var _React$useState17 = React.useState(0),
+      _React$useState18 = (0, _slicedToArray2.default)(_React$useState17, 2),
+      ellipsisFontSize = _React$useState18[0],
+      setEllipsisFontSize = _React$useState18[1];
+
+  var onResize = function onResize(_ref2, element) {
     var offsetWidth = _ref2.offsetWidth;
+
+    var _a;
+
     setEllipsisWidth(offsetWidth);
+    setEllipsisFontSize(parseInt((_a = window.getComputedStyle) === null || _a === void 0 ? void 0 : _a.call(window, element).fontSize, 10));
   }; // >>>>> JS Ellipsis
 
 
@@ -131901,6 +132016,7 @@ var Base = /*#__PURE__*/React.forwardRef(function (props, ref) {
       text: children,
       rows: rows,
       width: ellipsisWidth,
+      fontSize: ellipsisFontSize,
       onEllipsis: onJsEllipsis
     }, function (node, needEllipsis) {
       var renderNode = node;
@@ -133300,7 +133416,7 @@ var isImageUrl = function isImageUrl(file) {
   var url = file.thumbUrl || file.url || '';
   var extension = extname(url);
 
-  if (/^data:image\//.test(url) || /(webp|svg|png|gif|jpg|jpeg|jfif|bmp|dpg|ico)$/i.test(extension)) {
+  if (/^data:image\//.test(url) || /(webp|svg|png|gif|jpg|jpeg|jfif|bmp|dpg|ico|heic|heif)$/i.test(extension)) {
     return true;
   }
 
@@ -134376,7 +134492,7 @@ var InternalUpload = function InternalUpload(props, ref) {
     return showUploadList ? /*#__PURE__*/React.createElement(_LocaleReceiver.default, {
       componentName: "Upload",
       defaultLocale: _default2.default.Upload
-    }, function (locale) {
+    }, function (contextLocale) {
       var _ref = typeof showUploadList === 'boolean' ? {} : showUploadList,
           showRemoveIcon = _ref.showRemoveIcon,
           showPreviewIcon = _ref.showPreviewIcon,
@@ -134400,7 +134516,7 @@ var InternalUpload = function InternalUpload(props, ref) {
         previewIcon: previewIcon,
         downloadIcon: downloadIcon,
         iconRender: iconRender,
-        locale: (0, _extends2.default)((0, _extends2.default)({}, locale), propLocale),
+        locale: (0, _extends2.default)((0, _extends2.default)({}, contextLocale), propLocale),
         isImageUrl: isImageUrl,
         progress: progress,
         appendAction: button,
@@ -134562,7 +134678,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
-var _default = '4.23.2';
+var _default = '4.23.4';
 exports.default = _default;
 },{}],"node_modules/antd/es/version/index.js":[function(require,module,exports) {
 "use strict";
@@ -195008,9 +195124,7 @@ exports.authReset = authReset;
 var logout = function logout() {
   localStorage.removeItem('token');
   localStorage.removeItem('expirationDate');
-  localStorage.removeItem('username'); // localStorage.clear();
-  // sessionStorage.clear();
-
+  localStorage.removeItem('username');
   var cookies = document.cookie;
 
   var _iterator = _createForOfIteratorHelper(cookies.split(";")),
@@ -195028,6 +195142,15 @@ var logout = function logout() {
   } finally {
     _iterator.f();
   }
+
+  _axios.default.defaults.xsrfHeaderName = "X-CSRFTOKEN";
+  _axios.default.defaults.xsrfCookieName = "csrftoken";
+
+  _axios.default.post('http://127.0.0.1:8000/rest-auth/logout/', {}).then(function (res) {
+    console.log("err at actions ", res.data);
+  }).catch(function (err) {
+    console.log("err at logout ", err.message);
+  });
 
   return {
     type: actionTypes.AUTH_LOGOUT
@@ -195051,6 +195174,9 @@ var authLogin = function authLogin(username, password) {
     dispatch(authStart());
     _axios.default.defaults.xsrfHeaderName = "X-CSRFTOKEN";
     _axios.default.defaults.xsrfCookieName = "csrftoken";
+    _axios.default.defaults.headers = {
+      'Content-Type': 'application/json'
+    };
 
     _axios.default.post('http://127.0.0.1:8000/rest-auth/login/', {
       username: username,
@@ -205322,6 +205448,7 @@ function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Sy
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 var Login = function Login(props) {
+  console.log("in login page ");
   var navigate = (0, _reactRouterDom.useNavigate)();
 
   var _Form$useForm = _antd.Form.useForm(),
@@ -206145,7 +206272,2666 @@ exports.default = _default;
 var define;
 !function(t){"function"==typeof define&&define.amd?define(t):t()}(function(){"use strict";function r(t,e){for(var n=0;n<e.length;n++){var o=e[n];o.enumerable=o.enumerable||!1,o.configurable=!0,"value"in o&&(o.writable=!0),Object.defineProperty(t,o.key,o)}}function e(e,t){var n=Object.keys(e);if(Object.getOwnPropertySymbols){var o=Object.getOwnPropertySymbols(e);t&&(o=o.filter(function(t){return Object.getOwnPropertyDescriptor(e,t).enumerable})),n.push.apply(n,o)}return n}function i(r){for(var t=1;t<arguments.length;t++){var i=null!=arguments[t]?arguments[t]:{};t%2?e(i,!0).forEach(function(t){var e,n,o;e=r,o=i[n=t],n in e?Object.defineProperty(e,n,{value:o,enumerable:!0,configurable:!0,writable:!0}):e[n]=o}):Object.getOwnPropertyDescriptors?Object.defineProperties(r,Object.getOwnPropertyDescriptors(i)):e(i).forEach(function(t){Object.defineProperty(r,t,Object.getOwnPropertyDescriptor(i,t))})}return r}function c(t){return(c=Object.setPrototypeOf?Object.getPrototypeOf:function(t){return t.__proto__||Object.getPrototypeOf(t)})(t)}function u(t,e){return(u=Object.setPrototypeOf||function(t,e){return t.__proto__=e,t})(t,e)}function a(t,e,n){return(a=function(){if("undefined"==typeof Reflect||!Reflect.construct)return!1;if(Reflect.construct.sham)return!1;if("function"==typeof Proxy)return!0;try{return Date.prototype.toString.call(Reflect.construct(Date,[],function(){})),!0}catch(t){return!1}}()?Reflect.construct:function(t,e,n){var o=[null];o.push.apply(o,e);var r=new(Function.bind.apply(t,o));return n&&u(r,n.prototype),r}).apply(null,arguments)}function f(t){var o="function"==typeof Map?new Map:void 0;return(f=function(t){if(null===t||(e=t,-1===Function.toString.call(e).indexOf("[native code]")))return t;var e;if("function"!=typeof t)throw new TypeError("Super expression must either be null or a function");if(void 0!==o){if(o.has(t))return o.get(t);o.set(t,n)}function n(){return a(t,arguments,c(this).constructor)}return n.prototype=Object.create(t.prototype,{constructor:{value:n,enumerable:!1,writable:!0,configurable:!0}}),u(n,t)})(t)}function l(t,e){return!e||"object"!=typeof e&&"function"!=typeof e?function(t){if(void 0===t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return t}(t):e}var p=function(){function n(){var t,e=0<arguments.length&&void 0!==arguments[0]?arguments[0]:{};return function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,n),(t=l(this,c(n).call(this,"urlchangeevent",i({cancelable:!0},e)))).newURL=e.newURL,t.oldURL=e.oldURL,t.action=e.action,t}var t,e,o;return function(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function");t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,writable:!0,configurable:!0}}),e&&u(t,e)}(n,f(Event)),t=n,(e=[{key:Symbol.toStringTag,get:function(){return"UrlChangeEvent"}}])&&r(t.prototype,e),o&&r(t,o),n}(),w=window.history.pushState.bind(window.history);window.history.pushState=function(t,e,n){var o=new URL(n||"",window.location.href);window.dispatchEvent(new p({newURL:o,oldURL:s,action:"pushState"}))&&(w(i({_index:d+1},t),e,n),h())};var s,d,y=window.history.replaceState.bind(window.history);function o(){var t=window.history.state;t&&"number"==typeof t._index||y(i({_index:window.history.length},t),null,null)}function h(){s=new URL(window.location.href),d=window.history.state._index}window.history.replaceState=function(t,e,n){var o=new URL(n||"",window.location.href);window.dispatchEvent(new p({newURL:o,oldURL:s,action:"replaceState"}))&&(y(i({_index:d},t),e,n),h())},o(),h(),window.addEventListener("popstate",function(t){o();var e=window.history.state._index,n=new URL(window.location);if(e!==d){if(!window.dispatchEvent(new p({oldURL:s,newURL:n,action:"popstate"})))return t.stopImmediatePropagation(),void window.history.go(d-e);h()}else t.stopImmediatePropagation()}),window.addEventListener("beforeunload",function(t){if(!window.dispatchEvent(new p({oldURL:s,newURL:null,action:"beforeunload"}))){t.preventDefault();return t.returnValue="o/"}})});
 
-},{}],"src/containers/Chat.js":[function(require,module,exports) {
+},{}],"node_modules/tslib/tslib.es6.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.__assign = void 0;
+exports.__asyncDelegator = __asyncDelegator;
+exports.__asyncGenerator = __asyncGenerator;
+exports.__asyncValues = __asyncValues;
+exports.__await = __await;
+exports.__awaiter = __awaiter;
+exports.__classPrivateFieldGet = __classPrivateFieldGet;
+exports.__classPrivateFieldSet = __classPrivateFieldSet;
+exports.__createBinding = void 0;
+exports.__decorate = __decorate;
+exports.__exportStar = __exportStar;
+exports.__extends = __extends;
+exports.__generator = __generator;
+exports.__importDefault = __importDefault;
+exports.__importStar = __importStar;
+exports.__makeTemplateObject = __makeTemplateObject;
+exports.__metadata = __metadata;
+exports.__param = __param;
+exports.__read = __read;
+exports.__rest = __rest;
+exports.__spread = __spread;
+exports.__spreadArrays = __spreadArrays;
+exports.__values = __values;
+
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+
+/* global Reflect, Promise */
+var extendStatics = function (d, b) {
+  extendStatics = Object.setPrototypeOf || {
+    __proto__: []
+  } instanceof Array && function (d, b) {
+    d.__proto__ = b;
+  } || function (d, b) {
+    for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+  };
+
+  return extendStatics(d, b);
+};
+
+function __extends(d, b) {
+  extendStatics(d, b);
+
+  function __() {
+    this.constructor = d;
+  }
+
+  d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+}
+
+var __assign = function () {
+  exports.__assign = __assign = Object.assign || function __assign(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+      s = arguments[i];
+
+      for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+    }
+
+    return t;
+  };
+
+  return __assign.apply(this, arguments);
+};
+
+exports.__assign = __assign;
+
+function __rest(s, e) {
+  var t = {};
+
+  for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0) t[p] = s[p];
+
+  if (s != null && typeof Object.getOwnPropertySymbols === "function") for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+    if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i])) t[p[i]] = s[p[i]];
+  }
+  return t;
+}
+
+function __decorate(decorators, target, key, desc) {
+  var c = arguments.length,
+      r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+      d;
+  if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+  return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+
+function __param(paramIndex, decorator) {
+  return function (target, key) {
+    decorator(target, key, paramIndex);
+  };
+}
+
+function __metadata(metadataKey, metadataValue) {
+  if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(metadataKey, metadataValue);
+}
+
+function __awaiter(thisArg, _arguments, P, generator) {
+  function adopt(value) {
+    return value instanceof P ? value : new P(function (resolve) {
+      resolve(value);
+    });
+  }
+
+  return new (P || (P = Promise))(function (resolve, reject) {
+    function fulfilled(value) {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function rejected(value) {
+      try {
+        step(generator["throw"](value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function step(result) {
+      result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+    }
+
+    step((generator = generator.apply(thisArg, _arguments || [])).next());
+  });
+}
+
+function __generator(thisArg, body) {
+  var _ = {
+    label: 0,
+    sent: function () {
+      if (t[0] & 1) throw t[1];
+      return t[1];
+    },
+    trys: [],
+    ops: []
+  },
+      f,
+      y,
+      t,
+      g;
+  return g = {
+    next: verb(0),
+    "throw": verb(1),
+    "return": verb(2)
+  }, typeof Symbol === "function" && (g[Symbol.iterator] = function () {
+    return this;
+  }), g;
+
+  function verb(n) {
+    return function (v) {
+      return step([n, v]);
+    };
+  }
+
+  function step(op) {
+    if (f) throw new TypeError("Generator is already executing.");
+
+    while (_) try {
+      if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+      if (y = 0, t) op = [op[0] & 2, t.value];
+
+      switch (op[0]) {
+        case 0:
+        case 1:
+          t = op;
+          break;
+
+        case 4:
+          _.label++;
+          return {
+            value: op[1],
+            done: false
+          };
+
+        case 5:
+          _.label++;
+          y = op[1];
+          op = [0];
+          continue;
+
+        case 7:
+          op = _.ops.pop();
+
+          _.trys.pop();
+
+          continue;
+
+        default:
+          if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+            _ = 0;
+            continue;
+          }
+
+          if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
+            _.label = op[1];
+            break;
+          }
+
+          if (op[0] === 6 && _.label < t[1]) {
+            _.label = t[1];
+            t = op;
+            break;
+          }
+
+          if (t && _.label < t[2]) {
+            _.label = t[2];
+
+            _.ops.push(op);
+
+            break;
+          }
+
+          if (t[2]) _.ops.pop();
+
+          _.trys.pop();
+
+          continue;
+      }
+
+      op = body.call(thisArg, _);
+    } catch (e) {
+      op = [6, e];
+      y = 0;
+    } finally {
+      f = t = 0;
+    }
+
+    if (op[0] & 5) throw op[1];
+    return {
+      value: op[0] ? op[1] : void 0,
+      done: true
+    };
+  }
+}
+
+var __createBinding = Object.create ? function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  Object.defineProperty(o, k2, {
+    enumerable: true,
+    get: function () {
+      return m[k];
+    }
+  });
+} : function (o, m, k, k2) {
+  if (k2 === undefined) k2 = k;
+  o[k2] = m[k];
+};
+
+exports.__createBinding = __createBinding;
+
+function __exportStar(m, o) {
+  for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(o, p)) __createBinding(o, m, p);
+}
+
+function __values(o) {
+  var s = typeof Symbol === "function" && Symbol.iterator,
+      m = s && o[s],
+      i = 0;
+  if (m) return m.call(o);
+  if (o && typeof o.length === "number") return {
+    next: function () {
+      if (o && i >= o.length) o = void 0;
+      return {
+        value: o && o[i++],
+        done: !o
+      };
+    }
+  };
+  throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+}
+
+function __read(o, n) {
+  var m = typeof Symbol === "function" && o[Symbol.iterator];
+  if (!m) return o;
+  var i = m.call(o),
+      r,
+      ar = [],
+      e;
+
+  try {
+    while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+  } catch (error) {
+    e = {
+      error: error
+    };
+  } finally {
+    try {
+      if (r && !r.done && (m = i["return"])) m.call(i);
+    } finally {
+      if (e) throw e.error;
+    }
+  }
+
+  return ar;
+}
+
+function __spread() {
+  for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
+
+  return ar;
+}
+
+function __spreadArrays() {
+  for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+
+  for (var r = Array(s), k = 0, i = 0; i < il; i++) for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++) r[k] = a[j];
+
+  return r;
+}
+
+;
+
+function __await(v) {
+  return this instanceof __await ? (this.v = v, this) : new __await(v);
+}
+
+function __asyncGenerator(thisArg, _arguments, generator) {
+  if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+  var g = generator.apply(thisArg, _arguments || []),
+      i,
+      q = [];
+  return i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () {
+    return this;
+  }, i;
+
+  function verb(n) {
+    if (g[n]) i[n] = function (v) {
+      return new Promise(function (a, b) {
+        q.push([n, v, a, b]) > 1 || resume(n, v);
+      });
+    };
+  }
+
+  function resume(n, v) {
+    try {
+      step(g[n](v));
+    } catch (e) {
+      settle(q[0][3], e);
+    }
+  }
+
+  function step(r) {
+    r.value instanceof __await ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q[0][2], r);
+  }
+
+  function fulfill(value) {
+    resume("next", value);
+  }
+
+  function reject(value) {
+    resume("throw", value);
+  }
+
+  function settle(f, v) {
+    if (f(v), q.shift(), q.length) resume(q[0][0], q[0][1]);
+  }
+}
+
+function __asyncDelegator(o) {
+  var i, p;
+  return i = {}, verb("next"), verb("throw", function (e) {
+    throw e;
+  }), verb("return"), i[Symbol.iterator] = function () {
+    return this;
+  }, i;
+
+  function verb(n, f) {
+    i[n] = o[n] ? function (v) {
+      return (p = !p) ? {
+        value: __await(o[n](v)),
+        done: n === "return"
+      } : f ? f(v) : v;
+    } : f;
+  }
+}
+
+function __asyncValues(o) {
+  if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+  var m = o[Symbol.asyncIterator],
+      i;
+  return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () {
+    return this;
+  }, i);
+
+  function verb(n) {
+    i[n] = o[n] && function (v) {
+      return new Promise(function (resolve, reject) {
+        v = o[n](v), settle(resolve, reject, v.done, v.value);
+      });
+    };
+  }
+
+  function settle(resolve, reject, d, v) {
+    Promise.resolve(v).then(function (v) {
+      resolve({
+        value: v,
+        done: d
+      });
+    }, reject);
+  }
+}
+
+function __makeTemplateObject(cooked, raw) {
+  if (Object.defineProperty) {
+    Object.defineProperty(cooked, "raw", {
+      value: raw
+    });
+  } else {
+    cooked.raw = raw;
+  }
+
+  return cooked;
+}
+
+;
+
+var __setModuleDefault = Object.create ? function (o, v) {
+  Object.defineProperty(o, "default", {
+    enumerable: true,
+    value: v
+  });
+} : function (o, v) {
+  o["default"] = v;
+};
+
+function __importStar(mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+
+  __setModuleDefault(result, mod);
+
+  return result;
+}
+
+function __importDefault(mod) {
+  return mod && mod.__esModule ? mod : {
+    default: mod
+  };
+}
+
+function __classPrivateFieldGet(receiver, privateMap) {
+  if (!privateMap.has(receiver)) {
+    throw new TypeError("attempted to get private field on non-instance");
+  }
+
+  return privateMap.get(receiver);
+}
+
+function __classPrivateFieldSet(receiver, privateMap, value) {
+  if (!privateMap.has(receiver)) {
+    throw new TypeError("attempted to set private field on non-instance");
+  }
+
+  privateMap.set(receiver, value);
+  return value;
+}
+},{}],"node_modules/normalize-wheel/src/UserAgent_DEPRECATED.js":[function(require,module,exports) {
+/**
+ * Copyright 2004-present Facebook. All Rights Reserved.
+ *
+ * @providesModule UserAgent_DEPRECATED
+ */
+
+/**
+ *  Provides entirely client-side User Agent and OS detection. You should prefer
+ *  the non-deprecated UserAgent module when possible, which exposes our
+ *  authoritative server-side PHP-based detection to the client.
+ *
+ *  Usage is straightforward:
+ *
+ *    if (UserAgent_DEPRECATED.ie()) {
+ *      //  IE
+ *    }
+ *
+ *  You can also do version checks:
+ *
+ *    if (UserAgent_DEPRECATED.ie() >= 7) {
+ *      //  IE7 or better
+ *    }
+ *
+ *  The browser functions will return NaN if the browser does not match, so
+ *  you can also do version compares the other way:
+ *
+ *    if (UserAgent_DEPRECATED.ie() < 7) {
+ *      //  IE6 or worse
+ *    }
+ *
+ *  Note that the version is a float and may include a minor version number,
+ *  so you should always use range operators to perform comparisons, not
+ *  strict equality.
+ *
+ *  **Note:** You should **strongly** prefer capability detection to browser
+ *  version detection where it's reasonable:
+ *
+ *    http://www.quirksmode.org/js/support.html
+ *
+ *  Further, we have a large number of mature wrapper functions and classes
+ *  which abstract away many browser irregularities. Check the documentation,
+ *  grep for things, or ask on javascript@lists.facebook.com before writing yet
+ *  another copy of "event || window.event".
+ *
+ */
+
+var _populated = false;
+
+// Browsers
+var _ie, _firefox, _opera, _webkit, _chrome;
+
+// Actual IE browser for compatibility mode
+var _ie_real_version;
+
+// Platforms
+var _osx, _windows, _linux, _android;
+
+// Architectures
+var _win64;
+
+// Devices
+var _iphone, _ipad, _native;
+
+var _mobile;
+
+function _populate() {
+  if (_populated) {
+    return;
+  }
+
+  _populated = true;
+
+  // To work around buggy JS libraries that can't handle multi-digit
+  // version numbers, Opera 10's user agent string claims it's Opera
+  // 9, then later includes a Version/X.Y field:
+  //
+  // Opera/9.80 (foo) Presto/2.2.15 Version/10.10
+  var uas = navigator.userAgent;
+  var agent = /(?:MSIE.(\d+\.\d+))|(?:(?:Firefox|GranParadiso|Iceweasel).(\d+\.\d+))|(?:Opera(?:.+Version.|.)(\d+\.\d+))|(?:AppleWebKit.(\d+(?:\.\d+)?))|(?:Trident\/\d+\.\d+.*rv:(\d+\.\d+))/.exec(uas);
+  var os    = /(Mac OS X)|(Windows)|(Linux)/.exec(uas);
+
+  _iphone = /\b(iPhone|iP[ao]d)/.exec(uas);
+  _ipad = /\b(iP[ao]d)/.exec(uas);
+  _android = /Android/i.exec(uas);
+  _native = /FBAN\/\w+;/i.exec(uas);
+  _mobile = /Mobile/i.exec(uas);
+
+  // Note that the IE team blog would have you believe you should be checking
+  // for 'Win64; x64'.  But MSDN then reveals that you can actually be coming
+  // from either x64 or ia64;  so ultimately, you should just check for Win64
+  // as in indicator of whether you're in 64-bit IE.  32-bit IE on 64-bit
+  // Windows will send 'WOW64' instead.
+  _win64 = !!(/Win64/.exec(uas));
+
+  if (agent) {
+    _ie = agent[1] ? parseFloat(agent[1]) : (
+          agent[5] ? parseFloat(agent[5]) : NaN);
+    // IE compatibility mode
+    if (_ie && document && document.documentMode) {
+      _ie = document.documentMode;
+    }
+    // grab the "true" ie version from the trident token if available
+    var trident = /(?:Trident\/(\d+.\d+))/.exec(uas);
+    _ie_real_version = trident ? parseFloat(trident[1]) + 4 : _ie;
+
+    _firefox = agent[2] ? parseFloat(agent[2]) : NaN;
+    _opera   = agent[3] ? parseFloat(agent[3]) : NaN;
+    _webkit  = agent[4] ? parseFloat(agent[4]) : NaN;
+    if (_webkit) {
+      // We do not add the regexp to the above test, because it will always
+      // match 'safari' only since 'AppleWebKit' appears before 'Chrome' in
+      // the userAgent string.
+      agent = /(?:Chrome\/(\d+\.\d+))/.exec(uas);
+      _chrome = agent && agent[1] ? parseFloat(agent[1]) : NaN;
+    } else {
+      _chrome = NaN;
+    }
+  } else {
+    _ie = _firefox = _opera = _chrome = _webkit = NaN;
+  }
+
+  if (os) {
+    if (os[1]) {
+      // Detect OS X version.  If no version number matches, set _osx to true.
+      // Version examples:  10, 10_6_1, 10.7
+      // Parses version number as a float, taking only first two sets of
+      // digits.  If only one set of digits is found, returns just the major
+      // version number.
+      var ver = /(?:Mac OS X (\d+(?:[._]\d+)?))/.exec(uas);
+
+      _osx = ver ? parseFloat(ver[1].replace('_', '.')) : true;
+    } else {
+      _osx = false;
+    }
+    _windows = !!os[2];
+    _linux   = !!os[3];
+  } else {
+    _osx = _windows = _linux = false;
+  }
+}
+
+var UserAgent_DEPRECATED = {
+
+  /**
+   *  Check if the UA is Internet Explorer.
+   *
+   *
+   *  @return float|NaN Version number (if match) or NaN.
+   */
+  ie: function() {
+    return _populate() || _ie;
+  },
+
+  /**
+   * Check if we're in Internet Explorer compatibility mode.
+   *
+   * @return bool true if in compatibility mode, false if
+   * not compatibility mode or not ie
+   */
+  ieCompatibilityMode: function() {
+    return _populate() || (_ie_real_version > _ie);
+  },
+
+
+  /**
+   * Whether the browser is 64-bit IE.  Really, this is kind of weak sauce;  we
+   * only need this because Skype can't handle 64-bit IE yet.  We need to remove
+   * this when we don't need it -- tracked by #601957.
+   */
+  ie64: function() {
+    return UserAgent_DEPRECATED.ie() && _win64;
+  },
+
+  /**
+   *  Check if the UA is Firefox.
+   *
+   *
+   *  @return float|NaN Version number (if match) or NaN.
+   */
+  firefox: function() {
+    return _populate() || _firefox;
+  },
+
+
+  /**
+   *  Check if the UA is Opera.
+   *
+   *
+   *  @return float|NaN Version number (if match) or NaN.
+   */
+  opera: function() {
+    return _populate() || _opera;
+  },
+
+
+  /**
+   *  Check if the UA is WebKit.
+   *
+   *
+   *  @return float|NaN Version number (if match) or NaN.
+   */
+  webkit: function() {
+    return _populate() || _webkit;
+  },
+
+  /**
+   *  For Push
+   *  WILL BE REMOVED VERY SOON. Use UserAgent_DEPRECATED.webkit
+   */
+  safari: function() {
+    return UserAgent_DEPRECATED.webkit();
+  },
+
+  /**
+   *  Check if the UA is a Chrome browser.
+   *
+   *
+   *  @return float|NaN Version number (if match) or NaN.
+   */
+  chrome : function() {
+    return _populate() || _chrome;
+  },
+
+
+  /**
+   *  Check if the user is running Windows.
+   *
+   *  @return bool `true' if the user's OS is Windows.
+   */
+  windows: function() {
+    return _populate() || _windows;
+  },
+
+
+  /**
+   *  Check if the user is running Mac OS X.
+   *
+   *  @return float|bool   Returns a float if a version number is detected,
+   *                       otherwise true/false.
+   */
+  osx: function() {
+    return _populate() || _osx;
+  },
+
+  /**
+   * Check if the user is running Linux.
+   *
+   * @return bool `true' if the user's OS is some flavor of Linux.
+   */
+  linux: function() {
+    return _populate() || _linux;
+  },
+
+  /**
+   * Check if the user is running on an iPhone or iPod platform.
+   *
+   * @return bool `true' if the user is running some flavor of the
+   *    iPhone OS.
+   */
+  iphone: function() {
+    return _populate() || _iphone;
+  },
+
+  mobile: function() {
+    return _populate() || (_iphone || _ipad || _android || _mobile);
+  },
+
+  nativeApp: function() {
+    // webviews inside of the native apps
+    return _populate() || _native;
+  },
+
+  android: function() {
+    return _populate() || _android;
+  },
+
+  ipad: function() {
+    return _populate() || _ipad;
+  }
+};
+
+module.exports = UserAgent_DEPRECATED;
+
+},{}],"node_modules/normalize-wheel/src/ExecutionEnvironment.js":[function(require,module,exports) {
+/**
+ * Copyright (c) 2015, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * @providesModule ExecutionEnvironment
+ */
+
+/*jslint evil: true */
+
+'use strict';
+
+var canUseDOM = !!(
+  typeof window !== 'undefined' &&
+  window.document &&
+  window.document.createElement
+);
+
+/**
+ * Simple, lightweight module assisting with the detection and context of
+ * Worker. Helps avoid circular dependencies and allows code to reason about
+ * whether or not they are in a Worker, even if they never include the main
+ * `ReactWorker` dependency.
+ */
+var ExecutionEnvironment = {
+
+  canUseDOM: canUseDOM,
+
+  canUseWorkers: typeof Worker !== 'undefined',
+
+  canUseEventListeners:
+    canUseDOM && !!(window.addEventListener || window.attachEvent),
+
+  canUseViewport: canUseDOM && !!window.screen,
+
+  isInWorker: !canUseDOM // For now, this is true - might change in the future.
+
+};
+
+module.exports = ExecutionEnvironment;
+
+},{}],"node_modules/normalize-wheel/src/isEventSupported.js":[function(require,module,exports) {
+/**
+ * Copyright 2013-2015, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * @providesModule isEventSupported
+ */
+
+'use strict';
+
+var ExecutionEnvironment = require('./ExecutionEnvironment');
+
+var useHasFeature;
+if (ExecutionEnvironment.canUseDOM) {
+  useHasFeature =
+    document.implementation &&
+    document.implementation.hasFeature &&
+    // always returns true in newer browsers as per the standard.
+    // @see http://dom.spec.whatwg.org/#dom-domimplementation-hasfeature
+    document.implementation.hasFeature('', '') !== true;
+}
+
+/**
+ * Checks if an event is supported in the current execution environment.
+ *
+ * NOTE: This will not work correctly for non-generic events such as `change`,
+ * `reset`, `load`, `error`, and `select`.
+ *
+ * Borrows from Modernizr.
+ *
+ * @param {string} eventNameSuffix Event name, e.g. "click".
+ * @param {?boolean} capture Check if the capture phase is supported.
+ * @return {boolean} True if the event is supported.
+ * @internal
+ * @license Modernizr 3.0.0pre (Custom Build) | MIT
+ */
+function isEventSupported(eventNameSuffix, capture) {
+  if (!ExecutionEnvironment.canUseDOM ||
+      capture && !('addEventListener' in document)) {
+    return false;
+  }
+
+  var eventName = 'on' + eventNameSuffix;
+  var isSupported = eventName in document;
+
+  if (!isSupported) {
+    var element = document.createElement('div');
+    element.setAttribute(eventName, 'return;');
+    isSupported = typeof element[eventName] === 'function';
+  }
+
+  if (!isSupported && useHasFeature && eventNameSuffix === 'wheel') {
+    // This is the only way to test support for the `wheel` event in IE9+.
+    isSupported = document.implementation.hasFeature('Events.wheel', '3.0');
+  }
+
+  return isSupported;
+}
+
+module.exports = isEventSupported;
+
+},{"./ExecutionEnvironment":"node_modules/normalize-wheel/src/ExecutionEnvironment.js"}],"node_modules/normalize-wheel/src/normalizeWheel.js":[function(require,module,exports) {
+/**
+ * Copyright (c) 2015, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ *
+ * @providesModule normalizeWheel
+ * @typechecks
+ */
+
+'use strict';
+
+var UserAgent_DEPRECATED = require('./UserAgent_DEPRECATED');
+
+var isEventSupported = require('./isEventSupported');
+
+
+// Reasonable defaults
+var PIXEL_STEP  = 10;
+var LINE_HEIGHT = 40;
+var PAGE_HEIGHT = 800;
+
+/**
+ * Mouse wheel (and 2-finger trackpad) support on the web sucks.  It is
+ * complicated, thus this doc is long and (hopefully) detailed enough to answer
+ * your questions.
+ *
+ * If you need to react to the mouse wheel in a predictable way, this code is
+ * like your bestest friend. * hugs *
+ *
+ * As of today, there are 4 DOM event types you can listen to:
+ *
+ *   'wheel'                -- Chrome(31+), FF(17+), IE(9+)
+ *   'mousewheel'           -- Chrome, IE(6+), Opera, Safari
+ *   'MozMousePixelScroll'  -- FF(3.5 only!) (2010-2013) -- don't bother!
+ *   'DOMMouseScroll'       -- FF(0.9.7+) since 2003
+ *
+ * So what to do?  The is the best:
+ *
+ *   normalizeWheel.getEventType();
+ *
+ * In your event callback, use this code to get sane interpretation of the
+ * deltas.  This code will return an object with properties:
+ *
+ *   spinX   -- normalized spin speed (use for zoom) - x plane
+ *   spinY   -- " - y plane
+ *   pixelX  -- normalized distance (to pixels) - x plane
+ *   pixelY  -- " - y plane
+ *
+ * Wheel values are provided by the browser assuming you are using the wheel to
+ * scroll a web page by a number of lines or pixels (or pages).  Values can vary
+ * significantly on different platforms and browsers, forgetting that you can
+ * scroll at different speeds.  Some devices (like trackpads) emit more events
+ * at smaller increments with fine granularity, and some emit massive jumps with
+ * linear speed or acceleration.
+ *
+ * This code does its best to normalize the deltas for you:
+ *
+ *   - spin is trying to normalize how far the wheel was spun (or trackpad
+ *     dragged).  This is super useful for zoom support where you want to
+ *     throw away the chunky scroll steps on the PC and make those equal to
+ *     the slow and smooth tiny steps on the Mac. Key data: This code tries to
+ *     resolve a single slow step on a wheel to 1.
+ *
+ *   - pixel is normalizing the desired scroll delta in pixel units.  You'll
+ *     get the crazy differences between browsers, but at least it'll be in
+ *     pixels!
+ *
+ *   - positive value indicates scrolling DOWN/RIGHT, negative UP/LEFT.  This
+ *     should translate to positive value zooming IN, negative zooming OUT.
+ *     This matches the newer 'wheel' event.
+ *
+ * Why are there spinX, spinY (or pixels)?
+ *
+ *   - spinX is a 2-finger side drag on the trackpad, and a shift + wheel turn
+ *     with a mouse.  It results in side-scrolling in the browser by default.
+ *
+ *   - spinY is what you expect -- it's the classic axis of a mouse wheel.
+ *
+ *   - I dropped spinZ/pixelZ.  It is supported by the DOM 3 'wheel' event and
+ *     probably is by browsers in conjunction with fancy 3D controllers .. but
+ *     you know.
+ *
+ * Implementation info:
+ *
+ * Examples of 'wheel' event if you scroll slowly (down) by one step with an
+ * average mouse:
+ *
+ *   OS X + Chrome  (mouse)     -    4   pixel delta  (wheelDelta -120)
+ *   OS X + Safari  (mouse)     -  N/A   pixel delta  (wheelDelta  -12)
+ *   OS X + Firefox (mouse)     -    0.1 line  delta  (wheelDelta  N/A)
+ *   Win8 + Chrome  (mouse)     -  100   pixel delta  (wheelDelta -120)
+ *   Win8 + Firefox (mouse)     -    3   line  delta  (wheelDelta -120)
+ *
+ * On the trackpad:
+ *
+ *   OS X + Chrome  (trackpad)  -    2   pixel delta  (wheelDelta   -6)
+ *   OS X + Firefox (trackpad)  -    1   pixel delta  (wheelDelta  N/A)
+ *
+ * On other/older browsers.. it's more complicated as there can be multiple and
+ * also missing delta values.
+ *
+ * The 'wheel' event is more standard:
+ *
+ * http://www.w3.org/TR/DOM-Level-3-Events/#events-wheelevents
+ *
+ * The basics is that it includes a unit, deltaMode (pixels, lines, pages), and
+ * deltaX, deltaY and deltaZ.  Some browsers provide other values to maintain
+ * backward compatibility with older events.  Those other values help us
+ * better normalize spin speed.  Example of what the browsers provide:
+ *
+ *                          | event.wheelDelta | event.detail
+ *        ------------------+------------------+--------------
+ *          Safari v5/OS X  |       -120       |       0
+ *          Safari v5/Win7  |       -120       |       0
+ *         Chrome v17/OS X  |       -120       |       0
+ *         Chrome v17/Win7  |       -120       |       0
+ *                IE9/Win7  |       -120       |   undefined
+ *         Firefox v4/OS X  |     undefined    |       1
+ *         Firefox v4/Win7  |     undefined    |       3
+ *
+ */
+function normalizeWheel(/*object*/ event) /*object*/ {
+  var sX = 0, sY = 0,       // spinX, spinY
+      pX = 0, pY = 0;       // pixelX, pixelY
+
+  // Legacy
+  if ('detail'      in event) { sY = event.detail; }
+  if ('wheelDelta'  in event) { sY = -event.wheelDelta / 120; }
+  if ('wheelDeltaY' in event) { sY = -event.wheelDeltaY / 120; }
+  if ('wheelDeltaX' in event) { sX = -event.wheelDeltaX / 120; }
+
+  // side scrolling on FF with DOMMouseScroll
+  if ( 'axis' in event && event.axis === event.HORIZONTAL_AXIS ) {
+    sX = sY;
+    sY = 0;
+  }
+
+  pX = sX * PIXEL_STEP;
+  pY = sY * PIXEL_STEP;
+
+  if ('deltaY' in event) { pY = event.deltaY; }
+  if ('deltaX' in event) { pX = event.deltaX; }
+
+  if ((pX || pY) && event.deltaMode) {
+    if (event.deltaMode == 1) {          // delta in LINE units
+      pX *= LINE_HEIGHT;
+      pY *= LINE_HEIGHT;
+    } else {                             // delta in PAGE units
+      pX *= PAGE_HEIGHT;
+      pY *= PAGE_HEIGHT;
+    }
+  }
+
+  // Fall-back if spin cannot be determined
+  if (pX && !sX) { sX = (pX < 1) ? -1 : 1; }
+  if (pY && !sY) { sY = (pY < 1) ? -1 : 1; }
+
+  return { spinX  : sX,
+           spinY  : sY,
+           pixelX : pX,
+           pixelY : pY };
+}
+
+
+/**
+ * The best combination if you prefer spinX + spinY normalization.  It favors
+ * the older DOMMouseScroll for Firefox, as FF does not include wheelDelta with
+ * 'wheel' event, making spin speed determination impossible.
+ */
+normalizeWheel.getEventType = function() /*string*/ {
+  return (UserAgent_DEPRECATED.firefox())
+           ? 'DOMMouseScroll'
+           : (isEventSupported('wheel'))
+               ? 'wheel'
+               : 'mousewheel';
+};
+
+module.exports = normalizeWheel;
+
+},{"./UserAgent_DEPRECATED":"node_modules/normalize-wheel/src/UserAgent_DEPRECATED.js","./isEventSupported":"node_modules/normalize-wheel/src/isEventSupported.js"}],"node_modules/normalize-wheel/index.js":[function(require,module,exports) {
+module.exports = require('./src/normalizeWheel.js');
+
+},{"./src/normalizeWheel.js":"node_modules/normalize-wheel/src/normalizeWheel.js"}],"node_modules/react-easy-crop/index.module.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+exports.getInitialCropFromCroppedAreaPercentages = getInitialCropFromCroppedAreaPercentages;
+exports.getInitialCropFromCroppedAreaPixels = getInitialCropFromCroppedAreaPixels;
+
+var _tslib = require("tslib");
+
+var _react = _interopRequireDefault(require("react"));
+
+var _normalizeWheel = _interopRequireDefault(require("normalize-wheel"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Compute the dimension of the crop area based on media size,
+ * aspect ratio and optionally rotation
+ */
+function getCropSize(mediaWidth, mediaHeight, containerWidth, containerHeight, aspect, rotation) {
+  if (rotation === void 0) {
+    rotation = 0;
+  }
+
+  var _a = rotateSize(mediaWidth, mediaHeight, rotation),
+      width = _a.width,
+      height = _a.height;
+
+  var fittingWidth = Math.min(width, containerWidth);
+  var fittingHeight = Math.min(height, containerHeight);
+
+  if (fittingWidth > fittingHeight * aspect) {
+    return {
+      width: fittingHeight * aspect,
+      height: fittingHeight
+    };
+  }
+
+  return {
+    width: fittingWidth,
+    height: fittingWidth / aspect
+  };
+}
+/**
+ * Compute media zoom.
+ * We fit the media into the container with "max-width: 100%; max-height: 100%;"
+ */
+
+
+function getMediaZoom(mediaSize) {
+  // Take the axis with more pixels to improve accuracy
+  return mediaSize.width > mediaSize.height ? mediaSize.width / mediaSize.naturalWidth : mediaSize.height / mediaSize.naturalHeight;
+}
+/**
+ * Ensure a new media position stays in the crop area.
+ */
+
+
+function restrictPosition(position, mediaSize, cropSize, zoom, rotation) {
+  if (rotation === void 0) {
+    rotation = 0;
+  }
+
+  var _a = rotateSize(mediaSize.width, mediaSize.height, rotation),
+      width = _a.width,
+      height = _a.height;
+
+  return {
+    x: restrictPositionCoord(position.x, width, cropSize.width, zoom),
+    y: restrictPositionCoord(position.y, height, cropSize.height, zoom)
+  };
+}
+
+function restrictPositionCoord(position, mediaSize, cropSize, zoom) {
+  var maxPosition = mediaSize * zoom / 2 - cropSize / 2;
+  return clamp(position, -maxPosition, maxPosition);
+}
+
+function getDistanceBetweenPoints(pointA, pointB) {
+  return Math.sqrt(Math.pow(pointA.y - pointB.y, 2) + Math.pow(pointA.x - pointB.x, 2));
+}
+
+function getRotationBetweenPoints(pointA, pointB) {
+  return Math.atan2(pointB.y - pointA.y, pointB.x - pointA.x) * 180 / Math.PI;
+}
+/**
+ * Compute the output cropped area of the media in percentages and pixels.
+ * x/y are the top-left coordinates on the src media
+ */
+
+
+function computeCroppedArea(crop, mediaSize, cropSize, aspect, zoom, rotation, restrictPosition) {
+  if (rotation === void 0) {
+    rotation = 0;
+  }
+
+  if (restrictPosition === void 0) {
+    restrictPosition = true;
+  } // if the media is rotated by the user, we cannot limit the position anymore
+  // as it might need to be negative.
+
+
+  var limitAreaFn = restrictPosition ? limitArea : noOp;
+  var mediaBBoxSize = rotateSize(mediaSize.width, mediaSize.height, rotation);
+  var mediaNaturalBBoxSize = rotateSize(mediaSize.naturalWidth, mediaSize.naturalHeight, rotation); // calculate the crop area in percentages
+  // in the rotated space
+
+  var croppedAreaPercentages = {
+    x: limitAreaFn(100, ((mediaBBoxSize.width - cropSize.width / zoom) / 2 - crop.x / zoom) / mediaBBoxSize.width * 100),
+    y: limitAreaFn(100, ((mediaBBoxSize.height - cropSize.height / zoom) / 2 - crop.y / zoom) / mediaBBoxSize.height * 100),
+    width: limitAreaFn(100, cropSize.width / mediaBBoxSize.width * 100 / zoom),
+    height: limitAreaFn(100, cropSize.height / mediaBBoxSize.height * 100 / zoom)
+  }; // we compute the pixels size naively
+
+  var widthInPixels = Math.round(limitAreaFn(mediaNaturalBBoxSize.width, croppedAreaPercentages.width * mediaNaturalBBoxSize.width / 100));
+  var heightInPixels = Math.round(limitAreaFn(mediaNaturalBBoxSize.height, croppedAreaPercentages.height * mediaNaturalBBoxSize.height / 100));
+  var isImgWiderThanHigh = mediaNaturalBBoxSize.width >= mediaNaturalBBoxSize.height * aspect; // then we ensure the width and height exactly match the aspect (to avoid rounding approximations)
+  // if the media is wider than high, when zoom is 0, the crop height will be equals to image height
+  // thus we want to compute the width from the height and aspect for accuracy.
+  // Otherwise, we compute the height from width and aspect.
+
+  var sizePixels = isImgWiderThanHigh ? {
+    width: Math.round(heightInPixels * aspect),
+    height: heightInPixels
+  } : {
+    width: widthInPixels,
+    height: Math.round(widthInPixels / aspect)
+  };
+  var croppedAreaPixels = (0, _tslib.__assign)((0, _tslib.__assign)({}, sizePixels), {
+    x: Math.round(limitAreaFn(mediaNaturalBBoxSize.width - sizePixels.width, croppedAreaPercentages.x * mediaNaturalBBoxSize.width / 100)),
+    y: Math.round(limitAreaFn(mediaNaturalBBoxSize.height - sizePixels.height, croppedAreaPercentages.y * mediaNaturalBBoxSize.height / 100))
+  });
+  return {
+    croppedAreaPercentages: croppedAreaPercentages,
+    croppedAreaPixels: croppedAreaPixels
+  };
+}
+/**
+ * Ensure the returned value is between 0 and max
+ */
+
+
+function limitArea(max, value) {
+  return Math.min(max, Math.max(0, value));
+}
+
+function noOp(_max, value) {
+  return value;
+}
+/**
+ * Compute crop and zoom from the croppedAreaPercentages.
+ */
+
+
+function getInitialCropFromCroppedAreaPercentages(croppedAreaPercentages, mediaSize, rotation, cropSize, minZoom, maxZoom) {
+  var mediaBBoxSize = rotateSize(mediaSize.width, mediaSize.height, rotation); // This is the inverse process of computeCroppedArea
+
+  var zoom = clamp(cropSize.width / mediaBBoxSize.width * (100 / croppedAreaPercentages.width), minZoom, maxZoom);
+  var crop = {
+    x: zoom * mediaBBoxSize.width / 2 - cropSize.width / 2 - mediaBBoxSize.width * zoom * (croppedAreaPercentages.x / 100),
+    y: zoom * mediaBBoxSize.height / 2 - cropSize.height / 2 - mediaBBoxSize.height * zoom * (croppedAreaPercentages.y / 100)
+  };
+  return {
+    crop: crop,
+    zoom: zoom
+  };
+}
+/**
+ * Compute zoom from the croppedAreaPixels
+ */
+
+
+function getZoomFromCroppedAreaPixels(croppedAreaPixels, mediaSize, cropSize) {
+  var mediaZoom = getMediaZoom(mediaSize);
+  return cropSize.height > cropSize.width ? cropSize.height / (croppedAreaPixels.height * mediaZoom) : cropSize.width / (croppedAreaPixels.width * mediaZoom);
+}
+/**
+ * Compute crop and zoom from the croppedAreaPixels
+ */
+
+
+function getInitialCropFromCroppedAreaPixels(croppedAreaPixels, mediaSize, rotation, cropSize, minZoom, maxZoom) {
+  if (rotation === void 0) {
+    rotation = 0;
+  }
+
+  var mediaNaturalBBoxSize = rotateSize(mediaSize.naturalWidth, mediaSize.naturalHeight, rotation);
+  var zoom = clamp(getZoomFromCroppedAreaPixels(croppedAreaPixels, mediaSize, cropSize), minZoom, maxZoom);
+  var cropZoom = cropSize.height > cropSize.width ? cropSize.height / croppedAreaPixels.height : cropSize.width / croppedAreaPixels.width;
+  var crop = {
+    x: ((mediaNaturalBBoxSize.width - croppedAreaPixels.width) / 2 - croppedAreaPixels.x) * cropZoom,
+    y: ((mediaNaturalBBoxSize.height - croppedAreaPixels.height) / 2 - croppedAreaPixels.y) * cropZoom
+  };
+  return {
+    crop: crop,
+    zoom: zoom
+  };
+}
+/**
+ * Return the point that is the center of point a and b
+ */
+
+
+function getCenter(a, b) {
+  return {
+    x: (b.x + a.x) / 2,
+    y: (b.y + a.y) / 2
+  };
+}
+
+function getRadianAngle(degreeValue) {
+  return degreeValue * Math.PI / 180;
+}
+/**
+ * Returns the new bounding area of a rotated rectangle.
+ */
+
+
+function rotateSize(width, height, rotation) {
+  var rotRad = getRadianAngle(rotation);
+  return {
+    width: Math.abs(Math.cos(rotRad) * width) + Math.abs(Math.sin(rotRad) * height),
+    height: Math.abs(Math.sin(rotRad) * width) + Math.abs(Math.cos(rotRad) * height)
+  };
+}
+/**
+ * Clamp value between min and max
+ */
+
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+/**
+ * Combine multiple class names into a single string.
+ */
+
+
+function classNames() {
+  var args = [];
+
+  for (var _i = 0; _i < arguments.length; _i++) {
+    args[_i] = arguments[_i];
+  }
+
+  return args.filter(function (value) {
+    if (typeof value === 'string' && value.length > 0) {
+      return true;
+    }
+
+    return false;
+  }).join(' ').trim();
+}
+
+var css_248z = ".reactEasyCrop_Container {\n  position: absolute;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  overflow: hidden;\n  user-select: none;\n  touch-action: none;\n  cursor: move;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n}\n\n.reactEasyCrop_Image,\n.reactEasyCrop_Video {\n  will-change: transform; /* this improves performances and prevent painting issues on iOS Chrome */\n}\n\n.reactEasyCrop_Contain {\n  max-width: 100%;\n  max-height: 100%;\n  margin: auto;\n  position: absolute;\n  top: 0;\n  bottom: 0;\n  left: 0;\n  right: 0;\n}\n.reactEasyCrop_Cover_Horizontal {\n  width: 100%;\n  height: auto;\n}\n.reactEasyCrop_Cover_Vertical {\n  width: auto;\n  height: 100%;\n}\n\n.reactEasyCrop_CropArea {\n  position: absolute;\n  left: 50%;\n  top: 50%;\n  transform: translate(-50%, -50%);\n  border: 1px solid rgba(255, 255, 255, 0.5);\n  box-sizing: border-box;\n  box-shadow: 0 0 0 9999em;\n  color: rgba(0, 0, 0, 0.5);\n  overflow: hidden;\n}\n\n.reactEasyCrop_CropAreaRound {\n  border-radius: 50%;\n}\n\n.reactEasyCrop_CropAreaGrid::before {\n  content: ' ';\n  box-sizing: border-box;\n  position: absolute;\n  border: 1px solid rgba(255, 255, 255, 0.5);\n  top: 0;\n  bottom: 0;\n  left: 33.33%;\n  right: 33.33%;\n  border-top: 0;\n  border-bottom: 0;\n}\n\n.reactEasyCrop_CropAreaGrid::after {\n  content: ' ';\n  box-sizing: border-box;\n  position: absolute;\n  border: 1px solid rgba(255, 255, 255, 0.5);\n  top: 33.33%;\n  bottom: 33.33%;\n  left: 0;\n  right: 0;\n  border-left: 0;\n  border-right: 0;\n}\n";
+var MIN_ZOOM = 1;
+var MAX_ZOOM = 3;
+
+var Cropper =
+/** @class */
+function (_super) {
+  (0, _tslib.__extends)(Cropper, _super);
+
+  function Cropper() {
+    var _this = _super !== null && _super.apply(this, arguments) || this;
+
+    _this.imageRef = /*#__PURE__*/_react.default.createRef();
+    _this.videoRef = /*#__PURE__*/_react.default.createRef();
+    _this.containerRef = null;
+    _this.styleRef = null;
+    _this.containerRect = null;
+    _this.mediaSize = {
+      width: 0,
+      height: 0,
+      naturalWidth: 0,
+      naturalHeight: 0
+    };
+    _this.dragStartPosition = {
+      x: 0,
+      y: 0
+    };
+    _this.dragStartCrop = {
+      x: 0,
+      y: 0
+    };
+    _this.lastPinchDistance = 0;
+    _this.lastPinchRotation = 0;
+    _this.rafDragTimeout = null;
+    _this.rafPinchTimeout = null;
+    _this.wheelTimer = null;
+    _this.currentDoc = document;
+    _this.currentWindow = window;
+    _this.state = {
+      cropSize: null,
+      hasWheelJustStarted: false
+    }; // this is to prevent Safari on iOS >= 10 to zoom the page
+
+    _this.preventZoomSafari = function (e) {
+      return e.preventDefault();
+    };
+
+    _this.cleanEvents = function () {
+      _this.currentDoc.removeEventListener('mousemove', _this.onMouseMove);
+
+      _this.currentDoc.removeEventListener('mouseup', _this.onDragStopped);
+
+      _this.currentDoc.removeEventListener('touchmove', _this.onTouchMove);
+
+      _this.currentDoc.removeEventListener('touchend', _this.onDragStopped);
+    };
+
+    _this.clearScrollEvent = function () {
+      if (_this.containerRef) _this.containerRef.removeEventListener('wheel', _this.onWheel);
+
+      if (_this.wheelTimer) {
+        clearTimeout(_this.wheelTimer);
+      }
+    };
+
+    _this.onMediaLoad = function () {
+      var cropSize = _this.computeSizes();
+
+      if (cropSize) {
+        _this.emitCropData();
+
+        _this.setInitialCrop(cropSize);
+      }
+
+      if (_this.props.onMediaLoaded) {
+        _this.props.onMediaLoaded(_this.mediaSize);
+      }
+    };
+
+    _this.setInitialCrop = function (cropSize) {
+      if (_this.props.initialCroppedAreaPercentages) {
+        var _a = getInitialCropFromCroppedAreaPercentages(_this.props.initialCroppedAreaPercentages, _this.mediaSize, _this.props.rotation, cropSize, _this.props.minZoom, _this.props.maxZoom),
+            crop = _a.crop,
+            zoom = _a.zoom;
+
+        _this.props.onCropChange(crop);
+
+        _this.props.onZoomChange && _this.props.onZoomChange(zoom);
+      } else if (_this.props.initialCroppedAreaPixels) {
+        var _b = getInitialCropFromCroppedAreaPixels(_this.props.initialCroppedAreaPixels, _this.mediaSize, _this.props.rotation, cropSize, _this.props.minZoom, _this.props.maxZoom),
+            crop = _b.crop,
+            zoom = _b.zoom;
+
+        _this.props.onCropChange(crop);
+
+        _this.props.onZoomChange && _this.props.onZoomChange(zoom);
+      }
+    };
+
+    _this.computeSizes = function () {
+      var _a, _b, _c, _d, _e, _f;
+
+      var mediaRef = _this.imageRef.current || _this.videoRef.current;
+
+      if (mediaRef && _this.containerRef) {
+        _this.containerRect = _this.containerRef.getBoundingClientRect();
+        var containerAspect = _this.containerRect.width / _this.containerRect.height;
+        var naturalWidth = ((_a = _this.imageRef.current) === null || _a === void 0 ? void 0 : _a.naturalWidth) || ((_b = _this.videoRef.current) === null || _b === void 0 ? void 0 : _b.videoWidth) || 0;
+        var naturalHeight = ((_c = _this.imageRef.current) === null || _c === void 0 ? void 0 : _c.naturalHeight) || ((_d = _this.videoRef.current) === null || _d === void 0 ? void 0 : _d.videoHeight) || 0;
+        var isMediaScaledDown = mediaRef.offsetWidth < naturalWidth || mediaRef.offsetHeight < naturalHeight;
+        var mediaAspect = naturalWidth / naturalHeight; // We do not rely on the offsetWidth/offsetHeight if the media is scaled down
+        // as the values they report are rounded. That will result in precision losses
+        // when calculating zoom. We use the fact that the media is positionned relative
+        // to the container. That allows us to use the container's dimensions
+        // and natural aspect ratio of the media to calculate accurate media size.
+        // However, for this to work, the container should not be rotated
+
+        var renderedMediaSize = void 0;
+
+        if (isMediaScaledDown) {
+          switch (_this.props.objectFit) {
+            default:
+            case 'contain':
+              renderedMediaSize = containerAspect > mediaAspect ? {
+                width: _this.containerRect.height * mediaAspect,
+                height: _this.containerRect.height
+              } : {
+                width: _this.containerRect.width,
+                height: _this.containerRect.width / mediaAspect
+              };
+              break;
+
+            case 'horizontal-cover':
+              renderedMediaSize = {
+                width: _this.containerRect.width,
+                height: _this.containerRect.width / mediaAspect
+              };
+              break;
+
+            case 'vertical-cover':
+              renderedMediaSize = {
+                width: _this.containerRect.height * mediaAspect,
+                height: _this.containerRect.height
+              };
+              break;
+
+            case 'auto-cover':
+              renderedMediaSize = naturalWidth > naturalHeight ? {
+                width: _this.containerRect.width,
+                height: _this.containerRect.width / mediaAspect
+              } : {
+                width: _this.containerRect.height * mediaAspect,
+                height: _this.containerRect.height
+              };
+              break;
+          }
+        } else {
+          renderedMediaSize = {
+            width: mediaRef.offsetWidth,
+            height: mediaRef.offsetHeight
+          };
+        }
+
+        _this.mediaSize = (0, _tslib.__assign)((0, _tslib.__assign)({}, renderedMediaSize), {
+          naturalWidth: naturalWidth,
+          naturalHeight: naturalHeight
+        }); // set media size in the parent
+
+        if (_this.props.setMediaSize) {
+          _this.props.setMediaSize(_this.mediaSize);
+        }
+
+        var cropSize = _this.props.cropSize ? _this.props.cropSize : getCropSize(_this.mediaSize.width, _this.mediaSize.height, _this.containerRect.width, _this.containerRect.height, _this.props.aspect, _this.props.rotation);
+
+        if (((_e = _this.state.cropSize) === null || _e === void 0 ? void 0 : _e.height) !== cropSize.height || ((_f = _this.state.cropSize) === null || _f === void 0 ? void 0 : _f.width) !== cropSize.width) {
+          _this.props.onCropSizeChange && _this.props.onCropSizeChange(cropSize);
+        }
+
+        _this.setState({
+          cropSize: cropSize
+        }, _this.recomputeCropPosition); // pass crop size to parent
+
+
+        if (_this.props.setCropSize) {
+          _this.props.setCropSize(cropSize);
+        }
+
+        return cropSize;
+      }
+    };
+
+    _this.onMouseDown = function (e) {
+      e.preventDefault();
+
+      _this.currentDoc.addEventListener('mousemove', _this.onMouseMove);
+
+      _this.currentDoc.addEventListener('mouseup', _this.onDragStopped);
+
+      _this.onDragStart(Cropper.getMousePoint(e));
+    };
+
+    _this.onMouseMove = function (e) {
+      return _this.onDrag(Cropper.getMousePoint(e));
+    };
+
+    _this.onTouchStart = function (e) {
+      if (_this.props.onTouchRequest && !_this.props.onTouchRequest(e)) {
+        return;
+      }
+
+      _this.currentDoc.addEventListener('touchmove', _this.onTouchMove, {
+        passive: false
+      }); // iOS 11 now defaults to passive: true
+
+
+      _this.currentDoc.addEventListener('touchend', _this.onDragStopped);
+
+      if (e.touches.length === 2) {
+        _this.onPinchStart(e);
+      } else if (e.touches.length === 1) {
+        _this.onDragStart(Cropper.getTouchPoint(e.touches[0]));
+      }
+    };
+
+    _this.onTouchMove = function (e) {
+      // Prevent whole page from scrolling on iOS.
+      e.preventDefault();
+
+      if (e.touches.length === 2) {
+        _this.onPinchMove(e);
+      } else if (e.touches.length === 1) {
+        _this.onDrag(Cropper.getTouchPoint(e.touches[0]));
+      }
+    };
+
+    _this.onDragStart = function (_a) {
+      var _b, _c;
+
+      var x = _a.x,
+          y = _a.y;
+      _this.dragStartPosition = {
+        x: x,
+        y: y
+      };
+      _this.dragStartCrop = (0, _tslib.__assign)({}, _this.props.crop);
+      (_c = (_b = _this.props).onInteractionStart) === null || _c === void 0 ? void 0 : _c.call(_b);
+    };
+
+    _this.onDrag = function (_a) {
+      var x = _a.x,
+          y = _a.y;
+      if (_this.rafDragTimeout) _this.currentWindow.cancelAnimationFrame(_this.rafDragTimeout);
+      _this.rafDragTimeout = _this.currentWindow.requestAnimationFrame(function () {
+        if (!_this.state.cropSize) return;
+        if (x === undefined || y === undefined) return;
+        var offsetX = x - _this.dragStartPosition.x;
+        var offsetY = y - _this.dragStartPosition.y;
+        var requestedPosition = {
+          x: _this.dragStartCrop.x + offsetX,
+          y: _this.dragStartCrop.y + offsetY
+        };
+        var newPosition = _this.props.restrictPosition ? restrictPosition(requestedPosition, _this.mediaSize, _this.state.cropSize, _this.props.zoom, _this.props.rotation) : requestedPosition;
+
+        _this.props.onCropChange(newPosition);
+      });
+    };
+
+    _this.onDragStopped = function () {
+      var _a, _b;
+
+      _this.cleanEvents();
+
+      _this.emitCropData();
+
+      (_b = (_a = _this.props).onInteractionEnd) === null || _b === void 0 ? void 0 : _b.call(_a);
+    };
+
+    _this.onWheel = function (e) {
+      if (_this.props.onWheelRequest && !_this.props.onWheelRequest(e)) {
+        return;
+      }
+
+      e.preventDefault();
+      var point = Cropper.getMousePoint(e);
+      var pixelY = (0, _normalizeWheel.default)(e).pixelY;
+      var newZoom = _this.props.zoom - pixelY * _this.props.zoomSpeed / 200;
+
+      _this.setNewZoom(newZoom, point, {
+        shouldUpdatePosition: true
+      });
+
+      if (!_this.state.hasWheelJustStarted) {
+        _this.setState({
+          hasWheelJustStarted: true
+        }, function () {
+          var _a, _b;
+
+          return (_b = (_a = _this.props).onInteractionStart) === null || _b === void 0 ? void 0 : _b.call(_a);
+        });
+      }
+
+      if (_this.wheelTimer) {
+        clearTimeout(_this.wheelTimer);
+      }
+
+      _this.wheelTimer = _this.currentWindow.setTimeout(function () {
+        return _this.setState({
+          hasWheelJustStarted: false
+        }, function () {
+          var _a, _b;
+
+          return (_b = (_a = _this.props).onInteractionEnd) === null || _b === void 0 ? void 0 : _b.call(_a);
+        });
+      }, 250);
+    };
+
+    _this.getPointOnContainer = function (_a) {
+      var x = _a.x,
+          y = _a.y;
+
+      if (!_this.containerRect) {
+        throw new Error('The Cropper is not mounted');
+      }
+
+      return {
+        x: _this.containerRect.width / 2 - (x - _this.containerRect.left),
+        y: _this.containerRect.height / 2 - (y - _this.containerRect.top)
+      };
+    };
+
+    _this.getPointOnMedia = function (_a) {
+      var x = _a.x,
+          y = _a.y;
+      var _b = _this.props,
+          crop = _b.crop,
+          zoom = _b.zoom;
+      return {
+        x: (x + crop.x) / zoom,
+        y: (y + crop.y) / zoom
+      };
+    };
+
+    _this.setNewZoom = function (zoom, point, _a) {
+      var _b = (_a === void 0 ? {} : _a).shouldUpdatePosition,
+          shouldUpdatePosition = _b === void 0 ? true : _b;
+      if (!_this.state.cropSize || !_this.props.onZoomChange) return;
+
+      var zoomPoint = _this.getPointOnContainer(point);
+
+      var zoomTarget = _this.getPointOnMedia(zoomPoint);
+
+      var newZoom = clamp(zoom, _this.props.minZoom, _this.props.maxZoom);
+      var requestedPosition = {
+        x: zoomTarget.x * newZoom - zoomPoint.x,
+        y: zoomTarget.y * newZoom - zoomPoint.y
+      };
+
+      if (shouldUpdatePosition) {
+        var newPosition = _this.props.restrictPosition ? restrictPosition(requestedPosition, _this.mediaSize, _this.state.cropSize, newZoom, _this.props.rotation) : requestedPosition;
+
+        _this.props.onCropChange(newPosition);
+      }
+
+      _this.props.onZoomChange(newZoom);
+    };
+
+    _this.getCropData = function () {
+      if (!_this.state.cropSize) {
+        return null;
+      } // this is to ensure the crop is correctly restricted after a zoom back (https://github.com/ValentinH/react-easy-crop/issues/6)
+
+
+      var restrictedPosition = _this.props.restrictPosition ? restrictPosition(_this.props.crop, _this.mediaSize, _this.state.cropSize, _this.props.zoom, _this.props.rotation) : _this.props.crop;
+      return computeCroppedArea(restrictedPosition, _this.mediaSize, _this.state.cropSize, _this.getAspect(), _this.props.zoom, _this.props.rotation, _this.props.restrictPosition);
+    };
+
+    _this.emitCropData = function () {
+      var cropData = _this.getCropData();
+
+      if (!cropData) return;
+      var croppedAreaPercentages = cropData.croppedAreaPercentages,
+          croppedAreaPixels = cropData.croppedAreaPixels;
+
+      if (_this.props.onCropComplete) {
+        _this.props.onCropComplete(croppedAreaPercentages, croppedAreaPixels);
+      }
+
+      if (_this.props.onCropAreaChange) {
+        _this.props.onCropAreaChange(croppedAreaPercentages, croppedAreaPixels);
+      }
+    };
+
+    _this.emitCropAreaChange = function () {
+      var cropData = _this.getCropData();
+
+      if (!cropData) return;
+      var croppedAreaPercentages = cropData.croppedAreaPercentages,
+          croppedAreaPixels = cropData.croppedAreaPixels;
+
+      if (_this.props.onCropAreaChange) {
+        _this.props.onCropAreaChange(croppedAreaPercentages, croppedAreaPixels);
+      }
+    };
+
+    _this.recomputeCropPosition = function () {
+      if (!_this.state.cropSize) return;
+      var newPosition = _this.props.restrictPosition ? restrictPosition(_this.props.crop, _this.mediaSize, _this.state.cropSize, _this.props.zoom, _this.props.rotation) : _this.props.crop;
+
+      _this.props.onCropChange(newPosition);
+
+      _this.emitCropData();
+    };
+
+    return _this;
+  }
+
+  Cropper.prototype.componentDidMount = function () {
+    if (this.containerRef) {
+      if (this.containerRef.ownerDocument) {
+        this.currentDoc = this.containerRef.ownerDocument;
+      }
+
+      if (this.currentDoc.defaultView) {
+        this.currentWindow = this.currentDoc.defaultView;
+      }
+
+      this.currentWindow.addEventListener('resize', this.computeSizes);
+      this.props.zoomWithScroll && this.containerRef.addEventListener('wheel', this.onWheel, {
+        passive: false
+      });
+      this.containerRef.addEventListener('gesturestart', this.preventZoomSafari);
+      this.containerRef.addEventListener('gesturechange', this.preventZoomSafari);
+    }
+
+    if (!this.props.disableAutomaticStylesInjection) {
+      this.styleRef = this.currentDoc.createElement('style');
+      this.styleRef.setAttribute('type', 'text/css');
+
+      if (this.props.nonce) {
+        this.styleRef.setAttribute('nonce', this.props.nonce);
+      }
+
+      this.styleRef.innerHTML = css_248z;
+      this.currentDoc.head.appendChild(this.styleRef);
+    } // when rendered via SSR, the image can already be loaded and its onLoad callback will never be called
+
+
+    if (this.imageRef.current && this.imageRef.current.complete) {
+      this.onMediaLoad();
+    } // set image and video refs in the parent if the callbacks exist
+
+
+    if (this.props.setImageRef) {
+      this.props.setImageRef(this.imageRef);
+    }
+
+    if (this.props.setVideoRef) {
+      this.props.setVideoRef(this.videoRef);
+    }
+  };
+
+  Cropper.prototype.componentWillUnmount = function () {
+    var _a;
+
+    this.currentWindow.removeEventListener('resize', this.computeSizes);
+
+    if (this.containerRef) {
+      this.containerRef.removeEventListener('gesturestart', this.preventZoomSafari);
+      this.containerRef.removeEventListener('gesturechange', this.preventZoomSafari);
+    }
+
+    if (this.styleRef) {
+      (_a = this.styleRef.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(this.styleRef);
+    }
+
+    this.cleanEvents();
+    this.props.zoomWithScroll && this.clearScrollEvent();
+  };
+
+  Cropper.prototype.componentDidUpdate = function (prevProps) {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+
+    if (prevProps.rotation !== this.props.rotation) {
+      this.computeSizes();
+      this.recomputeCropPosition();
+    } else if (prevProps.aspect !== this.props.aspect) {
+      this.computeSizes();
+    } else if (prevProps.zoom !== this.props.zoom) {
+      this.recomputeCropPosition();
+    } else if (((_a = prevProps.cropSize) === null || _a === void 0 ? void 0 : _a.height) !== ((_b = this.props.cropSize) === null || _b === void 0 ? void 0 : _b.height) || ((_c = prevProps.cropSize) === null || _c === void 0 ? void 0 : _c.width) !== ((_d = this.props.cropSize) === null || _d === void 0 ? void 0 : _d.width)) {
+      this.computeSizes();
+    } else if (((_e = prevProps.crop) === null || _e === void 0 ? void 0 : _e.x) !== ((_f = this.props.crop) === null || _f === void 0 ? void 0 : _f.x) || ((_g = prevProps.crop) === null || _g === void 0 ? void 0 : _g.y) !== ((_h = this.props.crop) === null || _h === void 0 ? void 0 : _h.y)) {
+      this.emitCropAreaChange();
+    }
+
+    if (prevProps.zoomWithScroll !== this.props.zoomWithScroll && this.containerRef) {
+      this.props.zoomWithScroll ? this.containerRef.addEventListener('wheel', this.onWheel, {
+        passive: false
+      }) : this.clearScrollEvent();
+    }
+
+    if (prevProps.video !== this.props.video) {
+      (_j = this.videoRef.current) === null || _j === void 0 ? void 0 : _j.load();
+    }
+  };
+
+  Cropper.prototype.getAspect = function () {
+    var _a = this.props,
+        cropSize = _a.cropSize,
+        aspect = _a.aspect;
+
+    if (cropSize) {
+      return cropSize.width / cropSize.height;
+    }
+
+    return aspect;
+  };
+
+  Cropper.prototype.onPinchStart = function (e) {
+    var pointA = Cropper.getTouchPoint(e.touches[0]);
+    var pointB = Cropper.getTouchPoint(e.touches[1]);
+    this.lastPinchDistance = getDistanceBetweenPoints(pointA, pointB);
+    this.lastPinchRotation = getRotationBetweenPoints(pointA, pointB);
+    this.onDragStart(getCenter(pointA, pointB));
+  };
+
+  Cropper.prototype.onPinchMove = function (e) {
+    var _this = this;
+
+    var pointA = Cropper.getTouchPoint(e.touches[0]);
+    var pointB = Cropper.getTouchPoint(e.touches[1]);
+    var center = getCenter(pointA, pointB);
+    this.onDrag(center);
+    if (this.rafPinchTimeout) this.currentWindow.cancelAnimationFrame(this.rafPinchTimeout);
+    this.rafPinchTimeout = this.currentWindow.requestAnimationFrame(function () {
+      var distance = getDistanceBetweenPoints(pointA, pointB);
+      var newZoom = _this.props.zoom * (distance / _this.lastPinchDistance);
+
+      _this.setNewZoom(newZoom, center, {
+        shouldUpdatePosition: false
+      });
+
+      _this.lastPinchDistance = distance;
+      var rotation = getRotationBetweenPoints(pointA, pointB);
+      var newRotation = _this.props.rotation + (rotation - _this.lastPinchRotation);
+      _this.props.onRotationChange && _this.props.onRotationChange(newRotation);
+      _this.lastPinchRotation = rotation;
+    });
+  };
+
+  Cropper.prototype.render = function () {
+    var _this = this;
+
+    var _a = this.props,
+        image = _a.image,
+        video = _a.video,
+        mediaProps = _a.mediaProps,
+        transform = _a.transform,
+        _b = _a.crop,
+        x = _b.x,
+        y = _b.y,
+        rotation = _a.rotation,
+        zoom = _a.zoom,
+        cropShape = _a.cropShape,
+        showGrid = _a.showGrid,
+        _c = _a.style,
+        containerStyle = _c.containerStyle,
+        cropAreaStyle = _c.cropAreaStyle,
+        mediaStyle = _c.mediaStyle,
+        _d = _a.classes,
+        containerClassName = _d.containerClassName,
+        cropAreaClassName = _d.cropAreaClassName,
+        mediaClassName = _d.mediaClassName,
+        objectFit = _a.objectFit;
+    return /*#__PURE__*/_react.default.createElement("div", {
+      onMouseDown: this.onMouseDown,
+      onTouchStart: this.onTouchStart,
+      ref: function ref(el) {
+        return _this.containerRef = el;
+      },
+      "data-testid": "container",
+      style: containerStyle,
+      className: classNames('reactEasyCrop_Container', containerClassName)
+    }, image ? /*#__PURE__*/_react.default.createElement("img", (0, _tslib.__assign)({
+      alt: "",
+      className: classNames('reactEasyCrop_Image', objectFit === 'contain' && 'reactEasyCrop_Contain', objectFit === 'horizontal-cover' && 'reactEasyCrop_Cover_Horizontal', objectFit === 'vertical-cover' && 'reactEasyCrop_Cover_Vertical', objectFit === 'auto-cover' && (this.mediaSize.naturalWidth > this.mediaSize.naturalHeight ? 'reactEasyCrop_Cover_Horizontal' : 'reactEasyCrop_Cover_Vertical'), mediaClassName)
+    }, mediaProps, {
+      src: image,
+      ref: this.imageRef,
+      style: (0, _tslib.__assign)((0, _tslib.__assign)({}, mediaStyle), {
+        transform: transform || "translate(" + x + "px, " + y + "px) rotate(" + rotation + "deg) scale(" + zoom + ")"
+      }),
+      onLoad: this.onMediaLoad
+    })) : video && /*#__PURE__*/_react.default.createElement("video", (0, _tslib.__assign)({
+      autoPlay: true,
+      loop: true,
+      muted: true,
+      className: classNames('reactEasyCrop_Video', objectFit === 'contain' && 'reactEasyCrop_Contain', objectFit === 'horizontal-cover' && 'reactEasyCrop_Cover_Horizontal', objectFit === 'vertical-cover' && 'reactEasyCrop_Cover_Vertical', objectFit === 'auto-cover' && (this.mediaSize.naturalWidth > this.mediaSize.naturalHeight ? 'reactEasyCrop_Cover_Horizontal' : 'reactEasyCrop_Cover_Vertical'), mediaClassName)
+    }, mediaProps, {
+      ref: this.videoRef,
+      onLoadedMetadata: this.onMediaLoad,
+      style: (0, _tslib.__assign)((0, _tslib.__assign)({}, mediaStyle), {
+        transform: transform || "translate(" + x + "px, " + y + "px) rotate(" + rotation + "deg) scale(" + zoom + ")"
+      }),
+      controls: false
+    }), (Array.isArray(video) ? video : [{
+      src: video
+    }]).map(function (item) {
+      return /*#__PURE__*/_react.default.createElement("source", (0, _tslib.__assign)({
+        key: item.src
+      }, item));
+    })), this.state.cropSize && /*#__PURE__*/_react.default.createElement("div", {
+      style: (0, _tslib.__assign)((0, _tslib.__assign)({}, cropAreaStyle), {
+        width: this.state.cropSize.width,
+        height: this.state.cropSize.height
+      }),
+      "data-testid": "cropper",
+      className: classNames('reactEasyCrop_CropArea', cropShape === 'round' && 'reactEasyCrop_CropAreaRound', showGrid && 'reactEasyCrop_CropAreaGrid', cropAreaClassName)
+    }));
+  };
+
+  Cropper.defaultProps = {
+    zoom: 1,
+    rotation: 0,
+    aspect: 4 / 3,
+    maxZoom: MAX_ZOOM,
+    minZoom: MIN_ZOOM,
+    cropShape: 'rect',
+    objectFit: 'contain',
+    showGrid: true,
+    style: {},
+    classes: {},
+    mediaProps: {},
+    zoomSpeed: 1,
+    restrictPosition: true,
+    zoomWithScroll: true
+  };
+
+  Cropper.getMousePoint = function (e) {
+    return {
+      x: Number(e.clientX),
+      y: Number(e.clientY)
+    };
+  };
+
+  Cropper.getTouchPoint = function (touch) {
+    return {
+      x: Number(touch.clientX),
+      y: Number(touch.clientY)
+    };
+  };
+
+  return Cropper;
+}(_react.default.Component);
+
+var _default = Cropper;
+exports.default = _default;
+},{"tslib":"node_modules/tslib/tslib.es6.js","react":"node_modules/react/index.js","normalize-wheel":"node_modules/normalize-wheel/index.js"}],"node_modules/antd-img-crop/dist/antd-img-crop.esm.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _react = _interopRequireWildcard(require("react"));
+
+var _modal = _interopRequireDefault(require("antd/es/modal"));
+
+var _upload = _interopRequireDefault(require("antd/es/upload"));
+
+var _LocaleReceiver = _interopRequireDefault(require("antd/es/locale-provider/LocaleReceiver"));
+
+var _slider = _interopRequireDefault(require("antd/es/slider"));
+
+var _reactEasyCrop = _interopRequireDefault(require("react-easy-crop"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+function __$styleInject(css) {
+  if (!css) return;
+  if (typeof window == 'undefined') return;
+  var style = document.createElement('style');
+  style.setAttribute('media', 'screen');
+  style.innerHTML = css;
+  document.head.appendChild(style);
+  return css;
+}
+
+/******************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+var __assign = function () {
+  __assign = Object.assign || function __assign(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+      s = arguments[i];
+
+      for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+    }
+
+    return t;
+  };
+
+  return __assign.apply(this, arguments);
+};
+
+function __rest(s, e) {
+  var t = {};
+
+  for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0) t[p] = s[p];
+
+  if (s != null && typeof Object.getOwnPropertySymbols === "function") for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+    if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i])) t[p[i]] = s[p[i]];
+  }
+  return t;
+}
+
+function __awaiter(thisArg, _arguments, P, generator) {
+  function adopt(value) {
+    return value instanceof P ? value : new P(function (resolve) {
+      resolve(value);
+    });
+  }
+
+  return new (P || (P = Promise))(function (resolve, reject) {
+    function fulfilled(value) {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function rejected(value) {
+      try {
+        step(generator["throw"](value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function step(result) {
+      result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+    }
+
+    step((generator = generator.apply(thisArg, _arguments || [])).next());
+  });
+}
+
+function __generator(thisArg, body) {
+  var _ = {
+    label: 0,
+    sent: function () {
+      if (t[0] & 1) throw t[1];
+      return t[1];
+    },
+    trys: [],
+    ops: []
+  },
+      f,
+      y,
+      t,
+      g;
+  return g = {
+    next: verb(0),
+    "throw": verb(1),
+    "return": verb(2)
+  }, typeof Symbol === "function" && (g[Symbol.iterator] = function () {
+    return this;
+  }), g;
+
+  function verb(n) {
+    return function (v) {
+      return step([n, v]);
+    };
+  }
+
+  function step(op) {
+    if (f) throw new TypeError("Generator is already executing.");
+
+    while (_) try {
+      if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+      if (y = 0, t) op = [op[0] & 2, t.value];
+
+      switch (op[0]) {
+        case 0:
+        case 1:
+          t = op;
+          break;
+
+        case 4:
+          _.label++;
+          return {
+            value: op[1],
+            done: false
+          };
+
+        case 5:
+          _.label++;
+          y = op[1];
+          op = [0];
+          continue;
+
+        case 7:
+          op = _.ops.pop();
+
+          _.trys.pop();
+
+          continue;
+
+        default:
+          if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+            _ = 0;
+            continue;
+          }
+
+          if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
+            _.label = op[1];
+            break;
+          }
+
+          if (op[0] === 6 && _.label < t[1]) {
+            _.label = t[1];
+            t = op;
+            break;
+          }
+
+          if (t && _.label < t[2]) {
+            _.label = t[2];
+
+            _.ops.push(op);
+
+            break;
+          }
+
+          if (t[2]) _.ops.pop();
+
+          _.trys.pop();
+
+          continue;
+      }
+
+      op = body.call(thisArg, _);
+    } catch (e) {
+      op = [6, e];
+      y = 0;
+    } finally {
+      f = t = 0;
+    }
+
+    if (op[0] & 5) throw op[1];
+    return {
+      value: op[0] ? op[1] : void 0,
+      done: true
+    };
+  }
+}
+
+var PREFIX = 'img-crop';
+var INIT_ZOOM = 1;
+var ZOOM_STEP = 0.1;
+var INIT_ROTATE = 0;
+var ROTATE_STEP = 1;
+var MIN_ROTATE = -180;
+var MAX_ROTATE = 180;
+var EasyCrop = (0, _react.forwardRef)(function (props, ref) {
+  var cropperRef = props.cropperRef,
+      image = props.image,
+      aspect = props.aspect,
+      shape = props.shape,
+      grid = props.grid,
+      zoom = props.zoom,
+      rotate = props.rotate,
+      minZoom = props.minZoom,
+      maxZoom = props.maxZoom,
+      cropperProps = props.cropperProps;
+
+  var _a = (0, _react.useState)({
+    x: 0,
+    y: 0
+  }),
+      crop = _a[0],
+      onCropChange = _a[1];
+
+  var _b = (0, _react.useState)({
+    width: 0,
+    height: 0
+  }),
+      cropSize = _b[0],
+      setCropSize = _b[1];
+
+  var _c = (0, _react.useState)(INIT_ZOOM),
+      zoomVal = _c[0],
+      setZoomVal = _c[1];
+
+  var _d = (0, _react.useState)(INIT_ROTATE),
+      rotateVal = _d[0],
+      setRotateVal = _d[1];
+
+  var cropPixelsRef = (0, _react.useRef)({
+    width: 0,
+    height: 0,
+    x: 0,
+    y: 0
+  });
+  var onMediaLoaded = (0, _react.useCallback)(function (mediaSize) {
+    var width = mediaSize.width,
+        height = mediaSize.height;
+    var ratioWidth = height * aspect;
+
+    if (width > ratioWidth) {
+      setCropSize({
+        width: ratioWidth,
+        height: height
+      });
+    } else {
+      setCropSize({
+        width: width,
+        height: width / aspect
+      });
+    }
+  }, [aspect]);
+  var onCropComplete = (0, _react.useCallback)(function (croppedArea, croppedAreaPixels) {
+    cropPixelsRef.current = croppedAreaPixels;
+  }, []);
+  (0, _react.useImperativeHandle)(ref, function () {
+    return {
+      rotateVal: rotateVal,
+      setZoomVal: setZoomVal,
+      setRotateVal: setRotateVal,
+      cropPixelsRef: cropPixelsRef
+    };
+  }, [rotateVal]);
+  return _react.default.createElement(_react.default.Fragment, null, _react.default.createElement(_reactEasyCrop.default, __assign({}, cropperProps, {
+    ref: cropperRef,
+    image: image,
+    crop: crop,
+    cropSize: cropSize,
+    onCropChange: onCropChange,
+    aspect: aspect,
+    cropShape: shape,
+    showGrid: grid,
+    zoomWithScroll: zoom,
+    zoom: zoomVal,
+    rotation: rotateVal,
+    onZoomChange: setZoomVal,
+    onRotationChange: setRotateVal,
+    minZoom: minZoom,
+    maxZoom: maxZoom,
+    onMediaLoaded: onMediaLoaded,
+    onCropComplete: onCropComplete,
+    classes: {
+      containerClassName: "".concat(PREFIX, "-container"),
+      mediaClassName: "".concat(PREFIX, "-media")
+    }
+  })), zoom && _react.default.createElement("section", {
+    className: "".concat(PREFIX, "-control ").concat(PREFIX, "-control-zoom")
+  }, _react.default.createElement("button", {
+    onClick: function () {
+      return setZoomVal(zoomVal - ZOOM_STEP);
+    },
+    disabled: zoomVal - ZOOM_STEP < minZoom
+  }, "\uFF0D"), _react.default.createElement(_slider.default, {
+    min: minZoom,
+    max: maxZoom,
+    step: ZOOM_STEP,
+    value: zoomVal,
+    onChange: setZoomVal
+  }), _react.default.createElement("button", {
+    onClick: function () {
+      return setZoomVal(zoomVal + ZOOM_STEP);
+    },
+    disabled: zoomVal + ZOOM_STEP > maxZoom
+  }, "\uFF0B")), rotate && _react.default.createElement("section", {
+    className: "".concat(PREFIX, "-control ").concat(PREFIX, "-control-rotate")
+  }, _react.default.createElement("button", {
+    onClick: function () {
+      return setRotateVal(rotateVal - ROTATE_STEP);
+    },
+    disabled: rotateVal === MIN_ROTATE
+  }, "\u21BA"), _react.default.createElement(_slider.default, {
+    min: MIN_ROTATE,
+    max: MAX_ROTATE,
+    step: ROTATE_STEP,
+    value: rotateVal,
+    onChange: setRotateVal
+  }), _react.default.createElement("button", {
+    onClick: function () {
+      return setRotateVal(rotateVal + ROTATE_STEP);
+    },
+    disabled: rotateVal === MAX_ROTATE
+  }, "\u21BB")));
+});
+var EasyCrop$1 = (0, _react.memo)(EasyCrop);
+
+__$styleInject(".img-crop-modal .img-crop-container {\n  position: relative;\n  width: 100%;\n  height: 40vh;\n}\n.img-crop-modal .img-crop-control {\n  display: flex;\n  align-items: center;\n  width: 60%;\n  margin-left: auto;\n  margin-right: auto;\n}\n.img-crop-modal .img-crop-control:first-of-type {\n  margin-top: 16px;\n}\n.img-crop-modal .img-crop-control:last-of-type {\n  margin-bottom: -8px;\n}\n.img-crop-modal .img-crop-control button {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  width: 34px;\n  height: 34px;\n  padding: 0;\n  font-style: normal;\n  background: transparent;\n  border: 0;\n  outline: 0;\n  cursor: pointer;\n}\n.img-crop-modal .img-crop-control button[disabled] {\n  cursor: default;\n}\n.img-crop-modal .img-crop-control button + div:only-of-type {\n  flex: 1;\n  margin: 0 8px;\n}\n.img-crop-modal .img-crop-control-zoom button {\n  font-size: 18px;\n}\n.img-crop-modal .img-crop-control-rotate button {\n  font-size: 16px;\n}\n.img-crop-modal .img-crop-control-rotate button:first-of-type {\n  transform: rotate(-20deg);\n}\n.img-crop-modal .img-crop-control-rotate button:last-of-type {\n  transform: rotate(20deg);\n}\n");
+
+var ImgCrop = (0, _react.forwardRef)(function (props, ref) {
+  var _a = props.aspect,
+      aspect = _a === void 0 ? 1 : _a,
+      _b = props.shape,
+      shape = _b === void 0 ? 'rect' : _b,
+      _c = props.grid,
+      grid = _c === void 0 ? false : _c,
+      _d = props.quality,
+      quality = _d === void 0 ? 0.4 : _d,
+      _e = props.fillColor,
+      fillColor = _e === void 0 ? 'white' : _e,
+      _f = props.zoom,
+      zoom = _f === void 0 ? true : _f,
+      _g = props.rotate,
+      rotate = _g === void 0 ? false : _g,
+      _h = props.minZoom,
+      minZoom = _h === void 0 ? 1 : _h,
+      _j = props.maxZoom,
+      maxZoom = _j === void 0 ? 3 : _j,
+      modalTitle = props.modalTitle,
+      modalWidth = props.modalWidth,
+      modalOk = props.modalOk,
+      modalCancel = props.modalCancel,
+      modalMaskTransitionName = props.modalMaskTransitionName,
+      modalTransitionName = props.modalTransitionName,
+      modalClassName = props.modalClassName,
+      onModalOk = props.onModalOk,
+      onModalCancel = props.onModalCancel,
+      beforeCrop = props.beforeCrop,
+      onUploadFail = props.onUploadFail,
+      cropperProps = props.cropperProps,
+      children = props.children;
+  var cb = (0, _react.useRef)({});
+  cb.current.onModalOk = onModalOk;
+  cb.current.onModalCancel = onModalCancel;
+  cb.current.beforeCrop = beforeCrop;
+  cb.current.onUploadFail = onUploadFail;
+  /**
+   * Upload
+   */
+
+  var _k = (0, _react.useState)(''),
+      image = _k[0],
+      setImage = _k[1];
+
+  var fileRef = (0, _react.useRef)();
+  var beforeUploadRef = (0, _react.useRef)();
+  var resolveRef = (0, _react.useRef)();
+  var rejectRef = (0, _react.useRef)();
+  var uploadComponent = (0, _react.useMemo)(function () {
+    var upload = Array.isArray(children) ? children[0] : children;
+
+    var _a = upload.props,
+        beforeUpload = _a.beforeUpload,
+        accept = _a.accept,
+        restUploadProps = __rest(_a, ["beforeUpload", "accept"]);
+
+    beforeUploadRef.current = beforeUpload;
+    return __assign(__assign({}, upload), {
+      props: __assign(__assign({}, restUploadProps), {
+        accept: accept || 'image/*',
+        beforeUpload: function (file, fileList) {
+          return new Promise(function (resolve, reject) {
+            return __awaiter(void 0, void 0, void 0, function () {
+              var shouldCrop, reader;
+              return __generator(this, function (_a) {
+                switch (_a.label) {
+                  case 0:
+                    if (!cb.current.beforeCrop) return [3
+                    /*break*/
+                    , 2];
+                    return [4
+                    /*yield*/
+                    , cb.current.beforeCrop(file, fileList)];
+
+                  case 1:
+                    shouldCrop = _a.sent();
+
+                    if (!shouldCrop) {
+                      return [2
+                      /*return*/
+                      , reject()];
+                    }
+
+                    _a.label = 2;
+
+                  case 2:
+                    fileRef.current = file;
+
+                    resolveRef.current = function (newFile) {
+                      var _a, _b;
+
+                      (_b = (_a = cb.current).onModalOk) === null || _b === void 0 ? void 0 : _b.call(_a, newFile);
+                      resolve(newFile);
+                    };
+
+                    rejectRef.current = function (uploadErr) {
+                      var _a, _b;
+
+                      (_b = (_a = cb.current).onUploadFail) === null || _b === void 0 ? void 0 : _b.call(_a, uploadErr);
+                      reject();
+                    };
+
+                    reader = new FileReader();
+                    reader.addEventListener('load', function () {
+                      if (typeof reader.result === 'string') {
+                        setImage(reader.result);
+                      }
+                    });
+                    reader.readAsDataURL(file);
+                    return [2
+                    /*return*/
+                    ];
+                }
+              });
+            });
+          });
+        }
+      })
+    });
+  }, [children]);
+  /**
+   * Crop
+   */
+
+  var easyCropRef = (0, _react.useRef)({});
+  /**
+   * Modal
+   */
+
+  var modalProps = (0, _react.useMemo)(function () {
+    var obj = {
+      width: modalWidth,
+      okText: modalOk,
+      cancelText: modalCancel,
+      maskTransitionName: modalMaskTransitionName,
+      transitionName: modalTransitionName
+    };
+    Object.keys(obj).forEach(function (key) {
+      if (!obj[key]) delete obj[key];
+    });
+    return obj;
+  }, [modalCancel, modalMaskTransitionName, modalOk, modalTransitionName, modalWidth]);
+
+  var onClose = function () {
+    setImage('');
+    easyCropRef.current.setZoomVal(INIT_ZOOM);
+    easyCropRef.current.setRotateVal(INIT_ROTATE);
+  };
+
+  var onCancel = (0, _react.useCallback)(function () {
+    var _a, _b;
+
+    (_b = (_a = cb.current).onModalCancel) === null || _b === void 0 ? void 0 : _b.call(_a);
+    onClose();
+  }, []);
+  var onOk = (0, _react.useCallback)(function () {
+    return __awaiter(void 0, void 0, void 0, function () {
+      var canvas, ctx, imgSource, _a, cropWidth, cropHeight, cropX, cropY, imgWidth, imgHeight, angle, sine, cosine, squareWidth, squareHeight, squareHalfWidth, squareHalfHeight, imgX, imgY, imgData, _b, type, name, uid;
+
+      return __generator(this, function (_c) {
+        onClose();
+        canvas = document.createElement('canvas');
+        ctx = canvas.getContext('2d');
+        imgSource = document.querySelector(".".concat(PREFIX, "-media"));
+        _a = easyCropRef.current.cropPixelsRef.current, cropWidth = _a.width, cropHeight = _a.height, cropX = _a.x, cropY = _a.y;
+
+        if (rotate && easyCropRef.current.rotateVal !== INIT_ROTATE) {
+          imgWidth = imgSource.naturalWidth, imgHeight = imgSource.naturalHeight;
+          angle = easyCropRef.current.rotateVal * (Math.PI / 180);
+          sine = Math.abs(Math.sin(angle));
+          cosine = Math.abs(Math.cos(angle));
+          squareWidth = imgWidth * cosine + imgHeight * sine;
+          squareHeight = imgHeight * cosine + imgWidth * sine;
+          canvas.width = squareWidth;
+          canvas.height = squareHeight;
+          ctx.fillStyle = fillColor;
+          ctx.fillRect(0, 0, squareWidth, squareHeight);
+          squareHalfWidth = squareWidth / 2;
+          squareHalfHeight = squareHeight / 2;
+          ctx.translate(squareHalfWidth, squareHalfHeight);
+          ctx.rotate(angle);
+          ctx.translate(-squareHalfWidth, -squareHalfHeight);
+          imgX = (squareWidth - imgWidth) / 2;
+          imgY = (squareHeight - imgHeight) / 2;
+          ctx.drawImage(imgSource, 0, 0, imgWidth, imgHeight, imgX, imgY, imgWidth, imgHeight);
+          imgData = ctx.getImageData(0, 0, squareWidth, squareHeight);
+          canvas.width = cropWidth;
+          canvas.height = cropHeight;
+          ctx.putImageData(imgData, -cropX, -cropY);
+        } else {
+          canvas.width = cropWidth;
+          canvas.height = cropHeight;
+          ctx.fillStyle = fillColor;
+          ctx.fillRect(0, 0, cropWidth, cropHeight);
+          ctx.drawImage(imgSource, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+        }
+
+        _b = fileRef.current, type = _b.type, name = _b.name, uid = _b.uid;
+        canvas.toBlob(function (blob) {
+          return __awaiter(void 0, void 0, void 0, function () {
+            var newFile, result;
+            return __generator(this, function (_a) {
+              switch (_a.label) {
+                case 0:
+                  newFile = Object.assign(new File([blob], name, {
+                    type: type
+                  }), {
+                    uid: uid
+                  });
+
+                  if (!beforeUploadRef.current) {
+                    return [2
+                    /*return*/
+                    , resolveRef.current(newFile)];
+                  }
+
+                  return [4
+                  /*yield*/
+                  , beforeUploadRef.current(newFile, [newFile])];
+
+                case 1:
+                  result = _a.sent();
+
+                  if (result === true) {
+                    return [2
+                    /*return*/
+                    , resolveRef.current(newFile)];
+                  }
+
+                  if (result === false) {
+                    return [2
+                    /*return*/
+                    , rejectRef.current(new Error('beforeUpload return false'))];
+                  }
+
+                  delete newFile[_upload.default.LIST_IGNORE];
+
+                  if (result === _upload.default.LIST_IGNORE) {
+                    Object.defineProperty(newFile, _upload.default.LIST_IGNORE, {
+                      value: true,
+                      configurable: true
+                    });
+                    return [2
+                    /*return*/
+                    , rejectRef.current(new Error('beforeUpload return LIST_IGNORE'))];
+                  }
+
+                  if (typeof result === 'object' && result !== null) {
+                    return [2
+                    /*return*/
+                    , resolveRef.current(result)];
+                  }
+
+                  return [2
+                  /*return*/
+                  ];
+              }
+            });
+          });
+        }, type, quality);
+        return [2
+        /*return*/
+        ];
+      });
+    });
+  }, [fillColor, quality, rotate]);
+
+  var getComponent = function (titleOfModal) {
+    return _react.default.createElement(_react.default.Fragment, null, uploadComponent, image && _react.default.createElement(_modal.default, __assign({
+      open: true,
+      wrapClassName: "".concat(PREFIX, "-modal ").concat(modalClassName || ''),
+      title: titleOfModal,
+      onOk: onOk,
+      onCancel: onCancel,
+      maskClosable: false,
+      destroyOnClose: true
+    }, modalProps), _react.default.createElement(EasyCrop$1, {
+      ref: easyCropRef,
+      cropperRef: ref,
+      image: image,
+      aspect: aspect,
+      shape: shape,
+      grid: grid,
+      zoom: zoom,
+      rotate: rotate,
+      minZoom: minZoom,
+      maxZoom: maxZoom,
+      cropperProps: cropperProps
+    })));
+  };
+
+  if (modalTitle) {
+    return getComponent(modalTitle);
+  }
+
+  return _react.default.createElement(_LocaleReceiver.default, null, function (locale, code) {
+    return getComponent(code === 'zh-cn' ? '编辑图片' : 'Edit image');
+  });
+});
+exports.default = ImgCrop;
+},{"react":"node_modules/react/index.js","antd/es/modal":"node_modules/antd/es/modal/index.js","antd/es/upload":"node_modules/antd/es/upload/index.js","antd/es/locale-provider/LocaleReceiver":"node_modules/antd/es/locale-provider/LocaleReceiver.js","antd/es/slider":"node_modules/antd/es/slider/index.js","react-easy-crop":"node_modules/react-easy-crop/index.module.js"}],"src/containers/UploadPopup.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _antd = require("antd");
+
+var _antdImgCrop = _interopRequireDefault(require("antd-img-crop"));
+
+var _react = _interopRequireWildcard(require("react"));
+
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var UploadModal = function UploadModal(props) {
+  return /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, /*#__PURE__*/_react.default.createElement(_antd.Modal, {
+    title: "Basic Modal",
+    open: props.open,
+    onOk: props.cancel,
+    onCancel: props.cancel,
+    centered: true,
+    footer: null
+  }));
+};
+
+var _default = UploadModal;
+exports.default = _default;
+},{"antd":"node_modules/antd/es/index.js","antd-img-crop":"node_modules/antd-img-crop/dist/antd-img-crop.esm.js","react":"node_modules/react/index.js"}],"src/containers/Chat.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -206178,6 +208964,8 @@ var messageActions = _interopRequireWildcard(require("../store/actions/messages"
 var _joinPopup = _interopRequireDefault(require("./joinPopup"));
 
 require("url-change-event");
+
+var _UploadPopup = _interopRequireDefault(require("./UploadPopup"));
 
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
@@ -206234,7 +209022,8 @@ var Chat = /*#__PURE__*/function (_React$Component) {
     _this = _super.call(this, props);
 
     _defineProperty(_assertThisInitialized(_this), "state", {
-      message: ''
+      message: '',
+      upload: false
     });
 
     _defineProperty(_assertThisInitialized(_this), "pathname", null);
@@ -206288,6 +209077,22 @@ var Chat = /*#__PURE__*/function (_React$Component) {
       _this.setState({
         flag: false,
         message: e.target.value
+      }, function () {
+        console.log('state is : ', this.state);
+      });
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "showModal", function (e) {
+      _this.setState({
+        upload: true
+      }, function () {
+        console.log('state is : ', this.state);
+      });
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "handleCancel", function () {
+      _this.setState({
+        upload: false
       }, function () {
         console.log('state is : ', this.state);
       });
@@ -206533,6 +209338,9 @@ var Chat = /*#__PURE__*/function (_React$Component) {
           close: function close() {
             return _this4.props.closeJoinChatPopup();
           }
+        }), /*#__PURE__*/_react.default.createElement(_UploadPopup.default, {
+          open: this.state.upload,
+          cancel: this.handleCancel
         }), /*#__PURE__*/_react.default.createElement(_sidepanel.default, null), /*#__PURE__*/_react.default.createElement("div", {
           className: "content"
         }, this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ? /*#__PURE__*/_react.default.createElement("div", {
@@ -206589,15 +209397,22 @@ var Chat = /*#__PURE__*/function (_React$Component) {
           className: "fa fa-paper-plane",
           "aria-hidden": "true"
         })), /*#__PURE__*/_react.default.createElement("button", {
-          id: "chat-message-attach"
+          id: "chat-message-attach",
+          onClick: this.showModal
         }, /*#__PURE__*/_react.default.createElement("i", {
           className: "fa fa-paperclip attachment",
           "aria-hidden": "true"
         })))))) : null) : null));
-      } else {
-        window.location.pathname = '/login';
-      } //else { return <Login />}     
-
+      } //else {
+      // console.log("to logout in chat")
+      // window.location.pathname = '/login'}
+      else {
+        {
+          console.log("in login page ");
+        }
+        window.history.pushState({}, '', '/login');
+        return /*#__PURE__*/_react.default.createElement(_Login.default, null);
+      }
     }
   }]);
 
@@ -206630,7 +209445,7 @@ var mapStateToProps = function mapStateToProps(state) {
 var _default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(Chat);
 
 exports.default = _default;
-},{"react":"node_modules/react/index.js","antd":"node_modules/antd/es/index.js","./sidepanel":"src/containers/sidepanel.js","../websocket":"src/websocket.js","./Login":"src/containers/Login.js","./Popup":"src/containers/Popup.js","react-redux":"node_modules/react-redux/es/index.js","axios":"node_modules/axios/index.js","./MemeberPopup":"src/containers/MemeberPopup.js","../store/actions/nav":"src/store/actions/nav.js","../store/actions/messages":"src/store/actions/messages.js","./joinPopup":"src/containers/joinPopup.js","url-change-event":"node_modules/url-change-event/dist/url-change-event.min.js"}],"src/containers/Register.js":[function(require,module,exports) {
+},{"react":"node_modules/react/index.js","antd":"node_modules/antd/es/index.js","./sidepanel":"src/containers/sidepanel.js","../websocket":"src/websocket.js","./Login":"src/containers/Login.js","./Popup":"src/containers/Popup.js","react-redux":"node_modules/react-redux/es/index.js","axios":"node_modules/axios/index.js","./MemeberPopup":"src/containers/MemeberPopup.js","../store/actions/nav":"src/store/actions/nav.js","../store/actions/messages":"src/store/actions/messages.js","./joinPopup":"src/containers/joinPopup.js","url-change-event":"node_modules/url-change-event/dist/url-change-event.min.js","./UploadPopup":"src/containers/UploadPopup.js"}],"src/containers/Register.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -212254,7 +215069,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "10110" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "13653" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
