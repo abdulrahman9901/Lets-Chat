@@ -206460,9 +206460,9 @@ var Chat = /*#__PURE__*/function (_React$Component) {
             key: message.id
           }, /*#__PURE__*/_react.default.createElement("li", {
             key: message.id,
-            class: "sys"
+            className: "sys"
           }, /*#__PURE__*/_react.default.createElement("p", {
-            class: "sys",
+            className: "sys",
             id: "193"
           }, message.content)));
         } else {
@@ -211968,7 +211968,8 @@ var authLogout = function authLogout(state, action) {
   return (0, _utility.updateObject)(state, {
     token: null,
     loading: false,
-    error: null
+    error: null,
+    username: null
   });
 };
 
@@ -212253,7 +212254,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "9835" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "10110" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

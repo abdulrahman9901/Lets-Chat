@@ -140,7 +140,7 @@ class Chat extends React.Component {
             if (message.system_message == true){
                 return(
                 <div key={message.id}>
-                <li key={message.id} class="sys"><p class="sys" id="193">{message.content}</p></li>
+                <li key={message.id} className="sys"><p className="sys" id="193">{message.content}</p></li>
                 </div>
                 )
             }else{
