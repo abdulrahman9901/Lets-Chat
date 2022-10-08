@@ -11,7 +11,6 @@ const AddMemeberForm = (props) => {
   const [value, setValue] = useState('Participant');
   /**https://github.com/pmndrs/react-three-fiber/issues/2134 */
 
-  // const { history } = useHistory();
 
   const navigate = useNavigate()
 

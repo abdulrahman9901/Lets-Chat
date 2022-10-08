@@ -139,13 +139,13 @@ class Chat extends React.Component {
         return messages.map(message => {
             if (message.system_message == true){
                 return(
-                <div>
-                <li class="sys"><p class="sys" id="193">{message.content}</p></li>
+                <div key={message.id}>
+                <li key={message.id} class="sys"><p class="sys" id="193">{message.content}</p></li>
                 </div>
                 )
             }else{
             return(
-            <div>
+            <div key={message.id}>
             <li key={message.id}  className={participants.includes(message.author) ? currentUser === message.author ? 'sent' :'replies' : 'replies out'}>
             {participantsCount > 1 ?
             <small id={message.id+'p'} className={participants.includes(message.author) ? currentUser === message.author ? 'sender' :'reciever' :'out'}>
@@ -358,7 +358,7 @@ class Chat extends React.Component {
               </div>        
             )}
         else {window.location.pathname = '/login'}
-        // else { return <Login />}     
+        //else { return <Login />}     
       
     }
 }

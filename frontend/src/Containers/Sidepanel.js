@@ -8,9 +8,9 @@ import * as messageActions from '../store/actions/messages'
 import Contact from "../Components/Contacts";
 
 class Sidepanel extends React.Component{
-  // state ={
-  //   chats:[],
-  // }
+  state ={
+    searchTerm:'',
+  }
 
 // getUserChats = (token,username) => {
 //   console.log('get chat on ')
@@ -57,6 +57,15 @@ componentDidMount(){
   }
 }
 
+searchBarHandler= e =>{
+  e.preventDefault();
+  this.setState({
+      searchTerm:e.target.value
+  },function () {
+      console.log('state is : ' ,this.state);
+  });
+}
+
 render(){
   console.log('at sidepanel',this.props)
   //console.log('at render',this.props.chats[0])
@@ -64,7 +73,16 @@ render(){
   let aciveChats;
   if (this.props.chats){
         console.log(" if chats")
-        aciveChats = this.props.chats.map(chat => {
+        aciveChats = this.props.chats.filter((chat => {
+          if (this.state.searchTerm == '')
+          {
+            return chat;
+          }
+          else if(chat.name.toLowerCase().includes(this.state.searchTerm.toLowerCase()))
+          {
+            return chat;
+          }
+        })).map(chat => {
         return <Contact 
         key={chat.id}
         chatURL={`/${chat.id}`}
@@ -94,7 +112,7 @@ render(){
         </div>
         <div id="search">
           <label htmlFor=""><i className="fa fa-search" aria-hidden="true"></i></label>
-          <input type="text" placeholder="Search contacts..." />
+          <input type="text" placeholder="Search chats..." onChange={this.searchBarHandler} onClick={e=>e.preventDefault()}/>
         </div>
         <div id="contacts">
           <ul>
