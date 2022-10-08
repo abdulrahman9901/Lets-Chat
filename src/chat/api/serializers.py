@@ -108,8 +108,9 @@ class ChatSerializer(serializers.ModelSerializer):
         async_to_sync(channel_layer.group_send)('chat_{}'.format(instance.id),{
              
                 'type': 'chat_message',
-                'message': 'new person added'
-            
+                'message':{
+                'command': 'chatsUpdate'     
+                }       
             })
         message = None
         participants = validated_data['participants']

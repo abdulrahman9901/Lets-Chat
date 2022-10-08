@@ -56,10 +56,10 @@ const AddMemeberForm = (props) => {
     axios.put(`http://127.0.0.1:8000/chat/${chatId}/update/`,content
         ).then(res=>{
             console.log(res.data)
-            message.success('Memebers were added successfully',5)
+            message.success('Memeber(s) were added successfully',5)
         }).catch(err =>{
             console.log(`error at create chat ${err}`)
-            message.error('something went wrong olease try again later...! ',5)
+            message.error('something went wrong please try again later...! ',5)
           });
   }
   const onFinish = (values) => {

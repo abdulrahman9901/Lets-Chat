@@ -42,6 +42,8 @@ export const getUserChats = (username, token) => {
         .get(`http://127.0.0.1:8000/chat/?username=${username}`)
         .then(res => {dispatch(getUserChatsSuccess(res.data))
             console.log('res.data at getUserChats ',res.data)
-        } );
+        } ).catch(err =>{
+            console.log('error at getUserChats ',err)
+        });
     };
     };

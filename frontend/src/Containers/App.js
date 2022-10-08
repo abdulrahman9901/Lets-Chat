@@ -17,6 +17,7 @@ class App extends React.Component {
         webSocketInstance.addCallbacks(
             this.props.setMessages.bind(this),
             this.props.addMessage.bind(this),
+            this.props.getChats.bind(this),
         )
     }
     render(){
@@ -50,7 +51,8 @@ const mapDispatchToProps=(dispatch)=>{
         closeAddMemeberPopup :()=>{dispatch(navActions.closeAddMemeberPopup())},
         closeJoinChatPopup :()=>{dispatch(navActions.closeJoinChatPopup())},
         addMessage :(message)=>{dispatch(messagesActions.addMessages(message))},
-        setMessages :(messages)=>{dispatch(messagesActions.setMessages(messages))}
+        setMessages :(messages)=>{dispatch(messagesActions.setMessages(messages))},
+        getChats :(username,token)=>{ dispatch(messagesActions.getUserChats(username,token)) }
     }
 }
 export default connect(mapStateToProps,mapDispatchToProps)(App);
