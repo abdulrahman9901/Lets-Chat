@@ -22,7 +22,7 @@ const onFinish = (values) => {
  // }
 };
 
-useEffect(() => {  
+useEffect(() => { 
   if(props.error)
     props.onReset()
   },[props]);

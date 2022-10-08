@@ -34,6 +34,16 @@ export const logout=()=>{
     localStorage.removeItem('token');
     localStorage.removeItem('expirationDate');
     localStorage.removeItem('username');
+    // localStorage.clear();
+    // sessionStorage.clear();
+
+    const cookies = document.cookie;
+    for (const myCookie of cookies.split(";")) {
+    const pos = myCookie.indexOf("=");
+    const name = pos > -1 ? myCookie.substr(0, pos) : myCookie;
+    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    }
+
     return{
         type:actionTypes.AUTH_LOGOUT,
     }
@@ -58,11 +68,12 @@ export const authLogin =(username,password)=>{
                 username:username,
                 password:password
             }
-        ).then(res=>{
+        ).then((res)=>{
             const token = res.data.key;
             const expirationDate = new Date(new Date().getTime() + 3600 *1000);
             localStorage.setItem('token',token);
             localStorage.setItem('expirationDate',expirationDate);
+            username = localStorage.getItem("username")
             dispatch(authSuccess(token,username));
             dispatch(checkAuthTimeout(3600));
         }).catch(err =>{

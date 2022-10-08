@@ -194963,6 +194963,12 @@ function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "functio
 
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
 var authStart = function authStart() {
   return {
     type: actionTypes.AUTH_START
@@ -195002,7 +195008,27 @@ exports.authReset = authReset;
 var logout = function logout() {
   localStorage.removeItem('token');
   localStorage.removeItem('expirationDate');
-  localStorage.removeItem('username');
+  localStorage.removeItem('username'); // localStorage.clear();
+  // sessionStorage.clear();
+
+  var cookies = document.cookie;
+
+  var _iterator = _createForOfIteratorHelper(cookies.split(";")),
+      _step;
+
+  try {
+    for (_iterator.s(); !(_step = _iterator.n()).done;) {
+      var myCookie = _step.value;
+      var pos = myCookie.indexOf("=");
+      var name = pos > -1 ? myCookie.substr(0, pos) : myCookie;
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    }
+  } catch (err) {
+    _iterator.e(err);
+  } finally {
+    _iterator.f();
+  }
+
   return {
     type: actionTypes.AUTH_LOGOUT
   };
@@ -195034,6 +195060,7 @@ var authLogin = function authLogin(username, password) {
       var expirationDate = new Date(new Date().getTime() + 3600 * 1000);
       localStorage.setItem('token', token);
       localStorage.setItem('expirationDate', expirationDate);
+      username = localStorage.getItem("username");
       dispatch(authSuccess(token, username));
       dispatch(checkAuthTimeout(3600));
     }).catch(function (err) {
@@ -204863,12 +204890,26 @@ var Sidepanel = /*#__PURE__*/function (_React$Component) {
 
     _this = _super.call.apply(_super, [this].concat(args));
 
+    _defineProperty(_assertThisInitialized(_this), "state", {
+      searchTerm: ''
+    });
+
     _defineProperty(_assertThisInitialized(_this), "openAddChatPopup", function () {
       _this.props.addChat();
     });
 
     _defineProperty(_assertThisInitialized(_this), "openJoinChatPopup", function () {
       _this.props.joinChat();
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "searchBarHandler", function (e) {
+      e.preventDefault();
+
+      _this.setState({
+        searchTerm: e.target.value
+      }, function () {
+        console.log('state is : ', this.state);
+      });
     });
 
     return _this;
@@ -204909,7 +204950,13 @@ var Sidepanel = /*#__PURE__*/function (_React$Component) {
 
       if (this.props.chats) {
         console.log(" if chats");
-        aciveChats = this.props.chats.map(function (chat) {
+        aciveChats = this.props.chats.filter(function (chat) {
+          if (_this2.state.searchTerm == '') {
+            return chat;
+          } else if (chat.name.toLowerCase().includes(_this2.state.searchTerm.toLowerCase())) {
+            return chat;
+          }
+        }).map(function (chat) {
           return /*#__PURE__*/_react.default.createElement(_Contacts.default, {
             key: chat.id,
             chatURL: "/".concat(chat.id),
@@ -204951,7 +204998,11 @@ var Sidepanel = /*#__PURE__*/function (_React$Component) {
         "aria-hidden": "true"
       })), /*#__PURE__*/_react.default.createElement("input", {
         type: "text",
-        placeholder: "Search contacts..."
+        placeholder: "Search chats...",
+        onChange: this.searchBarHandler,
+        onClick: function onClick(e) {
+          return e.preventDefault();
+        }
       })), /*#__PURE__*/_react.default.createElement("div", {
         id: "contacts"
       }, /*#__PURE__*/_react.default.createElement("ul", null, aciveChats)), /*#__PURE__*/_react.default.createElement("div", {
@@ -205662,7 +205713,6 @@ var AddMemeberForm = function AddMemeberForm(props) {
       value = _useState4[0],
       setValue = _useState4[1];
   /**https://github.com/pmndrs/react-three-fiber/issues/2134 */
-  // const { history } = useHistory();
 
 
   var navigate = (0, _reactRouterDom.useNavigate)();
@@ -206406,14 +206456,19 @@ var Chat = /*#__PURE__*/function (_React$Component) {
       })).values());
       return messages.map(function (message) {
         if (message.system_message == true) {
-          return /*#__PURE__*/_react.default.createElement("div", null, /*#__PURE__*/_react.default.createElement("li", {
+          return /*#__PURE__*/_react.default.createElement("div", {
+            key: message.id
+          }, /*#__PURE__*/_react.default.createElement("li", {
+            key: message.id,
             class: "sys"
           }, /*#__PURE__*/_react.default.createElement("p", {
             class: "sys",
             id: "193"
           }, message.content)));
         } else {
-          return /*#__PURE__*/_react.default.createElement("div", null, /*#__PURE__*/_react.default.createElement("li", {
+          return /*#__PURE__*/_react.default.createElement("div", {
+            key: message.id
+          }, /*#__PURE__*/_react.default.createElement("li", {
             key: message.id,
             className: participants.includes(message.author) ? currentUser === message.author ? 'sent' : 'replies' : 'replies out'
           }, participantsCount > 1 ? /*#__PURE__*/_react.default.createElement("small", {
@@ -206541,7 +206596,7 @@ var Chat = /*#__PURE__*/function (_React$Component) {
         })))))) : null) : null));
       } else {
         window.location.pathname = '/login';
-      } // else { return <Login />}     
+      } //else { return <Login />}     
 
     }
   }]);
