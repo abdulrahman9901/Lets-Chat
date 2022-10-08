@@ -32,7 +32,7 @@ class WebSocketService{
         }))
         this.socketRef.onmessage=(e)=>{
             this.socketNewMessage(e.data)
-            console.log('Message from server ', e.data);
+            console.log('Message from server json : ', JSON.parse(e.data).command);
         }
         this.socketRef.onerror=(e)=>{
             console.log(e.message);
@@ -45,7 +45,7 @@ class WebSocketService{
     socketNewMessage(data){
         const parsedData=JSON.parse(data)
         const command=parsedData.command
-
+        console.log("command :=> " , command)
         if(Object.keys(this.callbacks).length === 0){
             return;
         }
@@ -54,7 +54,11 @@ class WebSocketService{
         }
         if(command === 'new_message'){
             this.callbacks[command](parsedData.message)
-    }
+        }
+        if(command === 'chatsUpdate'){
+            console.log('chatUpdates',localStorage.getItem("username"),localStorage.getItem("token"))
+            this.callbacks[command](localStorage.getItem("username"),localStorage.getItem("token"))
+        }
 }
     fetchMessages(username,chatId){
         this.sendMessage({ command:"load_messages",username:username,chatId:chatId})
@@ -62,10 +66,10 @@ class WebSocketService{
     newChatMessage(message){
         this.sendMessage({ command:"new_message",from:message.from , message:message.content , chatId:message.chatId})
     }
-    addCallbacks(messageCallback,newMessageCallback){
+    addCallbacks(messageCallback,newMessageCallback,updateChats){
         this.callbacks['messages']=messageCallback
         this.callbacks['new_message']=newMessageCallback
-
+        this.callbacks['chatsUpdate']=updateChats
     }
     sendMessage(data){
         try{

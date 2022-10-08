@@ -197782,6 +197782,8 @@ var getUserChats = function getUserChats(username, token) {
     _axios.default.get("http://127.0.0.1:8000/chat/?username=".concat(username)).then(function (res) {
       dispatch(getUserChatsSuccess(res.data));
       console.log('res.data at getUserChats ', res.data);
+    }).catch(function (err) {
+      console.log('error at getUserChats ', err);
     });
   };
 };
@@ -205059,7 +205061,7 @@ var WebSocketService = /*#__PURE__*/function () {
       this.socketRef.onmessage = function (e) {
         _this.socketNewMessage(e.data);
 
-        console.log('Message from server ', e.data);
+        console.log('Message from server json : ', JSON.parse(e.data).command);
       };
 
       this.socketRef.onerror = function (e) {
@@ -205077,6 +205079,7 @@ var WebSocketService = /*#__PURE__*/function () {
     value: function socketNewMessage(data) {
       var parsedData = JSON.parse(data);
       var command = parsedData.command;
+      console.log("command :=> ", command);
 
       if (Object.keys(this.callbacks).length === 0) {
         return;
@@ -205088,6 +205091,11 @@ var WebSocketService = /*#__PURE__*/function () {
 
       if (command === 'new_message') {
         this.callbacks[command](parsedData.message);
+      }
+
+      if (command === 'chatsUpdate') {
+        console.log('chatUpdates', localStorage.getItem("username"), localStorage.getItem("token"));
+        this.callbacks[command](localStorage.getItem("username"), localStorage.getItem("token"));
       }
     }
   }, {
@@ -205111,9 +205119,10 @@ var WebSocketService = /*#__PURE__*/function () {
     }
   }, {
     key: "addCallbacks",
-    value: function addCallbacks(messageCallback, newMessageCallback) {
+    value: function addCallbacks(messageCallback, newMessageCallback, updateChats) {
       this.callbacks['messages'] = messageCallback;
       this.callbacks['new_message'] = newMessageCallback;
+      this.callbacks['chatsUpdate'] = updateChats;
     }
   }, {
     key: "sendMessage",
@@ -205696,11 +205705,11 @@ var AddMemeberForm = function AddMemeberForm(props) {
     _axios.default.put("http://127.0.0.1:8000/chat/".concat(chatId, "/update/"), content).then(function (res) {
       console.log(res.data);
 
-      _antd.message.success('Memebers were added successfully', 5);
+      _antd.message.success('Memeber(s) were added successfully', 5);
     }).catch(function (err) {
       console.log("error at create chat ".concat(err));
 
-      _antd.message.error('something went wrong olease try again later...! ', 5);
+      _antd.message.error('something went wrong please try again later...! ', 5);
     });
   };
 
@@ -205940,7 +205949,7 @@ var JoinChatForm = function JoinChatForm(props) {
     }).then(function (res) {
       console.log(res.data.data.id);
 
-      _antd.message.success('Chat created successfully', 5);
+      _antd.message.success('You has joined the Chat successfully', 5);
 
       props.getuserChats(props.username, props.token);
 
@@ -205950,7 +205959,7 @@ var JoinChatForm = function JoinChatForm(props) {
     }).catch(function (err) {
       console.log("error at create chat ".concat(err));
 
-      _antd.message.error('something went wrong olease try again later...! ', 5);
+      _antd.message.error('something went wrong please try again later...! ', 5);
     });
   };
 
@@ -206882,7 +206891,7 @@ var App = /*#__PURE__*/function (_React$Component) {
 
     _this = _super.call(this, props);
 
-    _websocket.default.addCallbacks(_this.props.setMessages.bind(_assertThisInitialized(_this)), _this.props.addMessage.bind(_assertThisInitialized(_this)));
+    _websocket.default.addCallbacks(_this.props.setMessages.bind(_assertThisInitialized(_this)), _this.props.addMessage.bind(_assertThisInitialized(_this)), _this.props.getChats.bind(_assertThisInitialized(_this)));
 
     return _this;
   }
@@ -206947,6 +206956,9 @@ var mapDispatchToProps = function mapDispatchToProps(dispatch) {
     },
     setMessages: function setMessages(messages) {
       dispatch(messagesActions.setMessages(messages));
+    },
+    getChats: function getChats(username, token) {
+      dispatch(messagesActions.getUserChats(username, token));
     }
   };
 };
@@ -212186,7 +212198,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "1600" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "9835" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

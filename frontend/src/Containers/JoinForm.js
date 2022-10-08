@@ -39,13 +39,13 @@ const JoinChatForm = (props) => {
             }
         ).then(res=>{
             console.log(res.data.data.id)
-            message.success('Chat created successfully',5)
+            message.success('You has joined the Chat successfully',5)
             props.getuserChats(props.username,props.token)
             webSocketInstance.fetchMessages(props.username,res.data.data.id);
             navigate(`/${res.data.data.id}`)
         }).catch(err =>{
             console.log(`error at create chat ${err}`)
-            message.error('something went wrong olease try again later...! ',5)
+            message.error('something went wrong please try again later...! ',5)
           });
   }
   const onFinish = (values) => {
