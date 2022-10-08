@@ -30,7 +30,7 @@ useEffect(() => {
 return (
   
   <Spin spinning={props.loading}>
-    {localStorage.getItem('token') !== null ? message.success("Logged in Successfully ",1.5,navigate(`/`)): null}  
+    {localStorage.getItem('token') != null ? message.success("Logged in Successfully ",1.5,navigate(`/`)): null}  
     {props.error? message.error("Something went wrong please try again... ",5) && navigate('/login'): null}
           <Form
     name="normal_login"

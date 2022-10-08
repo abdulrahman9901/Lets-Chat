@@ -77,7 +77,7 @@ import React from 'react';
 
     return (
       <Spin spinning={props.loading}>
-      {localStorage.getItem('token') !== null ?message.success("Registration done Successfully and you automatically logged in",3,navigate(`/`)): null}  
+      {localStorage.getItem('token') != null ?message.success("Registration done Successfully and you automatically logged in",3,navigate(`/`)): null}  
       {props.error ? message.error("Something went wrong please try again... ",5) && console.log('error at register is : ',props.error) && props.onReset() : null}
       <Form
         {...formItemLayout}

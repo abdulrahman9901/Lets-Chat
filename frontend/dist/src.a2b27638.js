@@ -205342,7 +205342,7 @@ var Login = function Login(props) {
   }, [props]);
   return /*#__PURE__*/_react.default.createElement(_antd.Spin, {
     spinning: props.loading
-  }, localStorage.getItem('token') !== null ? _antd.message.success("Logged in Successfully ", 1.5, navigate("/")) : null, props.error ? _antd.message.error("Something went wrong please try again... ", 5) && navigate('/login') : null, /*#__PURE__*/_react.default.createElement(_antd.Form, {
+  }, localStorage.getItem('token') != null ? _antd.message.success("Logged in Successfully ", 1.5, navigate("/")) : null, props.error ? _antd.message.error("Something went wrong please try again... ", 5) && navigate('/login') : null, /*#__PURE__*/_react.default.createElement(_antd.Form, {
     name: "normal_login",
     form: form,
     className: "login-form",
@@ -206728,7 +206728,7 @@ var Register = function Register(props) {
 
   return /*#__PURE__*/_react.default.createElement(_antd.Spin, {
     spinning: props.loading
-  }, localStorage.getItem('token') !== null ? _antd.message.success("Registration done Successfully and you automatically logged in", 3, navigate("/")) : null, props.error ? _antd.message.error("Something went wrong please try again... ", 5) && console.log('error at register is : ', props.error) && props.onReset() : null, /*#__PURE__*/_react.default.createElement(_antd.Form, _extends({}, formItemLayout, {
+  }, localStorage.getItem('token') != null ? _antd.message.success("Registration done Successfully and you automatically logged in", 3, navigate("/")) : null, props.error ? _antd.message.error("Something went wrong please try again... ", 5) && console.log('error at register is : ', props.error) && props.onReset() : null, /*#__PURE__*/_react.default.createElement(_antd.Form, _extends({}, formItemLayout, {
     className: "reg_form",
     form: form,
     name: "register",
