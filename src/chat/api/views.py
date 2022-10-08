@@ -95,3 +95,8 @@ class joinChatView(APIView):
                 }       
             })
             return Response({"status": "success", "data": schat.data}, status=status.HTTP_200_OK)
+
+class uploadimageView(APIView):
+    def post(self, request):
+        print(request.data)     
+        return Response({"status": "success", "data": request.data}, status=status.HTTP_200_OK)
