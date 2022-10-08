@@ -37,7 +37,8 @@ const authLogout =(state,action)=>{
     return updateObject(state,{
         token:null,
         loading:false,
-        error :null
+        error :null,
+        username:null,
     })
 }
 
