@@ -19,7 +19,8 @@
   "dependencies": {
     "@react-three/fiber": "^8.0.0-beta.3",
     "@reduxjs/toolkit": "^1.8.5",
-    "antd": "^4.23.2",
+    "antd": "^4.23.4",
+    "antd-img-crop": "^4.2.5",
     "axios": "^0.27.2",
     "history": "^5.3.0",
     "prop-types": "^15.8.1",

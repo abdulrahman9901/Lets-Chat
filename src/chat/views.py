@@ -8,12 +8,12 @@ from .models import Chat ,CustomUser ,Contact
 def index(request):
     return render(request, 'chat/index.html')
 
-@login_required 
-def room(request, room_name):
-    return render(request, 'chat/room.html', {
-        'room_name_json': mark_safe(json.dumps(room_name)),
-        'username': mark_safe(json.dumps(request.user.username)),
-    })
+# @login_required 
+# def room(request, room_name):
+#     return render(request, 'chat/room.html', {
+#         'room_name_json': mark_safe(json.dumps(room_name)),
+#         'username': mark_safe(json.dumps(request.user.username)),
+#     })
 
 # https://stackoverflow.com/questions/13423022/django-str-object-has-no-attribute-user
 def load_last_messages(chatId):
