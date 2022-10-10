@@ -1,3 +1,4 @@
+
 from rest_framework import permissions
 from rest_framework.generics import (
     ListAPIView,
@@ -98,5 +99,10 @@ class joinChatView(APIView):
 
 class uploadimageView(APIView):
     def post(self, request):
-        print(request.data)     
-        return Response({"status": "success", "data": request.data}, status=status.HTTP_200_OK)
+        print(type(request.data['images'].file))   
+        print(request.data['images'].file)
+        username = get_user_contact("imagetest")
+        message = Message.objects.create(contact=username,content='image .',image=request.data['images'],system_message=True)
+        # for image in request.data['images']: 
+        #     print(image)     
+        return Response({"status": "success", "data": "image"}, status=status.HTTP_200_OK)

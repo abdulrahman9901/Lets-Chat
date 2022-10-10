@@ -299,7 +299,7 @@ class Chat extends React.Component {
                 isVisible={this.props.showJoinChatPopup}
                 close={() => this.props.closeJoinChatPopup()}
                 />
-                <UploadModal open={this.state.upload} cancel={this.handleCancel}/>
+                <UploadModal token={this.props.token} open={this.state.upload} cancel={this.handleCancel}/>
                 <Sidepanel />
                 <div className="content">
                 {this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?
@@ -380,7 +380,7 @@ class Chat extends React.Component {
             // window.location.pathname = '/login'}
         else {
             {console.log("in login page ")}
-            window.history.pushState({}, '', '/login');
+            // window.history.pushState({}, '', '/login');
             return <Login />
         }     
       

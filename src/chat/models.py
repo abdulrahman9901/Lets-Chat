@@ -5,6 +5,7 @@ from django.db import models
 #from django.contrib.auth import get_user_model
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+
 # Create your models here.
 
 # https://stackoverflow.com/questions/26914022/auth-user-model-refers-to-model-that-has-not-been-installed
@@ -35,6 +36,7 @@ class Message(models.Model):
     content=models.TextField(null=False,max_length=200)
     created_at=models.DateTimeField(auto_now_add=True)
     system_message = models.BooleanField(default=False)
+    image = models.ImageField(upload_to='uploads/',null=True)
     def __str__(self):
         return self.contact.user.username
 
