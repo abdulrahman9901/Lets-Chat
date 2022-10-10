@@ -11,8 +11,8 @@ const UploadModal = (props) => {
   const handleUpload = () => {
       const formData = new FormData();
       console.log("raw data " , fileList)
-      fileList.forEach((file) => {
-        formData.append('images', file);
+      fileList.forEach((file,index) => {
+        formData.append(`image_${index}`, file);
       });
       formData.append('username', props.username);
       formData.append('chatid', props.chatid);
