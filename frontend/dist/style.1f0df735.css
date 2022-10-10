@@ -27169,7 +27169,8 @@ body {
     background: #e6eaea;
     font-size: 1em !important;
     display: inline;
-    margin-left: 64%;
+    /* margin-left: 64%; */
+    margin-left: 58% ;
     }
 
   #frame .content .messages ul li.replies {
@@ -27469,6 +27470,12 @@ background-color: #9BA5D9 !important;
 }
 .imgout {
   background-color: #808080 !important;
+}
+.imagesent {
+  margin-left: 21% !important;
+}
+.imagercv {
+  margin-left: 57% !important;
 }
 
 /*# sourceMappingURL=/style.1f0df735.css.map */
