@@ -27455,5 +27455,20 @@ li.sys {
   width: 100% !important;
   text-align: center;
 }
+.messageImage {
+width: 300px !important;
+height: 300px;
+border-radius: 50px !important;
+padding: 10px;
+}
+.imgsent {
+background-color: #9BA5D9 !important;
+}
+.imgrecv {
+  background-color: #DC153C !important;
+}
+.imgout {
+  background-color: #808080 !important;
+}
 
 /*# sourceMappingURL=/style.1f0df735.css.map */

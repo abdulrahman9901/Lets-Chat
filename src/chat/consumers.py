@@ -17,7 +17,8 @@ class ChatConsumer(WebsocketConsumer):
             'author':message.contact.user.username,
             'content':message.content,
             'timestamp':str(message.created_at),
-            'system_message':message.system_message
+            'system_message':message.system_message,
+            "image" : str(message.image)
         }
 
     def messages_to_json(self,messages):

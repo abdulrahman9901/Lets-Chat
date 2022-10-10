@@ -16,6 +16,17 @@ from channels.layers import get_channel_layer
 from django.shortcuts import get_object_or_404
 from asgiref.sync import async_to_sync
 
+import json
+from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models.fields.files import ImageFieldFile
+
+class ExtendedEncoder(DjangoJSONEncoder):
+    def default(self, o):
+        if isinstance(o, ImageFieldFile):
+            return str(o)
+        else:
+            return super().default(o)
+
 def get_user_contact(username):
     user = get_object_or_404(CustomUser,username=username)
     try :
@@ -36,7 +47,8 @@ def send_socket_message(instance,message):
                     'author':message.contact.user.username,
                     'content':message.content,
                     'timestamp':str(message.created_at),
-                    'system_message':message.system_message    
+                    'system_message':message.system_message ,
+                    "image" : str(message.image)
                     }
                 }       
                 })
@@ -100,9 +112,15 @@ class joinChatView(APIView):
 class uploadimageView(APIView):
     def post(self, request):
         print(type(request.data['images'].file))   
-        print(request.data['images'].file)
-        username = get_user_contact("imagetest")
-        message = Message.objects.create(contact=username,content='image .',image=request.data['images'],system_message=True)
+        print(request.data)
+ 
+        chat = get_object_or_404(Chat,id=request.data["chatid"])
+        username = get_user_contact(request.data['username'])
+
+        message = Message.objects.create(contact=username,content=None,image=request.data['images'],system_message=False)
+        chat.messages.add(message)
+        chat.save()
+        send_socket_message(chat,message)
         # for image in request.data['images']: 
         #     print(image)     
         return Response({"status": "success", "data": "image"}, status=status.HTTP_200_OK)
