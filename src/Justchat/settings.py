@@ -204,3 +204,7 @@ CSRF_COOKIE_NAME = 'XSRF-TOKEN'
 
 CSRF_HEADER_NAME = 'HTTP_X_XSRF_TOKEN'
 
+MEDIA_URL = '/media/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
