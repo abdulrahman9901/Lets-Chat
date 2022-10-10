@@ -6,3 +6,4 @@ node_modules
 static
 Documentation site
 media
+db.sqlite
