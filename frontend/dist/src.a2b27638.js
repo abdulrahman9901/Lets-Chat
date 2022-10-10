@@ -209448,7 +209448,7 @@ var Chat = /*#__PURE__*/function (_React$Component) {
             id: message.id
           }, message.content), /*#__PURE__*/_react.default.createElement("br", null), /*#__PURE__*/_react.default.createElement("small", {
             id: message.id + 's',
-            className: currentUser === message.author ? 'sent' : 'replies',
+            className: currentUser === message.author ? "sent ".concat(message.content === null ? 'imagesent' : null) : "replies ".concat(message.content === null ? 'imagercv' : null),
             style: {
               visibility: "hidden"
             }

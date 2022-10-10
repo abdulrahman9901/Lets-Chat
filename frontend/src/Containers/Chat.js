@@ -166,7 +166,7 @@ class Chat extends React.Component {
                 : <p onClick={(e) => this.changeVisibility(e,message.timestamp)} id={message.id}>{message.content}</p>
                 }
              <br/>
-                <small id={message.id+'s'} className={currentUser === message.author ? 'sent' :'replies'} style={{visibility:"hidden"}}>
+                <small id={message.id+'s'} className={currentUser === message.author ? `sent ${message.content === null ? 'imagesent' : null}` :`replies ${message.content === null ? 'imagercv' :null}`} style={{visibility:"hidden"}}>
                     {   
                         this.timestampDisplay(message.timestamp)
                     }
