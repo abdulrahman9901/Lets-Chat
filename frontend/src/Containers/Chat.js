@@ -143,12 +143,12 @@ class Chat extends React.Component {
                 <div key={message.id}>
                 <li key={message.id} className="sys"><p className="sys" id="193">{message.content}</p></li>
                 </div>
-                )
+                )                
             }else{
             return(
             <div key={message.id}>
             <li key={message.id}  className={participants.includes(message.author) ? currentUser === message.author ? 'sent' :'replies' : 'replies out'}>
-            {participantsCount > 1 ?
+            {participantsCount >= 0 ?
             <small id={message.id+'p'} className={participants.includes(message.author) ? currentUser === message.author ? 'sender' :'reciever' :'out'}>
                     {   
                         message.author
@@ -159,8 +159,12 @@ class Chat extends React.Component {
             
             {/* <img src="http://emilcarlsson.se/assets/mikeross.png" alt="" /> */}
             <img src={`https://img.icons8.com/glyph-neue/128/${participants.includes(message.author)? currentUser === message.author ? '00008B' :'DC143C':'808080'}/user-male-circle.png`}/>
-            <p onClick={(e) => this.changeVisibility(e,message.timestamp)} id={message.id}>{message.content}
-             </p>
+                {
+                message.content === null ?
+                // "image has been uploaded to the chat"
+                  <img src={`http://127.0.0.1:8000/media/`.concat(message.image)} onClick={(e) => this.changeVisibility(e,message.timestamp)} id={message.id} className={`messageImage  ${participants.includes(message.author)? currentUser === message.author ? 'imgsent' :'imgrecv' :'imgout'}`} alt="" />
+                : <p onClick={(e) => this.changeVisibility(e,message.timestamp)} id={message.id}>{message.content}</p>
+                }
              <br/>
                 <small id={message.id+'s'} className={currentUser === message.author ? 'sent' :'replies'} style={{visibility:"hidden"}}>
                     {   
@@ -299,7 +303,7 @@ class Chat extends React.Component {
                 isVisible={this.props.showJoinChatPopup}
                 close={() => this.props.closeJoinChatPopup()}
                 />
-                <UploadModal token={this.props.token} open={this.state.upload} cancel={this.handleCancel}/>
+                <UploadModal  chatid ={window.location.pathname.slice(1)}  username={this.props.currentUser} token={this.props.token} open={this.state.upload} cancel={this.handleCancel}/>
                 <Sidepanel />
                 <div className="content">
                 {this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?

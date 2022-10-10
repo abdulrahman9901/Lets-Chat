@@ -33,7 +33,7 @@ class Contact(models.Model):
 
 class Message(models.Model):
     contact=models.ForeignKey(Contact,on_delete=models.CASCADE,related_name="auther_messages")
-    content=models.TextField(null=False,max_length=200)
+    content=models.TextField(null=True,max_length=200)
     created_at=models.DateTimeField(auto_now_add=True)
     system_message = models.BooleanField(default=False)
     image = models.ImageField(upload_to='uploads/',null=True)

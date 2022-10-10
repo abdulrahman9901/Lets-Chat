@@ -204928,7 +204928,7 @@ var Contact = function Contact(props) {
     className: "meta"
   }, /*#__PURE__*/_react.default.createElement("p", {
     className: "name"
-  }, props.name), /*#__PURE__*/_react.default.createElement("p", null, " You and ", props.members.length > 2 ? "".concat(props.members.length - 1, " others") : props.members[1], props.members.length > 2 ? /*#__PURE__*/_react.default.createElement(_antd.Dropdown, {
+  }, props.name), /*#__PURE__*/_react.default.createElement("p", null, " You ", props.members.length > 2 ? "and ".concat(props.members.length - 1, " others") : props.members.length > 1 ? "and ".concat(props.members[1]) : 'only', props.members.length > 2 ? /*#__PURE__*/_react.default.createElement(_antd.Dropdown, {
     overlay: /*#__PURE__*/_react.default.createElement(_antd.Menu, {
       theme: "dark",
       items: props.members.map(function (m, indx) {
@@ -205263,7 +205263,7 @@ var WebSocketService = /*#__PURE__*/function () {
       }
 
       if (command === 'messages') {
-        this.callbacks[command]([parsedData.messages, parsedData.participants, parsedData.name, parsedData.admins, parsedData.system_message]);
+        this.callbacks[command]([parsedData.messages, parsedData.participants, parsedData.name, parsedData.admins, parsedData.system_message, parsedData.image]);
       }
 
       if (command === 'new_message') {
@@ -208967,6 +208967,8 @@ var UploadModal = function UploadModal(props) {
     fileList.forEach(function (file) {
       formData.append('images', file);
     });
+    formData.append('username', props.username);
+    formData.append('chatid', props.chatid);
     console.log("uploaded files are :- ", formData);
     setUploading(true); // You can use any AJAX library you like
 
@@ -209423,12 +209425,23 @@ var Chat = /*#__PURE__*/function (_React$Component) {
           }, /*#__PURE__*/_react.default.createElement("li", {
             key: message.id,
             className: participants.includes(message.author) ? currentUser === message.author ? 'sent' : 'replies' : 'replies out'
-          }, participantsCount > 1 ? /*#__PURE__*/_react.default.createElement("small", {
+          }, participantsCount >= 0 ? /*#__PURE__*/_react.default.createElement("small", {
             id: message.id + 'p',
             className: participants.includes(message.author) ? currentUser === message.author ? 'sender' : 'reciever' : 'out'
           }, message.author) : null, /*#__PURE__*/_react.default.createElement("br", null), /*#__PURE__*/_react.default.createElement("img", {
             src: "https://img.icons8.com/glyph-neue/128/".concat(participants.includes(message.author) ? currentUser === message.author ? '00008B' : 'DC143C' : '808080', "/user-male-circle.png")
-          }), /*#__PURE__*/_react.default.createElement("p", {
+          }), message.content === null ?
+          /*#__PURE__*/
+          // "image has been uploaded to the chat"
+          _react.default.createElement("img", {
+            src: "http://127.0.0.1:8000/media/".concat(message.image),
+            onClick: function onClick(e) {
+              return _this3.changeVisibility(e, message.timestamp);
+            },
+            id: message.id,
+            className: "messageImage  ".concat(participants.includes(message.author) ? currentUser === message.author ? 'imgsent' : 'imgrecv' : 'imgout'),
+            alt: ""
+          }) : /*#__PURE__*/_react.default.createElement("p", {
             onClick: function onClick(e) {
               return _this3.changeVisibility(e, message.timestamp);
             },
@@ -209486,6 +209499,8 @@ var Chat = /*#__PURE__*/function (_React$Component) {
             return _this4.props.closeJoinChatPopup();
           }
         }), /*#__PURE__*/_react.default.createElement(_UploadPopup.default, {
+          chatid: window.location.pathname.slice(1),
+          username: this.props.currentUser,
           token: this.props.token,
           open: this.state.upload,
           cancel: this.handleCancel

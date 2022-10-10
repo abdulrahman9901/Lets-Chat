@@ -14,6 +14,8 @@ const UploadModal = (props) => {
       fileList.forEach((file) => {
         formData.append('images', file);
       });
+      formData.append('username', props.username);
+      formData.append('chatid', props.chatid);
       console.log("uploaded files are :- ",formData)
       setUploading(true); // You can use any AJAX library you like
       
