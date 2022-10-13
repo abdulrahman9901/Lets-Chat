@@ -17,16 +17,24 @@ class Chat extends React.Component {
 
     state={
         message:'',
-        upload:false
+        upload:false,
+        messageLoad:false,
+        msgCount:50,
     }
 
     initializeChat(){
         console.log('==============> initializeChat <=============')
+        this.setState({ 
+            msgCount: 50 ,
+            messageLoad:false
+        },function () {
+            console.log("new msgCount ",this.state.msgCount)
+        })
         const chatId =window.location.pathname.slice(1);
         console.log('==============>match',chatId)
         if(chatId!='' && Number.isInteger(parseInt(chatId))){
         this.waitForSocketConnection(()=>{
-            webSocketInstance.fetchMessages(this.props.currentUser,chatId);
+            webSocketInstance.fetchMessages(this.props.currentUser,chatId,50);
         });
             webSocketInstance.connect(chatId);
         }
@@ -46,6 +54,7 @@ class Chat extends React.Component {
         }
         // https://stackoverflow.com/a/68371679
         window.addEventListener("click",CheckUrlChange);
+
         //window.addEventListener('urlchangeevent',CheckUrlChange);
         // var pushState = window.history.pushState;
         // window.history.pushState = function(state) {
@@ -57,6 +66,15 @@ class Chat extends React.Component {
     }
 
     componentWillReceiveProps(newProps){
+        // const loadMoreMsgs = ()=>{
+        //     this.setState((prevState) => ({ 
+        //         msgCount: prevState.msgCount + 10 ,
+        //         messageLoad:true
+        //      }),function () {
+        //         console.log("new msgCount =======>>>>>>",this.state)
+        //         webSocketInstance.fetchMessages(this.props.currentUser,window.location.pathname.slice(1),this.state.msgCount);
+        //     })
+        //   };
         console.log('newProps',newProps.messages,'Props',this.props.messages)
         console.log('componentWillReceiveProps')
         this.props.getChats()
@@ -64,6 +82,31 @@ class Chat extends React.Component {
             if (newProps.messages.length == 1 && newProps.messages[0].system_message)
                 this.pathname = location.pathname;
         }
+    // try {
+    //     document.getElementById("messagesWindow").addEventListener("scroll",function() {
+    //         console.log(document.getElementById("messagesWindow").scrollTop); 
+    //         if(document.getElementById("messagesWindow").scrollTop >= 100 && document.getElementById("messagesWindow").scrollTop <= 110){
+    //             //document.getElementById("messagesWindow").scrollTop = 100
+    //             console.log("load more messages !! ")
+    //             loadMoreMsgs();
+    //         }
+    //     })
+    //     }catch(error){
+    //         console.log(error)
+    //     }
+    
+        // if(this.state.messageLoad === false)
+        // {  
+             console.log("scroll down did update")
+            this.scrollToBottom();
+        // }
+        // else {
+            // this.setState({ 
+            //     messageLoad:false
+            //  },function () {
+            //     console.log("new msgCount ",this.state.messageLoad)
+            // })
+        //}
     }
 
     messagesEndRef = React.createRef()
@@ -75,14 +118,33 @@ class Chat extends React.Component {
       }
       
       componentDidMount() {
+        // if(this.state.messageLoad === false)
+        // {   console.log("scroll down did mount")
+        //     this.scrollToBottom();}
+        // else {
+        //     this.setState({ 
+        //         messageLoad:false
+        //      },function () {
+        //         console.log("new msgCount ",this.state.messageLoad)
+        //     })
+        // }
         this.scrollToBottom();
         this.submitOnEnter();
       }
       
       componentDidUpdate() {
-        this.scrollToBottom();
+        if(this.state.messageLoad === false)
+        {   console.log("scroll down did update",this.state)
+            this.scrollToBottom();
+        }
+        else {
+            this.setState({ 
+                messageLoad:false
+             },function () {
+                console.log("new msgCount ",this.state.messageLoad)
+            })
+        }
         this.submitOnEnter();
-        // console.log(this.pathname)
     }
     timestampDisplay(timestamp){
         let prefix = "";
@@ -158,7 +220,7 @@ class Chat extends React.Component {
                 <br />
             
             {/* <img src="http://emilcarlsson.se/assets/mikeross.png" alt="" /> */}
-            <img src={`https://img.icons8.com/glyph-neue/128/${participants.includes(message.author)? currentUser === message.author ? '00008B' :'DC143C':'808080'}/user-male-circle.png`}/>
+            <img src={`https://img.icons8.com/glyph-neue/128/${participants.includes(message.author)? currentUser === message.author ? '213541' :'8A724E':'808080'}/user-male-circle.png`}/>
                 {
                 message.content === null ?
                 // "image has been uploaded to the chat"
@@ -201,7 +263,7 @@ class Chat extends React.Component {
         }
         console.log('obj',messageObject);
         webSocketInstance.newChatMessage(messageObject);
-        webSocketInstance.fetchMessages(this.props.currentUser,window.location.pathname.slice(1));
+        webSocketInstance.fetchMessages(this.props.currentUser,window.location.pathname.slice(1),this.state.msgCount);
         this.setState({
             message:'',
             flag:true
@@ -312,22 +374,22 @@ class Chat extends React.Component {
                     <p> {this.props.name ? this.props.name : window.location.pathname.slice(1) ? `Chat # ${window.location.pathname.slice(1)}`:null} </p>
                     {this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?   <div className="social-media">
                     {this.props.admins && this.props.admins.includes(this.props.currentUser) ? 
-                        <Button type="primary" onClick={(e)=>{e.preventDefault();this.props.addMemeber()}}>
+                        <Button type="primary" style={{ background: "#32465A", borderColor: "green" }} onClick={(e)=>{e.preventDefault();this.props.addMemeber()}}>
                             Add memeber
                         </Button>
                     : null}
-                    <Button danger onClick={(e)=>{e.preventDefault();this.leave();}}>
+                    <Button   style={{ background: "#32465A", borderColor: "green" , color:"white"}} danger onClick={(e)=>{e.preventDefault();this.leave();}}>
                         Leave
                     </Button>
                     {this.props.admins && this.props.admins.includes(this.props.currentUser) ? 
-                        <Button type="primary" danger>
+                        <Button type="primary" danger  style={{ background: "#32465A", borderColor: "green" }}>
                             Delete 
                         </Button>
                     : null}
                     </div>: null}
                   </div>) : null}
                   {! this.props.main ?<div>
-                  <div className="messages">
+                  <div id="messagesWindow" className="messages">
                     <ul id="chat-log"> 
                         {console.log('messages',[...new Set(messages)])}
                         {messages && this.renderMessages(messages,this.props.participantsCount,this.props.participants)}

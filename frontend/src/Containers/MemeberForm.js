@@ -31,7 +31,7 @@ const AddMemeberForm = (props) => {
       'Content-Type' : 'application/json',
       Authorization :`Token ${props.token}`
     }
-    console.log('rule is ',value)
+    console.log('role is ',value)
     let content;
     if (value === 'Participant')
       content =  {
@@ -125,8 +125,8 @@ const AddMemeberForm = (props) => {
       </Select>
       </Form.Item>
       <Form.Item
-        label="Rule"
-        name='rule'
+        label="Role"
+        name='role'
         rules={[]}
       > 
       <Radio.Group

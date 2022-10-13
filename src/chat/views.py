@@ -16,9 +16,9 @@ def index(request):
 #     })
 
 # https://stackoverflow.com/questions/13423022/django-str-object-has-no-attribute-user
-def load_last_messages(chatId):
+def load_last_messages(chatId,msgCount=10):
     chat = get_object_or_404(Chat,id=chatId)
-    return chat.messages.order_by('-created_at').all()[:10]
+    return chat.messages.order_by('-created_at').all()[:msgCount]
 
 def get_user_contact(username):
     user = get_object_or_404(CustomUser,username=username)

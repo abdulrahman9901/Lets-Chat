@@ -2,7 +2,7 @@
 .reg_form{
   min-width:500px;
   max-width: 35%;
-  border: #559de4 solid 2px;
+  border: #296193 solid 2px;
   padding: 20px;
   margin: auto;
   background-color: #f9f9fa;
@@ -17,7 +17,7 @@
   min-width:260px;
   max-width: 25%;
   min-height: 310px;
-  border: #559de4 solid 2px;
+  border: #296193 solid 2px;
   padding: 20px;
   margin: auto;
   background-color: #f9f9fa;
@@ -642,7 +642,8 @@ body {
   #frame .content .messages ul li.sent p {
     /* background: #435f7a;
     color: #f5f5f5; */
-    background: #9BA5D9;
+    background: #37576B;
+    color: white;
   }
   #frame .content .messages ul div small.sent {
     color: #435f7a;
@@ -671,8 +672,9 @@ body {
   }
   #frame .content .messages ul li.replies p {
     /* background: #f5f5f5; */
-    background: #e39595;
+    background: #8A724E;
     float: right;
+    color: white;
   }
   #frame .content .messages ul li img {
     width: 55px;
@@ -892,7 +894,7 @@ small {
   font-size: 1em !important;
   margin-left: 3%;
   font-weight: bold;
-  color: darkblue;
+  color: #213541;
 }
 
 .reciever{
@@ -900,7 +902,7 @@ small {
   font-size: 1em !important;
   margin-right: 3%;
   font-weight: bold;
-  color: crimson;
+  color: #8A724E;
 }
 
 .ant-dropdown-trigger{
@@ -951,10 +953,10 @@ border-radius: 50px !important;
 padding: 10px;
 }
 .imgsent {
-background-color: #9BA5D9 !important;
+background-color: #37576b !important;
 }
 .imgrecv {
-  background-color: #E39595 !important;
+  background-color: #a0855b !important;
 }
 .imgout {
   background-color: #808080 !important;
@@ -964,4 +966,29 @@ background-color: #9BA5D9 !important;
 }
 .imagercv {
   margin-left: 57% !important;
+}
+.login-form-forgot {
+  float: right;
+  color: #11273B !important;
+}
+a.ant-form-item-control-input-content {
+  color: #122E47 !important;
+}
+div.ant-form-item-control-input-content > a{
+  color: #122E47 !important;
+}
+div.ant-form-item-control-input-content > button{
+  background-color: #122E47 !important;
+  color: white;
+}
+
+div.ant-form-item-control-input-content > button >a{
+  text-decoration: none;
+}
+
+div.ant-form-item-control-input-content > button >a:hover{
+  color:white !important;
+}
+div.ant-form-item-control-input-content > button:hover{
+  background-color: #20527e !important;
 }

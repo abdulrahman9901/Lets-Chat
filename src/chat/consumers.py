@@ -43,7 +43,7 @@ class ChatConsumer(WebsocketConsumer):
         return self.send_chat_message(content)
 
     def load_messages(self,data):
-        messages=load_last_messages(data['chatId'])
+        messages=load_last_messages(data['chatId'],data['msgCount'])
         chat = get_current_chat(data['chatId'])
         username = data['username']
         print(chat.admins.all())
