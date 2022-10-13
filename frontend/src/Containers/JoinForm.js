@@ -38,8 +38,8 @@ const JoinChatForm = (props) => {
               "id":values.Chat_id
             }
         ).then(res=>{
-            console.log(res.data.data.id)
-            message.success('You has joined the Chat successfully',5)
+              console.log(res.data.data.id)
+              message.success('You has joined the Chat successfully. ',5)
             props.getuserChats(props.username,props.token)
             webSocketInstance.fetchMessages(props.username,res.data.data.id);
             navigate(`/${res.data.data.id}`)

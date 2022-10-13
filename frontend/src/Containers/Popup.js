@@ -22,7 +22,7 @@ const AddChatModal = (props) => {
   };
 return (
       <Modal
-        title="Adding a New Chat "
+        title="Creating a New Chat "
         centered
         footer={null}
         open={props.isVisible}

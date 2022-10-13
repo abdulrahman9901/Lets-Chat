@@ -31,7 +31,7 @@ useEffect(() => {
 
 return (
   
-  <Spin spinning={props.loading}>
+  <Spin spinning={props.loading} style={{color:"black"}}>
     {localStorage.getItem('token') != null ? message.success("Logged in Successfully ",1.5,navigate(`/`)): null}  
     {props.error? message.error("Something went wrong please try again... ",5) && navigate('/login'): null}
           <Form

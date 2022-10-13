@@ -205278,10 +205278,12 @@ var WebSocketService = /*#__PURE__*/function () {
   }, {
     key: "fetchMessages",
     value: function fetchMessages(username, chatId) {
+      var msgCount = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 10;
       this.sendMessage({
         command: "load_messages",
         username: username,
-        chatId: chatId
+        chatId: chatId,
+        msgCount: msgCount
       });
     }
   }, {
@@ -205468,7 +205470,10 @@ var Login = function Login(props) {
     if (props.error) props.onReset();
   }, [props]);
   return /*#__PURE__*/_react.default.createElement(_antd.Spin, {
-    spinning: props.loading
+    spinning: props.loading,
+    style: {
+      color: "black"
+    }
   }, localStorage.getItem('token') != null ? _antd.message.success("Logged in Successfully ", 1.5, navigate("/")) : null, props.error ? _antd.message.error("Something went wrong please try again... ", 5) && navigate('/login') : null, /*#__PURE__*/_react.default.createElement(_antd.Form, {
     name: "normal_login",
     form: form,
@@ -205770,7 +205775,7 @@ var AddChatModal = function AddChatModal(props) {
   };
 
   return /*#__PURE__*/_react.default.createElement(_antd.Modal, {
-    title: "Adding a New Chat ",
+    title: "Creating a New Chat ",
     centered: true,
     footer: null,
     open: props.isVisible,
@@ -205862,7 +205867,7 @@ var AddMemeberForm = function AddMemeberForm(props) {
       'Content-Type': 'application/json',
       Authorization: "Token ".concat(props.token)
     };
-    console.log('rule is ', value);
+    console.log('role is ', value);
     var content;
     if (value === 'Participant') content = {
       "command": "addParticipant",
@@ -205942,8 +205947,8 @@ var AddMemeberForm = function AddMemeberForm(props) {
       width: '100%'
     }
   }, usernames)), /*#__PURE__*/_react.default.createElement(_antd.Form.Item, {
-    label: "Rule",
-    name: "rule",
+    label: "Role",
+    name: "role",
     rules: []
   }, /*#__PURE__*/_react.default.createElement(_antd.Radio.Group, {
     options: options,
@@ -206126,7 +206131,7 @@ var JoinChatForm = function JoinChatForm(props) {
     }).then(function (res) {
       console.log(res.data.data.id);
 
-      _antd.message.success('You has joined the Chat successfully', 5);
+      _antd.message.success('You has joined the Chat successfully. ', 5);
 
       props.getuserChats(props.username, props.token);
 
@@ -209172,7 +209177,9 @@ var Chat = /*#__PURE__*/function (_React$Component) {
 
     _defineProperty(_assertThisInitialized(_this), "state", {
       message: '',
-      upload: false
+      upload: false,
+      messageLoad: false,
+      msgCount: 50
     });
 
     _defineProperty(_assertThisInitialized(_this), "pathname", null);
@@ -209211,7 +209218,7 @@ var Chat = /*#__PURE__*/function (_React$Component) {
 
         _websocket.default.newChatMessage(messageObject);
 
-        _websocket.default.fetchMessages(_this.props.currentUser, window.location.pathname.slice(1));
+        _websocket.default.fetchMessages(_this.props.currentUser, window.location.pathname.slice(1), _this.state.msgCount);
 
         _this.setState({
           message: '',
@@ -209331,12 +209338,18 @@ var Chat = /*#__PURE__*/function (_React$Component) {
       var _this2 = this;
 
       console.log('==============> initializeChat <=============');
+      this.setState({
+        msgCount: 50,
+        messageLoad: false
+      }, function () {
+        console.log("new msgCount ", this.state.msgCount);
+      });
       var chatId = window.location.pathname.slice(1);
       console.log('==============>match', chatId);
 
       if (chatId != '' && Number.isInteger(parseInt(chatId))) {
         this.waitForSocketConnection(function () {
-          _websocket.default.fetchMessages(_this2.props.currentUser, chatId);
+          _websocket.default.fetchMessages(_this2.props.currentUser, chatId, 50);
         });
 
         _websocket.default.connect(chatId);
@@ -209345,25 +209358,78 @@ var Chat = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "componentWillReceiveProps",
     value: function componentWillReceiveProps(newProps) {
+      // const loadMoreMsgs = ()=>{
+      //     this.setState((prevState) => ({ 
+      //         msgCount: prevState.msgCount + 10 ,
+      //         messageLoad:true
+      //      }),function () {
+      //         console.log("new msgCount =======>>>>>>",this.state)
+      //         webSocketInstance.fetchMessages(this.props.currentUser,window.location.pathname.slice(1),this.state.msgCount);
+      //     })
+      //   };
       console.log('newProps', newProps.messages, 'Props', this.props.messages);
       console.log('componentWillReceiveProps');
       this.props.getChats();
 
       if (newProps && newProps.messages) {
         if (newProps.messages.length == 1 && newProps.messages[0].system_message) this.pathname = location.pathname;
-      }
+      } // try {
+      //     document.getElementById("messagesWindow").addEventListener("scroll",function() {
+      //         console.log(document.getElementById("messagesWindow").scrollTop); 
+      //         if(document.getElementById("messagesWindow").scrollTop >= 100 && document.getElementById("messagesWindow").scrollTop <= 110){
+      //             //document.getElementById("messagesWindow").scrollTop = 100
+      //             console.log("load more messages !! ")
+      //             loadMoreMsgs();
+      //         }
+      //     })
+      //     }catch(error){
+      //         console.log(error)
+      //     }
+      // if(this.state.messageLoad === false)
+      // {  
+
+
+      console.log("scroll down did update");
+      this.scrollToBottom(); // }
+      // else {
+      // this.setState({ 
+      //     messageLoad:false
+      //  },function () {
+      //     console.log("new msgCount ",this.state.messageLoad)
+      // })
+      //}
     }
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
+      // if(this.state.messageLoad === false)
+      // {   console.log("scroll down did mount")
+      //     this.scrollToBottom();}
+      // else {
+      //     this.setState({ 
+      //         messageLoad:false
+      //      },function () {
+      //         console.log("new msgCount ",this.state.messageLoad)
+      //     })
+      // }
       this.scrollToBottom();
       this.submitOnEnter();
     }
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate() {
-      this.scrollToBottom();
-      this.submitOnEnter(); // console.log(this.pathname)
+      if (this.state.messageLoad === false) {
+        console.log("scroll down did update", this.state);
+        this.scrollToBottom();
+      } else {
+        this.setState({
+          messageLoad: false
+        }, function () {
+          console.log("new msgCount ", this.state.messageLoad);
+        });
+      }
+
+      this.submitOnEnter();
     }
   }, {
     key: "timestampDisplay",
@@ -209429,7 +209495,7 @@ var Chat = /*#__PURE__*/function (_React$Component) {
             id: message.id + 'p',
             className: participants.includes(message.author) ? currentUser === message.author ? 'sender' : 'reciever' : 'out'
           }, message.author) : null, /*#__PURE__*/_react.default.createElement("br", null), /*#__PURE__*/_react.default.createElement("img", {
-            src: "https://img.icons8.com/glyph-neue/128/".concat(participants.includes(message.author) ? currentUser === message.author ? '00008B' : 'DC143C' : '808080', "/user-male-circle.png")
+            src: "https://img.icons8.com/glyph-neue/128/".concat(participants.includes(message.author) ? currentUser === message.author ? '213541' : '8A724E' : '808080', "/user-male-circle.png")
           }), message.content === null ?
           /*#__PURE__*/
           // "image has been uploaded to the chat"
@@ -209514,12 +209580,21 @@ var Chat = /*#__PURE__*/function (_React$Component) {
           className: "social-media"
         }, this.props.admins && this.props.admins.includes(this.props.currentUser) ? /*#__PURE__*/_react.default.createElement(_antd.Button, {
           type: "primary",
+          style: {
+            background: "#32465A",
+            borderColor: "green"
+          },
           onClick: function onClick(e) {
             e.preventDefault();
 
             _this4.props.addMemeber();
           }
         }, "Add memeber") : null, /*#__PURE__*/_react.default.createElement(_antd.Button, {
+          style: {
+            background: "#32465A",
+            borderColor: "green",
+            color: "white"
+          },
           danger: true,
           onClick: function onClick(e) {
             e.preventDefault();
@@ -209528,8 +209603,13 @@ var Chat = /*#__PURE__*/function (_React$Component) {
           }
         }, "Leave"), this.props.admins && this.props.admins.includes(this.props.currentUser) ? /*#__PURE__*/_react.default.createElement(_antd.Button, {
           type: "primary",
-          danger: true
+          danger: true,
+          style: {
+            background: "#32465A",
+            borderColor: "green"
+          }
         }, "Delete") : null) : null) : null, !this.props.main ? /*#__PURE__*/_react.default.createElement("div", null, /*#__PURE__*/_react.default.createElement("div", {
+          id: "messagesWindow",
           className: "messages"
         }, /*#__PURE__*/_react.default.createElement("ul", {
           id: "chat-log"
@@ -215232,7 +215312,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "11199" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "2147" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

@@ -60,8 +60,8 @@ class WebSocketService{
             this.callbacks[command](localStorage.getItem("username"),localStorage.getItem("token"))
         }
 }
-    fetchMessages(username,chatId){
-        this.sendMessage({ command:"load_messages",username:username,chatId:chatId})
+    fetchMessages(username,chatId,msgCount=10){
+        this.sendMessage({ command:"load_messages",username:username,chatId:chatId,msgCount:msgCount})
     }
     newChatMessage(message){
         this.sendMessage({ command:"new_message",from:message.from , message:message.content , chatId:message.chatId})
