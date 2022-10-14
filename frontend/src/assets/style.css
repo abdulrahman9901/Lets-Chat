@@ -992,3 +992,20 @@ div.ant-form-item-control-input-content > button >a:hover{
 div.ant-form-item-control-input-content > button:hover{
   background-color: #20527e !important;
 }
+div.ant-btn-group.ant-dropdown-button{
+  margin-right: 15px !important;
+}
+button.ant-btn.ant-btn-default.ant-btn-icon-only.ant-dropdown-trigger{
+  background: #122E47;
+  color: white;
+}
+button.ant-btn.ant-btn-default{
+  background: #122E47;
+  color: white;
+}
+button.ant-btn.ant-btn-default:hover{
+  background: #3c546c;
+}
+button.ant-btn.ant-btn-default.ant-btn-icon-only.ant-dropdown-trigger:hover{
+  background: #3c546c;
+}
