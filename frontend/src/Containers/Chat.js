@@ -13,6 +13,8 @@ import * as messageActions from '../store/actions/messages'
 import JoinChatModal from './joinPopup';
 import 'url-change-event'
 import UploadModal from './UploadPopup';
+import { Dropdown, Menu } from 'antd';
+
 class Chat extends React.Component {
 
     state={
@@ -55,7 +57,7 @@ class Chat extends React.Component {
         // https://stackoverflow.com/a/68371679
         window.addEventListener("click",CheckUrlChange);
 
-        //window.addEventListener('urlchangeevent',CheckUrlChange);
+        // window.addEventListener('urlchangeevent',CheckUrlChange);
         // var pushState = window.history.pushState;
         // window.history.pushState = function(state) {
         //     this.initializeChat()
@@ -369,25 +371,51 @@ class Chat extends React.Component {
                 <Sidepanel />
                 <div className="content">
                 {this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?
-                  (<div className="contact-profile">
-                    <img src="https://img.icons8.com/pastel-glyph/128/2C3E50/communication--v1.png"/>
-                    <p> {this.props.name ? this.props.name : window.location.pathname.slice(1) ? `Chat # ${window.location.pathname.slice(1)}`:null} </p>
-                    {this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?   <div className="social-media">
-                    {this.props.admins && this.props.admins.includes(this.props.currentUser) ? 
-                        <Button type="primary" style={{ background: "#32465A", borderColor: "green" }} onClick={(e)=>{e.preventDefault();this.props.addMemeber()}}>
-                            Add memeber
-                        </Button>
-                    : null}
-                    <Button   style={{ background: "#32465A", borderColor: "green" , color:"white"}} danger onClick={(e)=>{e.preventDefault();this.leave();}}>
-                        Leave
-                    </Button>
-                    {this.props.admins && this.props.admins.includes(this.props.currentUser) ? 
-                        <Button type="primary" danger  style={{ background: "#32465A", borderColor: "green" }}>
-                            Delete 
-                        </Button>
-                    : null}
-                    </div>: null}
-                  </div>) : null}
+                //   (<div className="contact-profile">
+                //     <img src="https://img.icons8.com/pastel-glyph/128/2C3E50/communication--v1.png"/>
+                //     <p> {this.props.name ? this.props.name : window.location.pathname.slice(1) ? `Chat # ${window.location.pathname.slice(1)}`:null} </p>
+                //     {this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?   <div className="social-media">
+                //     {this.props.admins && this.props.admins.includes(this.props.currentUser) ? 
+                //         <Button type="primary" style={{ background: "#32465A", borderColor: "green" }} onClick={(e)=>{e.preventDefault();this.props.addMemeber()}}>
+                //             Add memeber
+                //         </Button>
+                //     : null}
+                //     <Button   style={{ background: "#32465A", borderColor: "green" , color:"white"}} danger onClick={(e)=>{e.preventDefault();this.leave();}}>
+                //         Leave
+                //     </Button>
+                //     {this.props.admins && this.props.admins.includes(this.props.currentUser) ? 
+                //         <Button type="primary" danger  style={{ background: "#32465A", borderColor: "green" }}>
+                //             Delete 
+                //         </Button>
+                //     : null}
+                //     </div>: null}
+                //   </div>)
+                <div className="contact-profile">
+                <img src="https://img.icons8.com/pastel-glyph/128/2C3E50/communication--v1.png"/>
+                <p> {this.props.name ? this.props.name : window.location.pathname.slice(1) ? `Chat # ${window.location.pathname.slice(1)}`:null} </p>
+                {this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?  
+                 <div className="social-media">
+                <Dropdown.Button overlay={
+                    <Menu theme='dark' >
+                    {console.log("in drop dwon ",!(this.props.admins && this.props.admins.includes(this.props.currentUser)))}
+                     <Menu.Item key="1" disabled={!(this.props.admins && this.props.admins.includes(this.props.currentUser))}  onClick={()=>{this.props.addMemeber()}}>
+                             Add memeber
+                     </Menu.Item>
+                     <Menu.Item key="2" disabled={!(this.props.admins && this.props.admins.includes(this.props.currentUser))} > 
+                             Delete Chat
+                     </Menu.Item>
+                 </Menu>
+                }
+                
+                trigger={'click'}
+                style={{ background: "#32465A", borderColor: "green" , color:"white"}} 
+                onClick={(e)=>{e.preventDefault();this.leave();}}
+                >
+                Leave Chat
+                </Dropdown.Button>
+                </div>: null}
+                </div>
+                  : null}
                   {! this.props.main ?<div>
                   <div id="messagesWindow" className="messages">
                     <ul id="chat-log"> 

@@ -38,11 +38,17 @@ const JoinChatForm = (props) => {
               "id":values.Chat_id
             }
         ).then(res=>{
-              console.log(res.data.data.id)
-              message.success('You has joined the Chat successfully. ',5)
+            console.log("Chat id =======> ",res.data.data.id)
+            message.success('You has joined the Chat successfully. ',5)
             props.getuserChats(props.username,props.token)
-            webSocketInstance.fetchMessages(props.username,res.data.data.id);
-            navigate(`/${res.data.data.id}`)
+            //webSocketInstance.connect(props.username,res.data.data.id)
+            // if(webSocketInstance.state() !== 1){
+            //   console.log(' trying to connect !');
+            //   webSocketInstance.connect(props.username,res.data.data.id)
+            // }
+            // webSocketInstance.fetchMessages(props.username,res.data.data.id,10);
+            // navigate(`/${res.data.data.id}`)
+            window.location.pathname = `/${res.data.data.id}`
         }).catch(err =>{
             console.log(`error at create chat ${err}`)
             message.error('something went wrong please try again later...! ',5)

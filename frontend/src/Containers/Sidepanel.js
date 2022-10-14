@@ -6,6 +6,7 @@ import * as authActions from '../store/actions/auth'
 import * as navActions from '../store/actions/nav'
 import * as messageActions from '../store/actions/messages'
 import Contact from "../Components/Contacts";
+import webSocketInstance from '../websocket';
 
 class Sidepanel extends React.Component{
   state ={

@@ -204948,245 +204948,7 @@ var Contact = function Contact(props) {
 
 var _default = Contact;
 exports.default = _default;
-},{"react":"node_modules/react/index.js","react-router-dom":"node_modules/react-router-dom/dist/index.js","@ant-design/icons":"node_modules/@ant-design/icons/es/index.js","antd":"node_modules/antd/es/index.js","rc-field-form/es/useWatch":"node_modules/rc-field-form/es/useWatch.js"}],"src/containers/sidepanel.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
-
-var _react = _interopRequireDefault(require("react"));
-
-var _Dropdown = _interopRequireDefault(require("./Dropdown"));
-
-var _reactRedux = require("react-redux");
-
-var authActions = _interopRequireWildcard(require("../store/actions/auth"));
-
-var navActions = _interopRequireWildcard(require("../store/actions/nav"));
-
-var messageActions = _interopRequireWildcard(require("../store/actions/messages"));
-
-var _Contacts = _interopRequireDefault(require("../Components/Contacts"));
-
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-var Sidepanel = /*#__PURE__*/function (_React$Component) {
-  _inherits(Sidepanel, _React$Component);
-
-  var _super = _createSuper(Sidepanel);
-
-  function Sidepanel() {
-    var _this;
-
-    _classCallCheck(this, Sidepanel);
-
-    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-
-    _this = _super.call.apply(_super, [this].concat(args));
-
-    _defineProperty(_assertThisInitialized(_this), "state", {
-      searchTerm: ''
-    });
-
-    _defineProperty(_assertThisInitialized(_this), "openAddChatPopup", function () {
-      _this.props.addChat();
-    });
-
-    _defineProperty(_assertThisInitialized(_this), "openJoinChatPopup", function () {
-      _this.props.joinChat();
-    });
-
-    _defineProperty(_assertThisInitialized(_this), "searchBarHandler", function (e) {
-      e.preventDefault();
-
-      _this.setState({
-        searchTerm: e.target.value
-      }, function () {
-        console.log('state is : ', this.state);
-      });
-    });
-
-    return _this;
-  }
-
-  _createClass(Sidepanel, [{
-    key: "componentWillReceiveProps",
-    value: function componentWillReceiveProps(newProps) {
-      console.log("newProps = ".concat(newProps));
-      console.log(newProps.chats.length, this.props.chats.length);
-
-      if (newProps.token != null && newProps.username != null) {
-        if (this.props.chats.length <= 0 || newProps.chats.length !== this.props.chats.length) {
-          console.log('get in if ');
-          this.props.getChats(newProps.username, newProps.token);
-          console.log('after req', this.state);
-        }
-      }
-    }
-  }, {
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      console.log('at sidepanel componentDidMount', this.props);
-
-      if (this.props.token != null && this.props.username != null) {
-        this.props.getChats(this.props.username, this.props.token);
-      }
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var _this2 = this;
-
-      console.log('at sidepanel', this.props); //console.log('at render',this.props.chats[0])
-      //const aciveChats=null
-
-      var aciveChats;
-
-      if (this.props.chats) {
-        console.log(" if chats");
-        aciveChats = this.props.chats.filter(function (chat) {
-          if (_this2.state.searchTerm == '') {
-            return chat;
-          } else if (chat.name.toLowerCase().includes(_this2.state.searchTerm.toLowerCase())) {
-            return chat;
-          }
-        }).map(function (chat) {
-          return /*#__PURE__*/_react.default.createElement(_Contacts.default, {
-            key: chat.id,
-            chatURL: "/".concat(chat.id),
-            status: "online",
-            picURL: "https://img.icons8.com/pastel-glyph/128/E6EAEA/communication--v1.png",
-            name: chat.name ? chat.name : "Chat # ".concat(chat.id),
-            members: chat.participants
-          });
-        });
-      } else {
-        console.log(" else chats");
-        aciveChats = null;
-      }
-
-      return /*#__PURE__*/_react.default.createElement("div", {
-        id: "sidepanel"
-      }, /*#__PURE__*/_react.default.createElement("div", {
-        id: "profile"
-      }, /*#__PURE__*/_react.default.createElement("div", {
-        className: "wrap"
-      }, /*#__PURE__*/_react.default.createElement("img", {
-        id: "profile-img",
-        src: "https://img.icons8.com/ios-filled/100/95a5a6/user-male-circle.png",
-        className: "online",
-        alt: ""
-      }), /*#__PURE__*/_react.default.createElement("p", null, this.props.username), /*#__PURE__*/_react.default.createElement(_Dropdown.default, null), /*#__PURE__*/_react.default.createElement("div", {
-        id: "expanded"
-      }, /*#__PURE__*/_react.default.createElement("button", {
-        className: "authBtn",
-        onClick: function onClick() {
-          return _this2.props.onLogout();
-        }
-      }, /*#__PURE__*/_react.default.createElement("span", null, "Logout"))))), /*#__PURE__*/_react.default.createElement("div", {
-        id: "search"
-      }, /*#__PURE__*/_react.default.createElement("label", {
-        htmlFor: ""
-      }, /*#__PURE__*/_react.default.createElement("i", {
-        className: "fa fa-search",
-        "aria-hidden": "true"
-      })), /*#__PURE__*/_react.default.createElement("input", {
-        type: "text",
-        placeholder: "Search chats...",
-        onChange: this.searchBarHandler,
-        onClick: function onClick(e) {
-          return e.preventDefault();
-        }
-      })), /*#__PURE__*/_react.default.createElement("div", {
-        id: "contacts"
-      }, /*#__PURE__*/_react.default.createElement("ul", null, aciveChats)), /*#__PURE__*/_react.default.createElement("div", {
-        id: "bottom-bar"
-      }, /*#__PURE__*/_react.default.createElement("button", {
-        id: "addcontact",
-        onClick: function onClick() {
-          return _this2.openAddChatPopup();
-        }
-      }, /*#__PURE__*/_react.default.createElement("i", {
-        className: "fa fa-user-plus fa-fw",
-        "aria-hidden": "true"
-      }), " ", /*#__PURE__*/_react.default.createElement("span", null, "Create Chat")), /*#__PURE__*/_react.default.createElement("button", {
-        id: "joinChat",
-        onClick: function onClick() {
-          return _this2.openJoinChatPopup();
-        }
-      }, /*#__PURE__*/_react.default.createElement("i", {
-        className: "fa fa-cog fa-fw",
-        "aria-hidden": "true"
-      }), " ", /*#__PURE__*/_react.default.createElement("span", null, "Join chat "))));
-    }
-  }]);
-
-  return Sidepanel;
-}(_react.default.Component);
-
-var mapStateToProps = function mapStateToProps(state) {
-  return {
-    loading: state.auth.loading,
-    isAuthenticated: state.auth.token !== null,
-    token: state.auth.token,
-    username: state.auth.username,
-    chats: state.message.chats ? state.message.chats : []
-  };
-};
-
-var mapDispatchToProps = function mapDispatchToProps(dispatch) {
-  return {
-    onLogout: function onLogout() {
-      return dispatch(authActions.logout());
-    },
-    addChat: function addChat() {
-      return dispatch(navActions.openAddChatPopup());
-    },
-    joinChat: function joinChat() {
-      return dispatch(navActions.openJoinChatPopup());
-    },
-    getChats: function getChats(username, token) {
-      return dispatch(messageActions.getUserChats(username, token));
-    }
-  };
-};
-
-var _default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(Sidepanel);
-
-exports.default = _default;
-},{"react":"node_modules/react/index.js","./Dropdown":"src/containers/Dropdown.js","react-redux":"node_modules/react-redux/es/index.js","../store/actions/auth":"src/store/actions/auth.js","../store/actions/nav":"src/store/actions/nav.js","../store/actions/messages":"src/store/actions/messages.js","../Components/Contacts":"src/Components/Contacts.js"}],"src/websocket.js":[function(require,module,exports) {
+},{"react":"node_modules/react/index.js","react-router-dom":"node_modules/react-router-dom/dist/index.js","@ant-design/icons":"node_modules/@ant-design/icons/es/index.js","antd":"node_modules/antd/es/index.js","rc-field-form/es/useWatch":"node_modules/rc-field-form/es/useWatch.js"}],"src/websocket.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -205413,7 +205175,247 @@ var _default = webSocketInstance; //import { SOCKET_URL } from "./settings";
 // export default WebSocketInstance;
 
 exports.default = _default;
-},{}],"src/containers/Login.js":[function(require,module,exports) {
+},{}],"src/containers/sidepanel.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _react = _interopRequireDefault(require("react"));
+
+var _Dropdown = _interopRequireDefault(require("./Dropdown"));
+
+var _reactRedux = require("react-redux");
+
+var authActions = _interopRequireWildcard(require("../store/actions/auth"));
+
+var navActions = _interopRequireWildcard(require("../store/actions/nav"));
+
+var messageActions = _interopRequireWildcard(require("../store/actions/messages"));
+
+var _Contacts = _interopRequireDefault(require("../Components/Contacts"));
+
+var _websocket = _interopRequireDefault(require("../websocket"));
+
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var Sidepanel = /*#__PURE__*/function (_React$Component) {
+  _inherits(Sidepanel, _React$Component);
+
+  var _super = _createSuper(Sidepanel);
+
+  function Sidepanel() {
+    var _this;
+
+    _classCallCheck(this, Sidepanel);
+
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    _this = _super.call.apply(_super, [this].concat(args));
+
+    _defineProperty(_assertThisInitialized(_this), "state", {
+      searchTerm: ''
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "openAddChatPopup", function () {
+      _this.props.addChat();
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "openJoinChatPopup", function () {
+      _this.props.joinChat();
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "searchBarHandler", function (e) {
+      e.preventDefault();
+
+      _this.setState({
+        searchTerm: e.target.value
+      }, function () {
+        console.log('state is : ', this.state);
+      });
+    });
+
+    return _this;
+  }
+
+  _createClass(Sidepanel, [{
+    key: "componentWillReceiveProps",
+    value: function componentWillReceiveProps(newProps) {
+      console.log("newProps = ".concat(newProps));
+      console.log(newProps.chats.length, this.props.chats.length);
+
+      if (newProps.token != null && newProps.username != null) {
+        if (this.props.chats.length <= 0 || newProps.chats.length !== this.props.chats.length) {
+          console.log('get in if ');
+          this.props.getChats(newProps.username, newProps.token);
+          console.log('after req', this.state);
+        }
+      }
+    }
+  }, {
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      console.log('at sidepanel componentDidMount', this.props);
+
+      if (this.props.token != null && this.props.username != null) {
+        this.props.getChats(this.props.username, this.props.token);
+      }
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var _this2 = this;
+
+      console.log('at sidepanel', this.props); //console.log('at render',this.props.chats[0])
+      //const aciveChats=null
+
+      var aciveChats;
+
+      if (this.props.chats) {
+        console.log(" if chats");
+        aciveChats = this.props.chats.filter(function (chat) {
+          if (_this2.state.searchTerm == '') {
+            return chat;
+          } else if (chat.name.toLowerCase().includes(_this2.state.searchTerm.toLowerCase())) {
+            return chat;
+          }
+        }).map(function (chat) {
+          return /*#__PURE__*/_react.default.createElement(_Contacts.default, {
+            key: chat.id,
+            chatURL: "/".concat(chat.id),
+            status: "online",
+            picURL: "https://img.icons8.com/pastel-glyph/128/E6EAEA/communication--v1.png",
+            name: chat.name ? chat.name : "Chat # ".concat(chat.id),
+            members: chat.participants
+          });
+        });
+      } else {
+        console.log(" else chats");
+        aciveChats = null;
+      }
+
+      return /*#__PURE__*/_react.default.createElement("div", {
+        id: "sidepanel"
+      }, /*#__PURE__*/_react.default.createElement("div", {
+        id: "profile"
+      }, /*#__PURE__*/_react.default.createElement("div", {
+        className: "wrap"
+      }, /*#__PURE__*/_react.default.createElement("img", {
+        id: "profile-img",
+        src: "https://img.icons8.com/ios-filled/100/95a5a6/user-male-circle.png",
+        className: "online",
+        alt: ""
+      }), /*#__PURE__*/_react.default.createElement("p", null, this.props.username), /*#__PURE__*/_react.default.createElement(_Dropdown.default, null), /*#__PURE__*/_react.default.createElement("div", {
+        id: "expanded"
+      }, /*#__PURE__*/_react.default.createElement("button", {
+        className: "authBtn",
+        onClick: function onClick() {
+          return _this2.props.onLogout();
+        }
+      }, /*#__PURE__*/_react.default.createElement("span", null, "Logout"))))), /*#__PURE__*/_react.default.createElement("div", {
+        id: "search"
+      }, /*#__PURE__*/_react.default.createElement("label", {
+        htmlFor: ""
+      }, /*#__PURE__*/_react.default.createElement("i", {
+        className: "fa fa-search",
+        "aria-hidden": "true"
+      })), /*#__PURE__*/_react.default.createElement("input", {
+        type: "text",
+        placeholder: "Search chats...",
+        onChange: this.searchBarHandler,
+        onClick: function onClick(e) {
+          return e.preventDefault();
+        }
+      })), /*#__PURE__*/_react.default.createElement("div", {
+        id: "contacts"
+      }, /*#__PURE__*/_react.default.createElement("ul", null, aciveChats)), /*#__PURE__*/_react.default.createElement("div", {
+        id: "bottom-bar"
+      }, /*#__PURE__*/_react.default.createElement("button", {
+        id: "addcontact",
+        onClick: function onClick() {
+          return _this2.openAddChatPopup();
+        }
+      }, /*#__PURE__*/_react.default.createElement("i", {
+        className: "fa fa-user-plus fa-fw",
+        "aria-hidden": "true"
+      }), " ", /*#__PURE__*/_react.default.createElement("span", null, "Create Chat")), /*#__PURE__*/_react.default.createElement("button", {
+        id: "joinChat",
+        onClick: function onClick() {
+          return _this2.openJoinChatPopup();
+        }
+      }, /*#__PURE__*/_react.default.createElement("i", {
+        className: "fa fa-cog fa-fw",
+        "aria-hidden": "true"
+      }), " ", /*#__PURE__*/_react.default.createElement("span", null, "Join chat "))));
+    }
+  }]);
+
+  return Sidepanel;
+}(_react.default.Component);
+
+var mapStateToProps = function mapStateToProps(state) {
+  return {
+    loading: state.auth.loading,
+    isAuthenticated: state.auth.token !== null,
+    token: state.auth.token,
+    username: state.auth.username,
+    chats: state.message.chats ? state.message.chats : []
+  };
+};
+
+var mapDispatchToProps = function mapDispatchToProps(dispatch) {
+  return {
+    onLogout: function onLogout() {
+      return dispatch(authActions.logout());
+    },
+    addChat: function addChat() {
+      return dispatch(navActions.openAddChatPopup());
+    },
+    joinChat: function joinChat() {
+      return dispatch(navActions.openJoinChatPopup());
+    },
+    getChats: function getChats(username, token) {
+      return dispatch(messageActions.getUserChats(username, token));
+    }
+  };
+};
+
+var _default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(Sidepanel);
+
+exports.default = _default;
+},{"react":"node_modules/react/index.js","./Dropdown":"src/containers/Dropdown.js","react-redux":"node_modules/react-redux/es/index.js","../store/actions/auth":"src/store/actions/auth.js","../store/actions/nav":"src/store/actions/nav.js","../store/actions/messages":"src/store/actions/messages.js","../Components/Contacts":"src/Components/Contacts.js","../websocket":"src/websocket.js"}],"src/containers/Login.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -206129,15 +206131,19 @@ var JoinChatForm = function JoinChatForm(props) {
       "username": props.username,
       "id": values.Chat_id
     }).then(function (res) {
-      console.log(res.data.data.id);
+      console.log("Chat id =======> ", res.data.data.id);
 
       _antd.message.success('You has joined the Chat successfully. ', 5);
 
-      props.getuserChats(props.username, props.token);
+      props.getuserChats(props.username, props.token); //webSocketInstance.connect(props.username,res.data.data.id)
+      // if(webSocketInstance.state() !== 1){
+      //   console.log(' trying to connect !');
+      //   webSocketInstance.connect(props.username,res.data.data.id)
+      // }
+      // webSocketInstance.fetchMessages(props.username,res.data.data.id,10);
+      // navigate(`/${res.data.data.id}`)
 
-      _websocket.default.fetchMessages(props.username, res.data.data.id);
-
-      navigate("/".concat(res.data.data.id));
+      window.location.pathname = "/".concat(res.data.data.id);
     }).catch(function (err) {
       console.log("error at create chat ".concat(err));
 
@@ -209321,7 +209327,7 @@ var Chat = /*#__PURE__*/function (_React$Component) {
     }; // https://stackoverflow.com/a/68371679
 
 
-    window.addEventListener("click", CheckUrlChange); //window.addEventListener('urlchangeevent',CheckUrlChange);
+    window.addEventListener("click", CheckUrlChange); // window.addEventListener('urlchangeevent',CheckUrlChange);
     // var pushState = window.history.pushState;
     // window.history.pushState = function(state) {
     //     this.initializeChat()
@@ -209572,43 +209578,58 @@ var Chat = /*#__PURE__*/function (_React$Component) {
           cancel: this.handleCancel
         }), /*#__PURE__*/_react.default.createElement(_sidepanel.default, null), /*#__PURE__*/_react.default.createElement("div", {
           className: "content"
-        }, this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ? /*#__PURE__*/_react.default.createElement("div", {
+        }, this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?
+        /*#__PURE__*/
+        //   (<div className="contact-profile">
+        //     <img src="https://img.icons8.com/pastel-glyph/128/2C3E50/communication--v1.png"/>
+        //     <p> {this.props.name ? this.props.name : window.location.pathname.slice(1) ? `Chat # ${window.location.pathname.slice(1)}`:null} </p>
+        //     {this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?   <div className="social-media">
+        //     {this.props.admins && this.props.admins.includes(this.props.currentUser) ? 
+        //         <Button type="primary" style={{ background: "#32465A", borderColor: "green" }} onClick={(e)=>{e.preventDefault();this.props.addMemeber()}}>
+        //             Add memeber
+        //         </Button>
+        //     : null}
+        //     <Button   style={{ background: "#32465A", borderColor: "green" , color:"white"}} danger onClick={(e)=>{e.preventDefault();this.leave();}}>
+        //         Leave
+        //     </Button>
+        //     {this.props.admins && this.props.admins.includes(this.props.currentUser) ? 
+        //         <Button type="primary" danger  style={{ background: "#32465A", borderColor: "green" }}>
+        //             Delete 
+        //         </Button>
+        //     : null}
+        //     </div>: null}
+        //   </div>)
+        _react.default.createElement("div", {
           className: "contact-profile"
         }, /*#__PURE__*/_react.default.createElement("img", {
           src: "https://img.icons8.com/pastel-glyph/128/2C3E50/communication--v1.png"
         }), /*#__PURE__*/_react.default.createElement("p", null, " ", this.props.name ? this.props.name : window.location.pathname.slice(1) ? "Chat # ".concat(window.location.pathname.slice(1)) : null, " "), this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ? /*#__PURE__*/_react.default.createElement("div", {
           className: "social-media"
-        }, this.props.admins && this.props.admins.includes(this.props.currentUser) ? /*#__PURE__*/_react.default.createElement(_antd.Button, {
-          type: "primary",
-          style: {
-            background: "#32465A",
-            borderColor: "green"
-          },
-          onClick: function onClick(e) {
-            e.preventDefault();
-
-            _this4.props.addMemeber();
-          }
-        }, "Add memeber") : null, /*#__PURE__*/_react.default.createElement(_antd.Button, {
+        }, /*#__PURE__*/_react.default.createElement(_antd.Dropdown.Button, {
+          overlay: /*#__PURE__*/_react.default.createElement(_antd.Menu, {
+            theme: "dark"
+          }, console.log("in drop dwon ", !(this.props.admins && this.props.admins.includes(this.props.currentUser))), /*#__PURE__*/_react.default.createElement(_antd.Menu.Item, {
+            key: "1",
+            disabled: !(this.props.admins && this.props.admins.includes(this.props.currentUser)),
+            onClick: function onClick() {
+              _this4.props.addMemeber();
+            }
+          }, "Add memeber"), /*#__PURE__*/_react.default.createElement(_antd.Menu.Item, {
+            key: "2",
+            disabled: !(this.props.admins && this.props.admins.includes(this.props.currentUser))
+          }, "Delete Chat")),
+          trigger: 'click',
           style: {
             background: "#32465A",
             borderColor: "green",
             color: "white"
           },
-          danger: true,
           onClick: function onClick(e) {
             e.preventDefault();
 
             _this4.leave();
           }
-        }, "Leave"), this.props.admins && this.props.admins.includes(this.props.currentUser) ? /*#__PURE__*/_react.default.createElement(_antd.Button, {
-          type: "primary",
-          danger: true,
-          style: {
-            background: "#32465A",
-            borderColor: "green"
-          }
-        }, "Delete") : null) : null) : null, !this.props.main ? /*#__PURE__*/_react.default.createElement("div", null, /*#__PURE__*/_react.default.createElement("div", {
+        }, "Leave Chat")) : null) : null, !this.props.main ? /*#__PURE__*/_react.default.createElement("div", null, /*#__PURE__*/_react.default.createElement("div", {
           id: "messagesWindow",
           className: "messages"
         }, /*#__PURE__*/_react.default.createElement("ul", {
@@ -215312,7 +215333,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "2147" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "12365" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
