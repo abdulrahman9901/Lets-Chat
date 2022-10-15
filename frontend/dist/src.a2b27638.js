@@ -209097,7 +209097,75 @@ var UploadModal = function UploadModal(props) {
 
 var _default = UploadModal;
 exports.default = _default;
-},{"antd":"node_modules/antd/es/index.js","antd-img-crop":"node_modules/antd-img-crop/dist/antd-img-crop.esm.js","react":"node_modules/react/index.js","axios":"node_modules/axios/index.js"}],"src/containers/Chat.js":[function(require,module,exports) {
+},{"antd":"node_modules/antd/es/index.js","antd-img-crop":"node_modules/antd-img-crop/dist/antd-img-crop.esm.js","react":"node_modules/react/index.js","axios":"node_modules/axios/index.js"}],"src/containers/ConfirmPopup.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _antd = require("antd");
+
+var _react = _interopRequireWildcard(require("react"));
+
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]; if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+var ConfirmModal = function ConfirmModal(props) {
+  var _useState = (0, _react.useState)(false),
+      _useState2 = _slicedToArray(_useState, 2),
+      confirmLoading = _useState2[0],
+      setConfirmLoading = _useState2[1];
+
+  console.log('at modal ', props);
+
+  var onFinish = function onFinish() {};
+
+  var handleOk = function handleOk() {
+    setConfirmLoading(true);
+    setTimeout(function () {
+      setConfirmLoading(false); //props.action()
+
+      props.onClose();
+    }, 2000);
+  };
+
+  var handleCancel = function handleCancel() {
+    setTimeout(function () {
+      props.onClose();
+    }, 10);
+  };
+
+  return /*#__PURE__*/_react.default.createElement(_antd.Modal, {
+    width: 300,
+    centered: true,
+    open: props.isVisible,
+    onCancel: handleCancel,
+    onOk: handleOk
+  }, /*#__PURE__*/_react.default.createElement(_antd.Space, {
+    style: {
+      width: '250px'
+    }
+  }, "Are sure that you want to do that "));
+};
+
+var _default = ConfirmModal;
+exports.default = _default;
+},{"antd":"node_modules/antd/es/index.js","react":"node_modules/react/index.js"}],"src/containers/Chat.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -209132,6 +209200,10 @@ var _joinPopup = _interopRequireDefault(require("./joinPopup"));
 require("url-change-event");
 
 var _UploadPopup = _interopRequireDefault(require("./UploadPopup"));
+
+var _ConfirmPopup = _interopRequireDefault(require("./ConfirmPopup"));
+
+var _icons = require("@ant-design/icons");
 
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
@@ -209175,6 +209247,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+var confirm = _antd.Modal.confirm;
 var Item = _antd.Menu.Item;
 
 var Chat = /*#__PURE__*/function (_React$Component) {
@@ -209316,6 +209389,23 @@ var Chat = /*#__PURE__*/function (_React$Component) {
         console.log("error at create chat ".concat(err));
 
         _antd.message.error('something went wrong olease try again later...! ', 5);
+      });
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "ConfirmModal", function (action, actionName) {
+      confirm({
+        title: "Do you want to ".concat(actionName, " the chat..?"),
+        icon: /*#__PURE__*/_react.default.createElement(_icons.ExclamationCircleOutlined, null),
+        content: "If you clicked the OK button, this dialog will be closed after 1 second and you will ".concat(actionName, " the chat."),
+        onOk: function onOk() {
+          return new Promise(function (resolve, reject) {
+            setTimeout(Math.random() > 0.5 ? resolve : reject, 1000);
+            setTimeout(action, 1200);
+          }).catch(function () {
+            return console.log('Oops errors!');
+          });
+        },
+        onCancel: function onCancel() {}
       });
     });
 
@@ -209547,7 +209637,9 @@ var Chat = /*#__PURE__*/function (_React$Component) {
             },
             disabled: !(this.props.admins && this.props.admins.includes(this.props.currentUser)),
             onClick: function onClick() {
-              alert("Delete the chat was clicked");
+              _this4.ConfirmModal(function () {
+                alert("action");
+              }, "Delete");
             }
           }, "Delete the Chat"),
           key: '2'
@@ -209584,18 +209676,7 @@ var Chat = /*#__PURE__*/function (_React$Component) {
         }), /*#__PURE__*/_react.default.createElement("p", null, " ", this.props.name ? this.props.name : window.location.pathname.slice(1) ? "Chat # ".concat(window.location.pathname.slice(1)) : null, " "), this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ? /*#__PURE__*/_react.default.createElement("div", {
           className: "social-media"
         }, /*#__PURE__*/_react.default.createElement(_antd.Dropdown.Button, {
-          overlay:
-          /*#__PURE__*/
-          //     <Menu theme='dark' >
-          //     {console.log("in drop dwon ",!(this.props.admins && this.props.admins.includes(this.props.currentUser)))}
-          //      <Menu.Item key="1" disabled={!(this.props.admins && this.props.admins.includes(this.props.currentUser))}  onClick={()=>{this.props.addMemeber()}}>
-          //              Add memeber
-          //      </Menu.Item>
-          //      <Menu.Item key="2" disabled={!(this.props.admins && this.props.admins.includes(this.props.currentUser))} > 
-          //              Delete Chat
-          //      </Menu.Item>
-          //  </Menu>
-          _react.default.createElement(_antd.Menu, {
+          overlay: /*#__PURE__*/_react.default.createElement(_antd.Menu, {
             theme: "dark",
             style: {
               minHeight: '135px'
@@ -209611,7 +209692,9 @@ var Chat = /*#__PURE__*/function (_React$Component) {
           onClick: function onClick(e) {
             e.preventDefault();
 
-            _this4.leave();
+            _this4.ConfirmModal(function () {
+              _this4.leave();
+            }, "Leave");
           }
         }, "Leave Chat")) : null) : null, !this.props.main ? /*#__PURE__*/_react.default.createElement("div", null, /*#__PURE__*/_react.default.createElement("div", {
           id: "messagesWindow",
@@ -209693,7 +209776,7 @@ var mapStateToProps = function mapStateToProps(state) {
 var _default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(Chat);
 
 exports.default = _default;
-},{"react":"node_modules/react/index.js","antd":"node_modules/antd/es/index.js","./sidepanel":"src/containers/sidepanel.js","../websocket":"src/websocket.js","./Login":"src/containers/Login.js","./Popup":"src/containers/Popup.js","react-redux":"node_modules/react-redux/es/index.js","axios":"node_modules/axios/index.js","./MemeberPopup":"src/containers/MemeberPopup.js","../store/actions/nav":"src/store/actions/nav.js","../store/actions/messages":"src/store/actions/messages.js","./joinPopup":"src/containers/joinPopup.js","url-change-event":"node_modules/url-change-event/dist/url-change-event.min.js","./UploadPopup":"src/containers/UploadPopup.js"}],"src/containers/Register.js":[function(require,module,exports) {
+},{"react":"node_modules/react/index.js","antd":"node_modules/antd/es/index.js","./sidepanel":"src/containers/sidepanel.js","../websocket":"src/websocket.js","./Login":"src/containers/Login.js","./Popup":"src/containers/Popup.js","react-redux":"node_modules/react-redux/es/index.js","axios":"node_modules/axios/index.js","./MemeberPopup":"src/containers/MemeberPopup.js","../store/actions/nav":"src/store/actions/nav.js","../store/actions/messages":"src/store/actions/messages.js","./joinPopup":"src/containers/joinPopup.js","url-change-event":"node_modules/url-change-event/dist/url-change-event.min.js","./UploadPopup":"src/containers/UploadPopup.js","./ConfirmPopup":"src/containers/ConfirmPopup.js","@ant-design/icons":"node_modules/@ant-design/icons/es/index.js"}],"src/containers/Register.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {

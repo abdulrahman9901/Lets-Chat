@@ -5,7 +5,6 @@ import webSocketInstance from '../websocket';
 import Login from './Login';
 import AddChatModal from './Popup';
 import {connect} from 'react-redux'
-import { Button } from 'antd';
 import axios from 'axios';
 import AddMemberModal from './MemeberPopup'
 import * as navActions from '../store/actions/nav'
@@ -14,6 +13,10 @@ import JoinChatModal from './joinPopup';
 import 'url-change-event'
 import UploadModal from './UploadPopup';
 import { Dropdown, Menu } from 'antd';
+import ConfirmModal from './ConfirmPopup';
+import { Button, Modal } from 'antd';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
+const { confirm } = Modal;
 const { Item } = Menu;
 class Chat extends React.Component {
 
@@ -300,6 +303,21 @@ class Chat extends React.Component {
                 message.error('something went wrong olease try again later...! ',5)
             });
         }
+
+    ConfirmModal = (action,actionName) => {
+        confirm({
+          title: `Do you want to ${actionName} the chat..?`,
+          icon: <ExclamationCircleOutlined />,
+          content: `If you clicked the OK button, this dialog will be closed after 1 second and you will ${actionName} the chat.`,
+          onOk() {
+            return new Promise((resolve, reject) => {
+                setTimeout(Math.random() > 0.5 ? resolve : reject, 1000);
+                setTimeout(action, 1200);
+            }).catch(() => console.log('Oops errors!'));
+          },
+          onCancel() {},
+        });
+      };
     render(){
         console.log('props =>>>>>>>>>>>> ',this.props)
         const messages=this.props.messages;
@@ -314,7 +332,7 @@ class Chat extends React.Component {
                     key : '0'
             },{   label :(<Item style={{backgroundColor:"#001529"}} disabled={!(this.props.admins && this.props.admins.includes(this.props.currentUser))} onClick={()=>{alert("Kick memeber(s) was clicked")}} >Kick member(s)</Item>),
                     key : '1'
-            },{   label :(<Item style={{backgroundColor:"#001529"}} disabled={!(this.props.admins && this.props.admins.includes(this.props.currentUser))} onClick={()=>{alert("Delete the chat was clicked")}} >Delete the Chat</Item>),
+            },{   label :(<Item style={{backgroundColor:"#001529"}} disabled={!(this.props.admins && this.props.admins.includes(this.props.currentUser))} onClick={()=>{this.ConfirmModal(()=>{alert("action")} , "Delete")}} >Delete the Chat</Item>),
                     key : '2'
             },
                 ]
@@ -333,6 +351,8 @@ class Chat extends React.Component {
                 close={() => this.props.closeJoinChatPopup()}
                 />
                 <UploadModal  chatid ={window.location.pathname.slice(1)}  username={this.props.currentUser} token={this.props.token} open={this.state.upload} cancel={this.handleCancel}/>
+                {/* <ConfirmModal isVisible={this.state.confirmDelete} onClose={this.closeConfirm}/>
+                <ConfirmModal isVisible={this.state.confirmLeave} onClose={this.closeConfirm} action={this.leave}/> */}
                 <Sidepanel />
                 <div className="content">
                 {this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?
@@ -342,21 +362,12 @@ class Chat extends React.Component {
                 {this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?  
                  <div className="social-media">
                 <Dropdown.Button overlay={
-                //     <Menu theme='dark' >
-                //     {console.log("in drop dwon ",!(this.props.admins && this.props.admins.includes(this.props.currentUser)))}
-                //      <Menu.Item key="1" disabled={!(this.props.admins && this.props.admins.includes(this.props.currentUser))}  onClick={()=>{this.props.addMemeber()}}>
-                //              Add memeber
-                //      </Menu.Item>
-                //      <Menu.Item key="2" disabled={!(this.props.admins && this.props.admins.includes(this.props.currentUser))} > 
-                //              Delete Chat
-                //      </Menu.Item>
-                //  </Menu>
                 <Menu theme='dark' style={{minHeight:'135px'}} items={menuItems}/>
                 }
                 
                 trigger={'click'}
                 style={{ background: "#32465A", borderColor: "green" , color:"white"}} 
-                onClick={(e)=>{e.preventDefault();this.leave();}}
+                onClick={(e)=>{e.preventDefault();this.ConfirmModal(()=>{this.leave()} , "Leave")}}
                 >
                 Leave Chat
                 </Dropdown.Button>
@@ -388,16 +399,7 @@ class Chat extends React.Component {
                              :""
                             }
                          id="chat-message-input" placeholder="Write your message..."
-                     ></textarea> 
-                    {/* <input
-                    onChange={this.changeMessageHandler}
-                    value={
-                         !this.state.flag ?
-                         this.state.message
-                         :""
-                        }
-                     id="chat-message-input" type="text" placeholder="Write your message..." />  */}
-
+                     ></textarea>
         
                     <button id="chat-message-submit" className="submit">
                      <i className="fa fa-paper-plane" aria-hidden="true"></i>
