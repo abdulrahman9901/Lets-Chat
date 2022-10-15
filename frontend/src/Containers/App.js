@@ -27,7 +27,7 @@ class App extends React.Component {
             <Route path="/login" element={ <Login /> } />
             <Route path="/register" element={ <Register /> } />
             <Route path="/:chatID" element={<Chat {...this.props}  main={false}/>} />
-            <Route path="/" element={<Chat {...this.props} main={true} />} />
+            <Route exact path="/" element={<Chat {...this.props} main={true} />} />
             {/* <Route path="*" element={<PageNotFound />} /> */}
             </Routes>
             </div>

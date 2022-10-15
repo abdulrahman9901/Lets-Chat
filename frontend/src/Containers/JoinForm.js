@@ -47,7 +47,7 @@ const JoinChatForm = (props) => {
             //   webSocketInstance.connect(props.username,res.data.data.id)
             // }
             // webSocketInstance.fetchMessages(props.username,res.data.data.id,10);
-            // navigate(`/${res.data.data.id}`)
+             //navigate(`/${res.data.data.id}`)
             window.location.pathname = `/${res.data.data.id}`
         }).catch(err =>{
             console.log(`error at create chat ${err}`)
