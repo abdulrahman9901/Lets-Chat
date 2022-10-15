@@ -26901,7 +26901,7 @@ body {
   }
   #frame #sidepanel #contacts ul li.contact {
     position: relative;
-    padding: 5px 0 5px 0;
+    padding: 10px 0 10px 0;
     font-size: 0.9em;
     cursor: pointer;
     margin-bottom: 10px;

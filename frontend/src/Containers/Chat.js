@@ -14,7 +14,7 @@ import JoinChatModal from './joinPopup';
 import 'url-change-event'
 import UploadModal from './UploadPopup';
 import { Dropdown, Menu } from 'antd';
-
+const { Item } = Menu;
 class Chat extends React.Component {
 
     state={
@@ -46,6 +46,7 @@ class Chat extends React.Component {
         super(props)
         console.log('constructor')
         this.initializeChat()
+        this.pathname = location.pathname
         const CheckUrlChange = () => {
             console.log('in event handler ',location.pathname ,this.pathname)
             if (location.pathname !== this.pathname) {
@@ -58,25 +59,11 @@ class Chat extends React.Component {
         window.addEventListener("click",CheckUrlChange);
 
         // window.addEventListener('urlchangeevent',CheckUrlChange);
-        // var pushState = window.history.pushState;
-        // window.history.pushState = function(state) {
-        //     this.initializeChat()
-        //     console.log('I am called from pushStateHook');
-        //     return pushState.apply(history, arguments);
-        // };
         
     }
 
     componentWillReceiveProps(newProps){
-        // const loadMoreMsgs = ()=>{
-        //     this.setState((prevState) => ({ 
-        //         msgCount: prevState.msgCount + 10 ,
-        //         messageLoad:true
-        //      }),function () {
-        //         console.log("new msgCount =======>>>>>>",this.state)
-        //         webSocketInstance.fetchMessages(this.props.currentUser,window.location.pathname.slice(1),this.state.msgCount);
-        //     })
-        //   };
+
         console.log('newProps',newProps.messages,'Props',this.props.messages)
         console.log('componentWillReceiveProps')
         this.props.getChats()
@@ -84,31 +71,8 @@ class Chat extends React.Component {
             if (newProps.messages.length == 1 && newProps.messages[0].system_message)
                 this.pathname = location.pathname;
         }
-    // try {
-    //     document.getElementById("messagesWindow").addEventListener("scroll",function() {
-    //         console.log(document.getElementById("messagesWindow").scrollTop); 
-    //         if(document.getElementById("messagesWindow").scrollTop >= 100 && document.getElementById("messagesWindow").scrollTop <= 110){
-    //             //document.getElementById("messagesWindow").scrollTop = 100
-    //             console.log("load more messages !! ")
-    //             loadMoreMsgs();
-    //         }
-    //     })
-    //     }catch(error){
-    //         console.log(error)
-    //     }
-    
-        // if(this.state.messageLoad === false)
-        // {  
              console.log("scroll down did update")
             this.scrollToBottom();
-        // }
-        // else {
-            // this.setState({ 
-            //     messageLoad:false
-            //  },function () {
-            //     console.log("new msgCount ",this.state.messageLoad)
-            // })
-        //}
     }
 
     messagesEndRef = React.createRef()
@@ -120,16 +84,6 @@ class Chat extends React.Component {
       }
       
       componentDidMount() {
-        // if(this.state.messageLoad === false)
-        // {   console.log("scroll down did mount")
-        //     this.scrollToBottom();}
-        // else {
-        //     this.setState({ 
-        //         messageLoad:false
-        //      },function () {
-        //         console.log("new msgCount ",this.state.messageLoad)
-        //     })
-        // }
         this.scrollToBottom();
         this.submitOnEnter();
       }
@@ -353,6 +307,17 @@ class Chat extends React.Component {
 
         if(this.props.isAuthenticated === true) 
         {console.log("isAuthenticated");
+
+        console.log("menuItems disable value ",!(this.props.admins && this.props.admins.includes(this.props.currentUser)))
+        const menuItems = [
+            {     label :(<Item style={{backgroundColor:"#001529"}} disabled={!(this.props.admins && this.props.admins.includes(this.props.currentUser))} onClick={()=>{this.props.addMemeber()}} >Add memeber(s)</Item>),
+                    key : '0'
+            },{   label :(<Item style={{backgroundColor:"#001529"}} disabled={!(this.props.admins && this.props.admins.includes(this.props.currentUser))} onClick={()=>{alert("Kick memeber(s) was clicked")}} >Kick member(s)</Item>),
+                    key : '1'
+            },{   label :(<Item style={{backgroundColor:"#001529"}} disabled={!(this.props.admins && this.props.admins.includes(this.props.currentUser))} onClick={()=>{alert("Delete the chat was clicked")}} >Delete the Chat</Item>),
+                    key : '2'
+            },
+                ]
         return (
             <div id="frame">
                  <AddChatModal 
@@ -371,40 +336,22 @@ class Chat extends React.Component {
                 <Sidepanel />
                 <div className="content">
                 {this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?
-                //   (<div className="contact-profile">
-                //     <img src="https://img.icons8.com/pastel-glyph/128/2C3E50/communication--v1.png"/>
-                //     <p> {this.props.name ? this.props.name : window.location.pathname.slice(1) ? `Chat # ${window.location.pathname.slice(1)}`:null} </p>
-                //     {this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?   <div className="social-media">
-                //     {this.props.admins && this.props.admins.includes(this.props.currentUser) ? 
-                //         <Button type="primary" style={{ background: "#32465A", borderColor: "green" }} onClick={(e)=>{e.preventDefault();this.props.addMemeber()}}>
-                //             Add memeber
-                //         </Button>
-                //     : null}
-                //     <Button   style={{ background: "#32465A", borderColor: "green" , color:"white"}} danger onClick={(e)=>{e.preventDefault();this.leave();}}>
-                //         Leave
-                //     </Button>
-                //     {this.props.admins && this.props.admins.includes(this.props.currentUser) ? 
-                //         <Button type="primary" danger  style={{ background: "#32465A", borderColor: "green" }}>
-                //             Delete 
-                //         </Button>
-                //     : null}
-                //     </div>: null}
-                //   </div>)
                 <div className="contact-profile">
                 <img src="https://img.icons8.com/pastel-glyph/128/2C3E50/communication--v1.png"/>
                 <p> {this.props.name ? this.props.name : window.location.pathname.slice(1) ? `Chat # ${window.location.pathname.slice(1)}`:null} </p>
                 {this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?  
                  <div className="social-media">
                 <Dropdown.Button overlay={
-                    <Menu theme='dark' >
-                    {console.log("in drop dwon ",!(this.props.admins && this.props.admins.includes(this.props.currentUser)))}
-                     <Menu.Item key="1" disabled={!(this.props.admins && this.props.admins.includes(this.props.currentUser))}  onClick={()=>{this.props.addMemeber()}}>
-                             Add memeber
-                     </Menu.Item>
-                     <Menu.Item key="2" disabled={!(this.props.admins && this.props.admins.includes(this.props.currentUser))} > 
-                             Delete Chat
-                     </Menu.Item>
-                 </Menu>
+                //     <Menu theme='dark' >
+                //     {console.log("in drop dwon ",!(this.props.admins && this.props.admins.includes(this.props.currentUser)))}
+                //      <Menu.Item key="1" disabled={!(this.props.admins && this.props.admins.includes(this.props.currentUser))}  onClick={()=>{this.props.addMemeber()}}>
+                //              Add memeber
+                //      </Menu.Item>
+                //      <Menu.Item key="2" disabled={!(this.props.admins && this.props.admins.includes(this.props.currentUser))} > 
+                //              Delete Chat
+                //      </Menu.Item>
+                //  </Menu>
+                <Menu theme='dark' style={{minHeight:'135px'}} items={menuItems}/>
                 }
                 
                 trigger={'click'}

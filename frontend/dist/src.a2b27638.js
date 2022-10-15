@@ -204939,11 +204939,17 @@ var Contact = function Contact(props) {
       })
     }),
     trigger: ['click']
+  }, /*#__PURE__*/_react.default.createElement(_antd.Button, {
+    style: {
+      paddingLeft: '10px',
+      paddingRight: '4px',
+      marginBottom: '10px'
+    }
   }, /*#__PURE__*/_react.default.createElement("a", {
     onClick: function onClick(e) {
       return e.preventDefault();
     }
-  }, /*#__PURE__*/_react.default.createElement(_antd.Space, null, "Show", /*#__PURE__*/_react.default.createElement(_icons.DownOutlined, null)))) : null)))));
+  }, /*#__PURE__*/_react.default.createElement(_antd.Space, null, "Show", /*#__PURE__*/_react.default.createElement(_icons.DownOutlined, null))))) : null)))));
 };
 
 var _default = Contact;
@@ -206141,7 +206147,7 @@ var JoinChatForm = function JoinChatForm(props) {
       //   webSocketInstance.connect(props.username,res.data.data.id)
       // }
       // webSocketInstance.fetchMessages(props.username,res.data.data.id,10);
-      // navigate(`/${res.data.data.id}`)
+      //navigate(`/${res.data.data.id}`)
 
       window.location.pathname = "/".concat(res.data.data.id);
     }).catch(function (err) {
@@ -209169,6 +209175,8 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+var Item = _antd.Menu.Item;
+
 var Chat = /*#__PURE__*/function (_React$Component) {
   _inherits(Chat, _React$Component);
 
@@ -209315,6 +209323,8 @@ var Chat = /*#__PURE__*/function (_React$Component) {
 
     _this.initializeChat();
 
+    _this.pathname = location.pathname;
+
     var CheckUrlChange = function CheckUrlChange() {
       console.log('in event handler ', location.pathname, _this.pathname);
 
@@ -209328,12 +209338,6 @@ var Chat = /*#__PURE__*/function (_React$Component) {
 
 
     window.addEventListener("click", CheckUrlChange); // window.addEventListener('urlchangeevent',CheckUrlChange);
-    // var pushState = window.history.pushState;
-    // window.history.pushState = function(state) {
-    //     this.initializeChat()
-    //     console.log('I am called from pushStateHook');
-    //     return pushState.apply(history, arguments);
-    // };
 
     return _this;
   }
@@ -209364,60 +209368,20 @@ var Chat = /*#__PURE__*/function (_React$Component) {
   }, {
     key: "componentWillReceiveProps",
     value: function componentWillReceiveProps(newProps) {
-      // const loadMoreMsgs = ()=>{
-      //     this.setState((prevState) => ({ 
-      //         msgCount: prevState.msgCount + 10 ,
-      //         messageLoad:true
-      //      }),function () {
-      //         console.log("new msgCount =======>>>>>>",this.state)
-      //         webSocketInstance.fetchMessages(this.props.currentUser,window.location.pathname.slice(1),this.state.msgCount);
-      //     })
-      //   };
       console.log('newProps', newProps.messages, 'Props', this.props.messages);
       console.log('componentWillReceiveProps');
       this.props.getChats();
 
       if (newProps && newProps.messages) {
         if (newProps.messages.length == 1 && newProps.messages[0].system_message) this.pathname = location.pathname;
-      } // try {
-      //     document.getElementById("messagesWindow").addEventListener("scroll",function() {
-      //         console.log(document.getElementById("messagesWindow").scrollTop); 
-      //         if(document.getElementById("messagesWindow").scrollTop >= 100 && document.getElementById("messagesWindow").scrollTop <= 110){
-      //             //document.getElementById("messagesWindow").scrollTop = 100
-      //             console.log("load more messages !! ")
-      //             loadMoreMsgs();
-      //         }
-      //     })
-      //     }catch(error){
-      //         console.log(error)
-      //     }
-      // if(this.state.messageLoad === false)
-      // {  
-
+      }
 
       console.log("scroll down did update");
-      this.scrollToBottom(); // }
-      // else {
-      // this.setState({ 
-      //     messageLoad:false
-      //  },function () {
-      //     console.log("new msgCount ",this.state.messageLoad)
-      // })
-      //}
+      this.scrollToBottom();
     }
   }, {
     key: "componentDidMount",
     value: function componentDidMount() {
-      // if(this.state.messageLoad === false)
-      // {   console.log("scroll down did mount")
-      //     this.scrollToBottom();}
-      // else {
-      //     this.setState({ 
-      //         messageLoad:false
-      //      },function () {
-      //         console.log("new msgCount ",this.state.messageLoad)
-      //     })
-      // }
       this.scrollToBottom();
       this.submitOnEnter();
     }
@@ -209553,6 +209517,41 @@ var Chat = /*#__PURE__*/function (_React$Component) {
 
       if (this.props.isAuthenticated === true) {
         console.log("isAuthenticated");
+        console.log("menuItems disable value ", !(this.props.admins && this.props.admins.includes(this.props.currentUser)));
+        var menuItems = [{
+          label: /*#__PURE__*/_react.default.createElement(Item, {
+            style: {
+              backgroundColor: "#001529"
+            },
+            disabled: !(this.props.admins && this.props.admins.includes(this.props.currentUser)),
+            onClick: function onClick() {
+              _this4.props.addMemeber();
+            }
+          }, "Add memeber(s)"),
+          key: '0'
+        }, {
+          label: /*#__PURE__*/_react.default.createElement(Item, {
+            style: {
+              backgroundColor: "#001529"
+            },
+            disabled: !(this.props.admins && this.props.admins.includes(this.props.currentUser)),
+            onClick: function onClick() {
+              alert("Kick memeber(s) was clicked");
+            }
+          }, "Kick member(s)"),
+          key: '1'
+        }, {
+          label: /*#__PURE__*/_react.default.createElement(Item, {
+            style: {
+              backgroundColor: "#001529"
+            },
+            disabled: !(this.props.admins && this.props.admins.includes(this.props.currentUser)),
+            onClick: function onClick() {
+              alert("Delete the chat was clicked");
+            }
+          }, "Delete the Chat"),
+          key: '2'
+        }];
         return /*#__PURE__*/_react.default.createElement("div", {
           id: "frame"
         }, /*#__PURE__*/_react.default.createElement(_Popup.default, {
@@ -209578,46 +209577,31 @@ var Chat = /*#__PURE__*/function (_React$Component) {
           cancel: this.handleCancel
         }), /*#__PURE__*/_react.default.createElement(_sidepanel.default, null), /*#__PURE__*/_react.default.createElement("div", {
           className: "content"
-        }, this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?
-        /*#__PURE__*/
-        //   (<div className="contact-profile">
-        //     <img src="https://img.icons8.com/pastel-glyph/128/2C3E50/communication--v1.png"/>
-        //     <p> {this.props.name ? this.props.name : window.location.pathname.slice(1) ? `Chat # ${window.location.pathname.slice(1)}`:null} </p>
-        //     {this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?   <div className="social-media">
-        //     {this.props.admins && this.props.admins.includes(this.props.currentUser) ? 
-        //         <Button type="primary" style={{ background: "#32465A", borderColor: "green" }} onClick={(e)=>{e.preventDefault();this.props.addMemeber()}}>
-        //             Add memeber
-        //         </Button>
-        //     : null}
-        //     <Button   style={{ background: "#32465A", borderColor: "green" , color:"white"}} danger onClick={(e)=>{e.preventDefault();this.leave();}}>
-        //         Leave
-        //     </Button>
-        //     {this.props.admins && this.props.admins.includes(this.props.currentUser) ? 
-        //         <Button type="primary" danger  style={{ background: "#32465A", borderColor: "green" }}>
-        //             Delete 
-        //         </Button>
-        //     : null}
-        //     </div>: null}
-        //   </div>)
-        _react.default.createElement("div", {
+        }, this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ? /*#__PURE__*/_react.default.createElement("div", {
           className: "contact-profile"
         }, /*#__PURE__*/_react.default.createElement("img", {
           src: "https://img.icons8.com/pastel-glyph/128/2C3E50/communication--v1.png"
         }), /*#__PURE__*/_react.default.createElement("p", null, " ", this.props.name ? this.props.name : window.location.pathname.slice(1) ? "Chat # ".concat(window.location.pathname.slice(1)) : null, " "), this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ? /*#__PURE__*/_react.default.createElement("div", {
           className: "social-media"
         }, /*#__PURE__*/_react.default.createElement(_antd.Dropdown.Button, {
-          overlay: /*#__PURE__*/_react.default.createElement(_antd.Menu, {
-            theme: "dark"
-          }, console.log("in drop dwon ", !(this.props.admins && this.props.admins.includes(this.props.currentUser))), /*#__PURE__*/_react.default.createElement(_antd.Menu.Item, {
-            key: "1",
-            disabled: !(this.props.admins && this.props.admins.includes(this.props.currentUser)),
-            onClick: function onClick() {
-              _this4.props.addMemeber();
-            }
-          }, "Add memeber"), /*#__PURE__*/_react.default.createElement(_antd.Menu.Item, {
-            key: "2",
-            disabled: !(this.props.admins && this.props.admins.includes(this.props.currentUser))
-          }, "Delete Chat")),
+          overlay:
+          /*#__PURE__*/
+          //     <Menu theme='dark' >
+          //     {console.log("in drop dwon ",!(this.props.admins && this.props.admins.includes(this.props.currentUser)))}
+          //      <Menu.Item key="1" disabled={!(this.props.admins && this.props.admins.includes(this.props.currentUser))}  onClick={()=>{this.props.addMemeber()}}>
+          //              Add memeber
+          //      </Menu.Item>
+          //      <Menu.Item key="2" disabled={!(this.props.admins && this.props.admins.includes(this.props.currentUser))} > 
+          //              Delete Chat
+          //      </Menu.Item>
+          //  </Menu>
+          _react.default.createElement(_antd.Menu, {
+            theme: "dark",
+            style: {
+              minHeight: '135px'
+            },
+            items: menuItems
+          }),
           trigger: 'click',
           style: {
             background: "#32465A",
@@ -210050,6 +210034,7 @@ var App = /*#__PURE__*/function (_React$Component) {
           main: false
         }))
       }), /*#__PURE__*/_react.default.createElement(_reactRouterDom.Route, {
+        exact: true,
         path: "/",
         element: /*#__PURE__*/_react.default.createElement(_Chat.default, _extends({}, this.props, {
           main: true
@@ -215333,7 +215318,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "12365" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "7941" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
