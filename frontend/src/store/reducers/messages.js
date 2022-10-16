@@ -20,6 +20,7 @@ const setMessages =(state,action)=>{
         admins:action.admins,
         participantsCount:action.participantsCount,
         name: action.name,
+        chatKey:action.chatKey,
         system_message:action.system_message
     })
 }

@@ -27524,8 +27524,13 @@ button.ant-btn.ant-btn-default.ant-btn-icon-only.ant-dropdown-trigger:hover{
 #chatid{
   top: 20px;
   position: absolute;
-  left: 100px;
+  left: 90px;
   color: lightslategray;
+}
+div.ant-popover.ant-popover-placement-bottom{
+  max-width: 300px;
+  top: 59px !important;
+  word-break: break-word;
 }
 
 /*# sourceMappingURL=/style.1f0df735.css.map */

@@ -6,7 +6,7 @@ from channels.generic.websocket import WebsocketConsumer
 from chat.models import Chat, Contact, Message
 from django.contrib.auth import get_user_model
 from .views import load_last_messages , get_user_contact ,get_current_chat
-
+from .api.serializers import ChatSerializer
 User=get_user_model()
 
 class ChatConsumer(WebsocketConsumer):
@@ -66,7 +66,8 @@ class ChatConsumer(WebsocketConsumer):
                 'messages':self.messages_to_json(messages),
                 'participants' :memebers,
                 'admins' :admins,
-                'name' : chat.name
+                'name' : chat.name,
+                'chatKey' :ChatSerializer(chat).data['chatKey']
             }
         else :
             content={

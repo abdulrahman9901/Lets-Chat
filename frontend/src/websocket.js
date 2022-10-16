@@ -50,7 +50,7 @@ class WebSocketService{
             return;
         }
         if(command === 'messages'){
-            this.callbacks[command]([parsedData.messages,parsedData.participants,parsedData.name,parsedData.admins,parsedData.system_message,parsedData.image])
+            this.callbacks[command]([parsedData.messages,parsedData.participants,parsedData.name,parsedData.admins,parsedData.system_message,parsedData.image,parsedData.chatKey])
         }
         if(command === 'new_message'){
             this.callbacks[command](parsedData.message)

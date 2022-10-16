@@ -19,6 +19,7 @@ export const setMessages =(messages)=>{
         name:messages[2],
         admins:messages[3],
         system_message:messages[4],
+        chatKey:messages[6],
         participantsCount:messages[1].length
     }
 }
