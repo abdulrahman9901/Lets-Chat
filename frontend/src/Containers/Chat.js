@@ -13,7 +13,6 @@ import JoinChatModal from './joinPopup';
 import 'url-change-event'
 import UploadModal from './UploadPopup';
 import { Dropdown, Menu } from 'antd';
-import ConfirmModal from './ConfirmPopup';
 import { Button, Modal } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 const { confirm } = Modal;
@@ -25,6 +24,7 @@ class Chat extends React.Component {
         upload:false,
         messageLoad:false,
         msgCount:50,
+        showKickMemeberPopup:false
     }
 
     initializeChat(){
@@ -250,6 +250,7 @@ class Chat extends React.Component {
     handleCancel = () => {
         this.setState({
             upload:false,
+            showKickMemeberPopup:false
         },function () {
             console.log('state is : ' ,this.state);
         });
@@ -300,12 +301,33 @@ class Chat extends React.Component {
             window.location.pathname = "/"
             }).catch(err =>{
                 console.log(`error at create chat ${err}`)
-                message.error('something went wrong olease try again later...! ',5)
+                message.error('something went wrong please try again later...! ',5)
             });
         }
-
+    DeleteChat = ()=>{
+        const chatId =window.location.pathname.slice(1);
+        axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
+        axios.defaults.xsrfCookieName = "csrftoken";
+        axios.defaults.headers = {
+            'Content-Type' : 'application/json',
+            Authorization :`Token ${this.props.token}`
+        }
+        axios.delete(`http://127.0.0.1:8000/chat/${chatId}/delete/`,
+                {}
+        ).then(res=>{
+            console.log(res.data)
+            message.success('You have deleted the chat successfully',5)
+            this.props.getChats(localStorage.getItem('username'),this.props.token)
+            this.initializeChat();
+            window.location.pathname = "/"
+            }).catch(err =>{
+                console.log(`error at create chat ${err}`)
+                message.error('something went wrong please try again later...! ',5)
+            });
+    }
     ConfirmModal = (action,actionName) => {
-        confirm({
+        confirm(
+        {
           title: `Do you want to ${actionName} the chat..?`,
           icon: <ExclamationCircleOutlined />,
           content: `If you clicked the OK button, this dialog will be closed after 1 second and you will ${actionName} the chat.`,
@@ -328,11 +350,11 @@ class Chat extends React.Component {
 
         console.log("menuItems disable value ",!(this.props.admins && this.props.admins.includes(this.props.currentUser)))
         const menuItems = [
-            {     label :(<Item style={{backgroundColor:"#001529"}} disabled={!(this.props.admins && this.props.admins.includes(this.props.currentUser))} onClick={()=>{this.props.addMemeber()}} >Add memeber(s)</Item>),
+            {     label :(<Item style={{backgroundColor:"#001529"}} disabled={!(this.props.admins && this.props.admins.includes(this.props.currentUser))} onClick={()=>{this.props.addMemeber()}} >Add member(s)</Item>),
                     key : '0'
-            },{   label :(<Item style={{backgroundColor:"#001529"}} disabled={!(this.props.admins && this.props.admins.includes(this.props.currentUser))} onClick={()=>{alert("Kick memeber(s) was clicked")}} >Kick member(s)</Item>),
+            },{   label :(<Item style={{backgroundColor:"#001529"}} disabled={!(this.props.admins && this.props.admins.includes(this.props.currentUser))} onClick={()=>{this.setState({showKickMemeberPopup:true})}} >Kick member(s)</Item>),
                     key : '1'
-            },{   label :(<Item style={{backgroundColor:"#001529"}} disabled={!(this.props.admins && this.props.admins.includes(this.props.currentUser))} onClick={()=>{this.ConfirmModal(()=>{alert("action")} , "Delete")}} >Delete the Chat</Item>),
+            },{   label :(<Item style={{backgroundColor:"#001529"}} disabled={!(this.props.admins && this.props.admins.includes(this.props.currentUser))} onClick={()=>{this.ConfirmModal(()=>{this.DeleteChat()} , "Delete")}} >Delete the Chat</Item>),
                     key : '2'
             },
                 ]
@@ -345,20 +367,25 @@ class Chat extends React.Component {
                 <AddMemberModal 
                 isVisible={this.props.showAddMemeberPopup}
                 close={() => this.props.closeAddMemeberPopup()}
+                action={'Adding'}
+                />
+                <AddMemberModal 
+                isVisible={this.state.showKickMemeberPopup}
+                close={() => this.handleCancel()}
+                action={'Kicking'}
                 />
                 <JoinChatModal 
                 isVisible={this.props.showJoinChatPopup}
                 close={() => this.props.closeJoinChatPopup()}
                 />
                 <UploadModal  chatid ={window.location.pathname.slice(1)}  username={this.props.currentUser} token={this.props.token} open={this.state.upload} cancel={this.handleCancel}/>
-                {/* <ConfirmModal isVisible={this.state.confirmDelete} onClose={this.closeConfirm}/>
-                <ConfirmModal isVisible={this.state.confirmLeave} onClose={this.closeConfirm} action={this.leave}/> */}
+                
                 <Sidepanel />
                 <div className="content">
                 {this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?
                 <div className="contact-profile">
                 <img src="https://img.icons8.com/pastel-glyph/128/2C3E50/communication--v1.png"/>
-                <p> {this.props.name ? this.props.name : window.location.pathname.slice(1) ? `Chat # ${window.location.pathname.slice(1)}`:null} </p>
+                <p> {this.props.name ? this.props.name : window.location.pathname.slice(1) ? `Chat # ${window.location.pathname.slice(1)}`:null}<br/><small id="chatid">{`@id${window.location.pathname.slice(1)}`}</small></p>
                 {this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?  
                  <div className="social-media">
                 <Dropdown.Button overlay={

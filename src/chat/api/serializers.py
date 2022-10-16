@@ -124,16 +124,25 @@ class ChatSerializer(serializers.ModelSerializer):
         for admin in admins:
                 new_admins.append(get_user_contact(admin))
 
-        # leave case 
+        # leave /kick case 
         if len(contacts) < len(instance.participants.all()):
-            new = list(set(instance.participants.all()) - set(contacts))
-            print(new[0])     
-            message = Message.objects.create(contact=new[0],content='{} left the chat .'.format(new[0].user.username),system_message=True)
-            instance.messages.add(message)
-            send_socket_message(instance,message)
-            instance.participants.remove(new[0])
-            if new[0] in instance.admins.all():
-                instance.admins.remove(new[0])  
+            diff = list(set(instance.participants.all()) - set(contacts))
+            print(diff[0])
+            if request.data.get('command') == "kick" :
+                for contact in diff :     
+                    message = Message.objects.create(contact=contact,content='{} kicked {} from the chat .'.format(currentUser,contact.user.username),system_message=True)
+                    instance.messages.add(message)
+                    send_socket_message(instance,message)
+                    instance.participants.remove(contact)
+                    if contact in instance.admins.all():
+                        instance.admins.remove(contact)
+            else :
+                message = Message.objects.create(contact=diff[0],content='{} left the chat .'.format(diff[0].user.username),system_message=True)
+                instance.messages.add(message)
+                send_socket_message(instance,message)
+                instance.participants.remove(diff[0])
+                if diff[0] in instance.admins.all():
+                    instance.admins.remove(diff[0])    
             
         # add memeber and/or assign memeber to be an admin 
 
