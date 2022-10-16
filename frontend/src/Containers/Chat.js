@@ -1,5 +1,5 @@
 import React from 'react';
-import {message, Upload} from 'antd'
+import {message, Upload,Popover} from 'antd'
 import Sidepanel from './sidepanel';
 import webSocketInstance from '../websocket';
 import Login from './Login';
@@ -385,7 +385,15 @@ class Chat extends React.Component {
                 {this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?
                 <div className="contact-profile">
                 <img src="https://img.icons8.com/pastel-glyph/128/2C3E50/communication--v1.png"/>
-                <p> {this.props.name ? this.props.name : window.location.pathname.slice(1) ? `Chat # ${window.location.pathname.slice(1)}`:null}<br/><small id="chatid">{`@id${window.location.pathname.slice(1)}`}</small></p>
+                <p> {this.props.name ? this.props.name : window.location.pathname.slice(1) ? `Chat # ${window.location.pathname.slice(1)}`:null}
+                <br/>
+                {this.props.admins && this.props.admins.includes(this.props.currentUser) ?
+                <Popover style={{width:'200px',
+                    marginLeft:'70px'}} 
+                    title={null} content={`${this.props.chatKey}`} trigger="click">
+                    <small id="chatid">@chatkey</small>
+                </Popover>:null}              
+                </p>
                 {this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?  
                  <div className="social-media">
                 <Dropdown.Button overlay={
@@ -469,6 +477,7 @@ const mapStateToProps =(state)=>{
     participants:state.message.participants ,
     participantsCount:state.message.participantsCount ,
     name : state.message.name,
+    chatKey :state.message.chatKey,
     token:state.auth.token,
     currentUser : state.auth.username,
     admins : state.message.admins

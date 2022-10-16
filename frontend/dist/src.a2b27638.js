@@ -197908,6 +197908,7 @@ var setMessages = function setMessages(messages) {
     name: messages[2],
     admins: messages[3],
     system_message: messages[4],
+    chatKey: messages[6],
     participantsCount: messages[1].length
   };
 };
@@ -205031,7 +205032,7 @@ var WebSocketService = /*#__PURE__*/function () {
       }
 
       if (command === 'messages') {
-        this.callbacks[command]([parsedData.messages, parsedData.participants, parsedData.name, parsedData.admins, parsedData.system_message, parsedData.image]);
+        this.callbacks[command]([parsedData.messages, parsedData.participants, parsedData.name, parsedData.admins, parsedData.system_message, parsedData.image, parsedData.chatKey]);
       }
 
       if (command === 'new_message') {
@@ -209801,9 +209802,17 @@ var Chat = /*#__PURE__*/function (_React$Component) {
           className: "contact-profile"
         }, /*#__PURE__*/_react.default.createElement("img", {
           src: "https://img.icons8.com/pastel-glyph/128/2C3E50/communication--v1.png"
-        }), /*#__PURE__*/_react.default.createElement("p", null, " ", this.props.name ? this.props.name : window.location.pathname.slice(1) ? "Chat # ".concat(window.location.pathname.slice(1)) : null, /*#__PURE__*/_react.default.createElement("br", null), /*#__PURE__*/_react.default.createElement("small", {
+        }), /*#__PURE__*/_react.default.createElement("p", null, " ", this.props.name ? this.props.name : window.location.pathname.slice(1) ? "Chat # ".concat(window.location.pathname.slice(1)) : null, /*#__PURE__*/_react.default.createElement("br", null), this.props.admins && this.props.admins.includes(this.props.currentUser) ? /*#__PURE__*/_react.default.createElement(_antd.Popover, {
+          style: {
+            width: '200px',
+            marginLeft: '70px'
+          },
+          title: null,
+          content: "".concat(this.props.chatKey),
+          trigger: "click"
+        }, /*#__PURE__*/_react.default.createElement("small", {
           id: "chatid"
-        }, "@id".concat(window.location.pathname.slice(1)))), this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ? /*#__PURE__*/_react.default.createElement("div", {
+        }, "@chatkey")) : null), this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ? /*#__PURE__*/_react.default.createElement("div", {
           className: "social-media"
         }, /*#__PURE__*/_react.default.createElement(_antd.Dropdown.Button, {
           overlay: /*#__PURE__*/_react.default.createElement(_antd.Menu, {
@@ -209897,6 +209906,7 @@ var mapStateToProps = function mapStateToProps(state) {
     participants: state.message.participants,
     participantsCount: state.message.participantsCount,
     name: state.message.name,
+    chatKey: state.message.chatKey,
     token: state.auth.token,
     currentUser: state.auth.username,
     admins: state.message.admins
@@ -215426,6 +215436,7 @@ var setMessages = function setMessages(state, action) {
     admins: action.admins,
     participantsCount: action.participantsCount,
     name: action.name,
+    chatKey: action.chatKey,
     system_message: action.system_message
   });
 };
@@ -215531,7 +215542,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "4198" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "5953" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

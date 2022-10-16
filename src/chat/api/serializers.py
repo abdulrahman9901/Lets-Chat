@@ -18,6 +18,12 @@ from asgiref.sync import async_to_sync
 
 from channels.layers import get_channel_layer
 
+from cryptography.fernet import Fernet
+
+key = Fernet.generate_key()
+f = Fernet(key)
+print(key.decode())
+
 class CustomRegisterSerializer(RegisterSerializer):
     gender = serializers.ChoiceField(choices=GENDER_SELECTION)
     phone_number = serializers.CharField(max_length=30)
@@ -59,12 +65,16 @@ def send_socket_message(instance,message):
 class ChatSerializer(serializers.ModelSerializer):
     participants = ContactSerializer(many=True)
     admins = ContactSerializer(many=True)
-    
+    chatKey = serializers.SerializerMethodField('get_chat_key')
+
+    def get_chat_key(self, instance):
+        return f.encrypt(bytes(str(instance.id), 'utf-8')).decode()
+
     allowed_methods = ['get', 'post', 'put', 'delete', 'options','update']
     
     class Meta:
         model = Chat
-        fields = ('id','name','messages', 'participants','admins')
+        fields = ('id','name','messages', 'participants','admins','chatKey')
         read_only = ('id')
 
     def create(self, validated_data):
