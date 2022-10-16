@@ -205794,7 +205794,191 @@ var AddChatModal = function AddChatModal(props) {
 
 var _default = AddChatModal;
 exports.default = _default;
-},{"antd":"node_modules/antd/es/index.js","react":"node_modules/react/index.js","./Form":"src/containers/Form.js"}],"src/containers/MemeberForm.js":[function(require,module,exports) {
+},{"antd":"node_modules/antd/es/index.js","react":"node_modules/react/index.js","./Form":"src/containers/Form.js"}],"src/containers/KickMemeberForm.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _antd = require("antd");
+
+var _react = _interopRequireWildcard(require("react"));
+
+var _axios = _interopRequireDefault(require("axios"));
+
+var navActions = _interopRequireWildcard(require("../store/actions/nav"));
+
+var messageActions = _interopRequireWildcard(require("../store/actions/messages"));
+
+var _reactRedux = require("react-redux");
+
+var _reactRouterDom = require("react-router-dom");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]; if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+var KickMemeberForm = function KickMemeberForm(props) {
+  var _useState = (0, _react.useState)([]),
+      _useState2 = _slicedToArray(_useState, 2),
+      usernames = _useState2[0],
+      SetUsernames = _useState2[1];
+
+  var _useState3 = (0, _react.useState)('Participant'),
+      _useState4 = _slicedToArray(_useState3, 2),
+      value = _useState4[0],
+      setValue = _useState4[1];
+  /**https://github.com/pmndrs/react-three-fiber/issues/2134 */
+
+
+  var navigate = (0, _reactRouterDom.useNavigate)();
+  /*** https://stackoverflow.com/questions/53919499/clear-form-input-field-values-after-submitting-in-react-js-with-ant-design */
+
+  var _Form$useForm = _antd.Form.useForm(),
+      _Form$useForm2 = _slicedToArray(_Form$useForm, 1),
+      form = _Form$useForm2[0];
+
+  var handleChange = function handleChange(value) {
+    SetUsernames(value);
+  };
+
+  var KickMemeber = function KickMemeber(values, token) {
+    console.log(values.Contacts, token);
+    var chatId = window.location.pathname.slice(1);
+    _axios.default.defaults.xsrfHeaderName = "X-CSRFTOKEN";
+    _axios.default.defaults.xsrfCookieName = "csrftoken";
+    _axios.default.defaults.headers = {
+      'Content-Type': 'application/json',
+      Authorization: "Token ".concat(props.token)
+    };
+    var newPart = [];
+    console.log("Values type : ", _toConsumableArray(props.participants), _toConsumableArray(values.Contacts));
+
+    for (var i = 0; i < _toConsumableArray(props.participants).length; i++) {
+      if (!_toConsumableArray(values.Contacts).includes(_toConsumableArray(props.participants)[i])) newPart.push(_toConsumableArray(props.participants)[i]);
+    }
+
+    console.log("new Partcipants ", newPart);
+    var content = {
+      "command": "kick",
+      "username": props.username,
+      "messages": [],
+      "participants": newPart,
+      'admins': []
+    };
+    console.log(content);
+
+    _axios.default.put("http://127.0.0.1:8000/chat/".concat(chatId, "/update/"), content).then(function (res) {
+      console.log(res.data);
+
+      _antd.message.success('Memeber(s) were kicked successfully', 5);
+    }).catch(function (err) {
+      console.log("error at create chat ".concat(err));
+
+      _antd.message.error('something went wrong please try again later...! ', 5);
+    });
+  };
+
+  var onFinish = function onFinish(values) {
+    console.log('participants: ', [localStorage.getItem('username')].concat(_toConsumableArray(values.Contacts)));
+    KickMemeber(values, props.token);
+    form.resetFields();
+    setValue('Participants');
+    props.close();
+  };
+
+  var onFinishFailed = function onFinishFailed(errorInfo) {
+    console.log('Failed:', errorInfo);
+  };
+
+  return /*#__PURE__*/_react.default.createElement(_antd.Form, {
+    name: "basic",
+    form: form,
+    labelCol: {
+      span: 8
+    },
+    wrapperCol: {
+      span: 16
+    },
+    onFinish: onFinish,
+    onFinishFailed: onFinishFailed,
+    autoComplete: "off"
+  }, /*#__PURE__*/_react.default.createElement(_antd.Form.Item, {
+    label: "Contacts",
+    name: "Contacts",
+    rules: [{
+      required: true
+    }]
+  }, /*#__PURE__*/_react.default.createElement(_antd.Select, {
+    mode: "tags",
+    placeholder: "Please select",
+    defaultValue: [],
+    onChange: handleChange,
+    style: {
+      width: '100%'
+    }
+  }, props.participants.map(function (p) {
+    if (p !== props.username) return /*#__PURE__*/_react.default.createElement(Option, {
+      key: p
+    }, p);
+  }))), /*#__PURE__*/_react.default.createElement(_antd.Form.Item, {
+    wrapperCol: {
+      offset: 8,
+      span: 16
+    }
+  }, /*#__PURE__*/_react.default.createElement(_antd.Button, {
+    type: "primary",
+    htmlType: "submit"
+  }, "Kick")));
+};
+
+var mapStateToProps = function mapStateToProps(state) {
+  return {
+    token: state.auth.token,
+    participants: state.message.participants,
+    username: state.auth.username
+  };
+};
+
+var mapDispatchToProps = function mapDispatchToProps(dispatch) {
+  return {
+    closeOnSubmit: function closeOnSubmit() {
+      dispatch(navActions.closeAddMemeberPopup());
+    },
+    getuserChats: function getuserChats(username, token) {
+      dispatch(messageActions.getUserChats(username, token));
+    }
+  };
+};
+
+var _default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(KickMemeberForm);
+
+exports.default = _default;
+},{"antd":"node_modules/antd/es/index.js","react":"node_modules/react/index.js","axios":"node_modules/axios/index.js","../store/actions/nav":"src/store/actions/nav.js","../store/actions/messages":"src/store/actions/messages.js","react-redux":"node_modules/react-redux/es/index.js","react-router-dom":"node_modules/react-router-dom/dist/index.js"}],"src/containers/MemeberForm.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -206009,6 +206193,8 @@ var _antd = require("antd");
 
 var _react = _interopRequireWildcard(require("react"));
 
+var _KickMemeberForm = _interopRequireDefault(require("./KickMemeberForm"));
+
 var _MemeberForm = _interopRequireDefault(require("./MemeberForm"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -206017,33 +206203,8 @@ function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "functio
 
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
-
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]; if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-
 var AddMemeberModal = function AddMemeberModal(props) {
-  var _useState = (0, _react.useState)(false),
-      _useState2 = _slicedToArray(_useState, 2),
-      confirmLoading = _useState2[0],
-      setConfirmLoading = _useState2[1];
-
   console.log('at modal ', props);
-
-  var handleOk = function handleOk() {
-    setConfirmLoading(true);
-    setTimeout(function () {
-      setConfirmLoading(false);
-      props.close();
-    }, 2000);
-  };
 
   var handleCancel = function handleCancel() {
     setTimeout(function () {
@@ -206052,17 +206213,17 @@ var AddMemeberModal = function AddMemeberModal(props) {
   };
 
   return /*#__PURE__*/_react.default.createElement(_antd.Modal, {
-    title: "Adding a New Memeber ",
+    title: "".concat(props.action, " a Memeber "),
     centered: true,
     footer: null,
     open: props.isVisible,
     onCancel: handleCancel
-  }, /*#__PURE__*/_react.default.createElement(_MemeberForm.default, null));
+  }, props.action === "Adding" ? /*#__PURE__*/_react.default.createElement(_MemeberForm.default, null) : /*#__PURE__*/_react.default.createElement(_KickMemeberForm.default, props));
 };
 
 var _default = AddMemeberModal;
 exports.default = _default;
-},{"antd":"node_modules/antd/es/index.js","react":"node_modules/react/index.js","./MemeberForm":"src/containers/MemeberForm.js"}],"src/containers/JoinForm.js":[function(require,module,exports) {
+},{"antd":"node_modules/antd/es/index.js","react":"node_modules/react/index.js","./KickMemeberForm":"src/containers/KickMemeberForm.js","./MemeberForm":"src/containers/MemeberForm.js"}],"src/containers/JoinForm.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -209097,75 +209258,7 @@ var UploadModal = function UploadModal(props) {
 
 var _default = UploadModal;
 exports.default = _default;
-},{"antd":"node_modules/antd/es/index.js","antd-img-crop":"node_modules/antd-img-crop/dist/antd-img-crop.esm.js","react":"node_modules/react/index.js","axios":"node_modules/axios/index.js"}],"src/containers/ConfirmPopup.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
-
-var _antd = require("antd");
-
-var _react = _interopRequireWildcard(require("react"));
-
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
-
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]; if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-
-var ConfirmModal = function ConfirmModal(props) {
-  var _useState = (0, _react.useState)(false),
-      _useState2 = _slicedToArray(_useState, 2),
-      confirmLoading = _useState2[0],
-      setConfirmLoading = _useState2[1];
-
-  console.log('at modal ', props);
-
-  var onFinish = function onFinish() {};
-
-  var handleOk = function handleOk() {
-    setConfirmLoading(true);
-    setTimeout(function () {
-      setConfirmLoading(false); //props.action()
-
-      props.onClose();
-    }, 2000);
-  };
-
-  var handleCancel = function handleCancel() {
-    setTimeout(function () {
-      props.onClose();
-    }, 10);
-  };
-
-  return /*#__PURE__*/_react.default.createElement(_antd.Modal, {
-    width: 300,
-    centered: true,
-    open: props.isVisible,
-    onCancel: handleCancel,
-    onOk: handleOk
-  }, /*#__PURE__*/_react.default.createElement(_antd.Space, {
-    style: {
-      width: '250px'
-    }
-  }, "Are sure that you want to do that "));
-};
-
-var _default = ConfirmModal;
-exports.default = _default;
-},{"antd":"node_modules/antd/es/index.js","react":"node_modules/react/index.js"}],"src/containers/Chat.js":[function(require,module,exports) {
+},{"antd":"node_modules/antd/es/index.js","antd-img-crop":"node_modules/antd-img-crop/dist/antd-img-crop.esm.js","react":"node_modules/react/index.js","axios":"node_modules/axios/index.js"}],"src/containers/Chat.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -209200,8 +209293,6 @@ var _joinPopup = _interopRequireDefault(require("./joinPopup"));
 require("url-change-event");
 
 var _UploadPopup = _interopRequireDefault(require("./UploadPopup"));
-
-var _ConfirmPopup = _interopRequireDefault(require("./ConfirmPopup"));
 
 var _icons = require("@ant-design/icons");
 
@@ -209266,7 +209357,8 @@ var Chat = /*#__PURE__*/function (_React$Component) {
       message: '',
       upload: false,
       messageLoad: false,
-      msgCount: 50
+      msgCount: 50,
+      showKickMemeberPopup: false
     });
 
     _defineProperty(_assertThisInitialized(_this), "pathname", null);
@@ -209335,7 +209427,8 @@ var Chat = /*#__PURE__*/function (_React$Component) {
 
     _defineProperty(_assertThisInitialized(_this), "handleCancel", function () {
       _this.setState({
-        upload: false
+        upload: false,
+        showKickMemeberPopup: false
       }, function () {
         console.log('state is : ', this.state);
       });
@@ -209388,7 +209481,33 @@ var Chat = /*#__PURE__*/function (_React$Component) {
       }).catch(function (err) {
         console.log("error at create chat ".concat(err));
 
-        _antd.message.error('something went wrong olease try again later...! ', 5);
+        _antd.message.error('something went wrong please try again later...! ', 5);
+      });
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "DeleteChat", function () {
+      var chatId = window.location.pathname.slice(1);
+      _axios.default.defaults.xsrfHeaderName = "X-CSRFTOKEN";
+      _axios.default.defaults.xsrfCookieName = "csrftoken";
+      _axios.default.defaults.headers = {
+        'Content-Type': 'application/json',
+        Authorization: "Token ".concat(_this.props.token)
+      };
+
+      _axios.default.delete("http://127.0.0.1:8000/chat/".concat(chatId, "/delete/"), {}).then(function (res) {
+        console.log(res.data);
+
+        _antd.message.success('You have deleted the chat successfully', 5);
+
+        _this.props.getChats(localStorage.getItem('username'), _this.props.token);
+
+        _this.initializeChat();
+
+        window.location.pathname = "/";
+      }).catch(function (err) {
+        console.log("error at create chat ".concat(err));
+
+        _antd.message.error('something went wrong please try again later...! ', 5);
       });
     });
 
@@ -209617,7 +209736,7 @@ var Chat = /*#__PURE__*/function (_React$Component) {
             onClick: function onClick() {
               _this4.props.addMemeber();
             }
-          }, "Add memeber(s)"),
+          }, "Add member(s)"),
           key: '0'
         }, {
           label: /*#__PURE__*/_react.default.createElement(Item, {
@@ -209626,7 +209745,9 @@ var Chat = /*#__PURE__*/function (_React$Component) {
             },
             disabled: !(this.props.admins && this.props.admins.includes(this.props.currentUser)),
             onClick: function onClick() {
-              alert("Kick memeber(s) was clicked");
+              _this4.setState({
+                showKickMemeberPopup: true
+              });
             }
           }, "Kick member(s)"),
           key: '1'
@@ -209638,7 +209759,7 @@ var Chat = /*#__PURE__*/function (_React$Component) {
             disabled: !(this.props.admins && this.props.admins.includes(this.props.currentUser)),
             onClick: function onClick() {
               _this4.ConfirmModal(function () {
-                alert("action");
+                _this4.DeleteChat();
               }, "Delete");
             }
           }, "Delete the Chat"),
@@ -209655,7 +209776,14 @@ var Chat = /*#__PURE__*/function (_React$Component) {
           isVisible: this.props.showAddMemeberPopup,
           close: function close() {
             return _this4.props.closeAddMemeberPopup();
-          }
+          },
+          action: 'Adding'
+        }), /*#__PURE__*/_react.default.createElement(_MemeberPopup.default, {
+          isVisible: this.state.showKickMemeberPopup,
+          close: function close() {
+            return _this4.handleCancel();
+          },
+          action: 'Kicking'
         }), /*#__PURE__*/_react.default.createElement(_joinPopup.default, {
           isVisible: this.props.showJoinChatPopup,
           close: function close() {
@@ -209673,7 +209801,9 @@ var Chat = /*#__PURE__*/function (_React$Component) {
           className: "contact-profile"
         }, /*#__PURE__*/_react.default.createElement("img", {
           src: "https://img.icons8.com/pastel-glyph/128/2C3E50/communication--v1.png"
-        }), /*#__PURE__*/_react.default.createElement("p", null, " ", this.props.name ? this.props.name : window.location.pathname.slice(1) ? "Chat # ".concat(window.location.pathname.slice(1)) : null, " "), this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ? /*#__PURE__*/_react.default.createElement("div", {
+        }), /*#__PURE__*/_react.default.createElement("p", null, " ", this.props.name ? this.props.name : window.location.pathname.slice(1) ? "Chat # ".concat(window.location.pathname.slice(1)) : null, /*#__PURE__*/_react.default.createElement("br", null), /*#__PURE__*/_react.default.createElement("small", {
+          id: "chatid"
+        }, "@id".concat(window.location.pathname.slice(1)))), this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ? /*#__PURE__*/_react.default.createElement("div", {
           className: "social-media"
         }, /*#__PURE__*/_react.default.createElement(_antd.Dropdown.Button, {
           overlay: /*#__PURE__*/_react.default.createElement(_antd.Menu, {
@@ -209776,7 +209906,7 @@ var mapStateToProps = function mapStateToProps(state) {
 var _default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(Chat);
 
 exports.default = _default;
-},{"react":"node_modules/react/index.js","antd":"node_modules/antd/es/index.js","./sidepanel":"src/containers/sidepanel.js","../websocket":"src/websocket.js","./Login":"src/containers/Login.js","./Popup":"src/containers/Popup.js","react-redux":"node_modules/react-redux/es/index.js","axios":"node_modules/axios/index.js","./MemeberPopup":"src/containers/MemeberPopup.js","../store/actions/nav":"src/store/actions/nav.js","../store/actions/messages":"src/store/actions/messages.js","./joinPopup":"src/containers/joinPopup.js","url-change-event":"node_modules/url-change-event/dist/url-change-event.min.js","./UploadPopup":"src/containers/UploadPopup.js","./ConfirmPopup":"src/containers/ConfirmPopup.js","@ant-design/icons":"node_modules/@ant-design/icons/es/index.js"}],"src/containers/Register.js":[function(require,module,exports) {
+},{"react":"node_modules/react/index.js","antd":"node_modules/antd/es/index.js","./sidepanel":"src/containers/sidepanel.js","../websocket":"src/websocket.js","./Login":"src/containers/Login.js","./Popup":"src/containers/Popup.js","react-redux":"node_modules/react-redux/es/index.js","axios":"node_modules/axios/index.js","./MemeberPopup":"src/containers/MemeberPopup.js","../store/actions/nav":"src/store/actions/nav.js","../store/actions/messages":"src/store/actions/messages.js","./joinPopup":"src/containers/joinPopup.js","url-change-event":"node_modules/url-change-event/dist/url-change-event.min.js","./UploadPopup":"src/containers/UploadPopup.js","@ant-design/icons":"node_modules/@ant-design/icons/es/index.js"}],"src/containers/Register.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -215401,7 +215531,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "7941" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "4198" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

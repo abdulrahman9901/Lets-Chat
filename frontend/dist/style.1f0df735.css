@@ -27521,5 +27521,11 @@ button.ant-btn.ant-btn-default:hover{
 button.ant-btn.ant-btn-default.ant-btn-icon-only.ant-dropdown-trigger:hover{
   background: #3c546c;
 }
+#chatid{
+  top: 20px;
+  position: absolute;
+  left: 100px;
+  color: lightslategray;
+}
 
 /*# sourceMappingURL=/style.1f0df735.css.map */
