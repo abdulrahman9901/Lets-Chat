@@ -35,7 +35,7 @@ const JoinChatForm = (props) => {
     axios.post(`http://127.0.0.1:8000/chat/join/`,
             { "command" :"join",
               "username":props.username,
-              "id":values.Chat_id
+              "Chatkey":values.Chat_key
             }
         ).then(res=>{
             console.log("Chat id =======> ",res.data.data.id)
@@ -79,12 +79,12 @@ const JoinChatForm = (props) => {
       autoComplete="off"
     >
       <Form.Item
-        label="Chat ID"
-        name='Chat_id'
+        label="Chat key"
+        name='Chat_key'
         rules={[
           {
             required: true,
-            message: 'Please input the Chat ID !',
+            message: 'Please write the Chat Key !',
           },
         ]}
       >
