@@ -19,10 +19,14 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
 from cryptography.fernet import Fernet
-
+# https://www.tutorialspoint.com/how-to-encrypt-and-decrypt-data-in-python
+# https://nitratine.net/blog/post/encryption-and-decryption-in-python/
 key = Fernet.generate_key()
 f = Fernet(key)
 print(key.decode())
+
+def decrypter(key):
+    return int(f.decrypt(key).decode())
 
 class CustomRegisterSerializer(RegisterSerializer):
     gender = serializers.ChoiceField(choices=GENDER_SELECTION)
@@ -68,6 +72,7 @@ class ChatSerializer(serializers.ModelSerializer):
     chatKey = serializers.SerializerMethodField('get_chat_key')
 
     def get_chat_key(self, instance):
+        print("decrypted chat id is ",decrypter(f.encrypt(bytes(str(instance.id), 'utf-8')).decode()),"and real chat id ",instance.id)
         return f.encrypt(bytes(str(instance.id), 'utf-8')).decode()
 
     allowed_methods = ['get', 'post', 'put', 'delete', 'options','update']

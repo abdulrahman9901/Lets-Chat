@@ -206297,7 +206297,7 @@ var JoinChatForm = function JoinChatForm(props) {
     _axios.default.post("http://127.0.0.1:8000/chat/join/", {
       "command": "join",
       "username": props.username,
-      "id": values.Chat_id
+      "Chatkey": values.Chat_key
     }).then(function (res) {
       console.log("Chat id =======> ", res.data.data.id);
 
@@ -206342,11 +206342,11 @@ var JoinChatForm = function JoinChatForm(props) {
     onFinishFailed: onFinishFailed,
     autoComplete: "off"
   }, /*#__PURE__*/_react.default.createElement(_antd.Form.Item, {
-    label: "Chat ID",
-    name: "Chat_id",
+    label: "Chat key",
+    name: "Chat_key",
     rules: [{
       required: true,
-      message: 'Please input the Chat ID !'
+      message: 'Please write the Chat Key !'
     }]
   }, /*#__PURE__*/_react.default.createElement(_antd.Input, null)), /*#__PURE__*/_react.default.createElement(_antd.Form.Item, {
     wrapperCol: {
@@ -206436,7 +206436,7 @@ var JoinChatModal = function JoinChatModal(props) {
   };
 
   return /*#__PURE__*/_react.default.createElement(_antd.Modal, {
-    title: "Adding a New Chat ",
+    title: "Joining Chat ",
     centered: true,
     footer: null,
     open: props.isVisible,
@@ -215542,7 +215542,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "5953" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "2535" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

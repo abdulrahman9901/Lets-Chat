@@ -9,7 +9,7 @@ from rest_framework.generics import (
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import ChatSerializer
+from .serializers import ChatSerializer , decrypter
 from chat.models import Chat ,Contact ,CustomUser,Message
 from channels.layers import get_channel_layer
 from django.shortcuts import get_object_or_404
@@ -86,7 +86,9 @@ class ChatDeleteView(DestroyAPIView):
 
 class joinChatView(APIView):
     def post(self, request):
-            chat = get_object_or_404(Chat,id=request.data["id"])
+            id = decrypter(request.data["Chatkey"])
+            print("id at join chat : ",id)
+            chat = get_object_or_404(Chat,id=id)
             username = get_user_contact(request.data["username"])
             print(username)
             if username not in chat.participants.all() :
