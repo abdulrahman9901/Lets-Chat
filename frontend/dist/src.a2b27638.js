@@ -205274,6 +205274,13 @@ var Sidepanel = /*#__PURE__*/function (_React$Component) {
       });
     });
 
+    _defineProperty(_assertThisInitialized(_this), "toMessages", function () {
+      if (window.location.pathname.slice(1) !== "") {
+        document.getElementById('content').style.display = "block";
+        document.getElementById('sidepanel').style.display = "none";
+      }
+    });
+
     return _this;
   }
 
@@ -205344,7 +205351,14 @@ var Sidepanel = /*#__PURE__*/function (_React$Component) {
         src: "https://img.icons8.com/ios-filled/100/95a5a6/user-male-circle.png",
         className: "online",
         alt: ""
-      }), /*#__PURE__*/_react.default.createElement("p", null, this.props.username), /*#__PURE__*/_react.default.createElement(_Dropdown.default, null), /*#__PURE__*/_react.default.createElement("div", {
+      }), /*#__PURE__*/_react.default.createElement("p", null, this.props.username), /*#__PURE__*/_react.default.createElement("button", {
+        onClick: this.toMessages,
+        id: "toMessages",
+        className: "btn"
+      }, /*#__PURE__*/_react.default.createElement("i", {
+        className: "fa fa-arrow-right",
+        "aria-hidden": "true"
+      })), /*#__PURE__*/_react.default.createElement("div", {
         id: "expanded"
       }, /*#__PURE__*/_react.default.createElement("button", {
         className: "authBtn",
@@ -209529,6 +209543,11 @@ var Chat = /*#__PURE__*/function (_React$Component) {
       });
     });
 
+    _defineProperty(_assertThisInitialized(_this), "showChats", function (e) {
+      document.getElementById('content').style.display = "none";
+      document.getElementById('sidepanel').style.display = "block";
+    });
+
     console.log('constructor');
 
     _this.initializeChat();
@@ -209543,11 +209562,33 @@ var Chat = /*#__PURE__*/function (_React$Component) {
         _this.pathname = location.pathname;
 
         _this.initializeChat();
-      }
+
+        if (document.body.clientWidth <= 735) {
+          document.getElementById('content').style.display = "block";
+          document.getElementById('sidepanel').style.display = "none";
+        }
+      } // else if (window.location.pathname == '/'){
+      //     if(document.body.clientWidth <=735){
+      //         document.getElementById('content').style.display = "none" 
+      //         document.getElementById('sidepanel').style.display = "block" 
+      //         }
+      // }
+
     }; // https://stackoverflow.com/a/68371679
 
 
-    window.addEventListener("click", CheckUrlChange); // window.addEventListener('urlchangeevent',CheckUrlChange);
+    window.addEventListener("click", CheckUrlChange);
+    window.addEventListener("resize", function (event) {
+      if (document.body.clientWidth > 735) {
+        document.getElementById('content').style.display = "block";
+        document.getElementById('sidepanel').style.display = "block";
+      } else {
+        document.getElementById('content').style.display = "none";
+        document.getElementById('sidepanel').style.display = "block";
+      }
+
+      console.log(document.body.clientWidth + ' wide by ' + document.body.clientHeight + ' high');
+    }); // window.addEventListener('urlchangeevent',CheckUrlChange);
 
     return _this;
   }
@@ -209797,10 +209838,18 @@ var Chat = /*#__PURE__*/function (_React$Component) {
           open: this.state.upload,
           cancel: this.handleCancel
         }), /*#__PURE__*/_react.default.createElement(_sidepanel.default, null), /*#__PURE__*/_react.default.createElement("div", {
+          id: "content",
           className: "content"
         }, this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ? /*#__PURE__*/_react.default.createElement("div", {
           className: "contact-profile"
-        }, /*#__PURE__*/_react.default.createElement("img", {
+        }, /*#__PURE__*/_react.default.createElement("button", {
+          id: "toChats",
+          class: "btn",
+          onClick: this.showChats
+        }, /*#__PURE__*/_react.default.createElement("i", {
+          class: "fa fa-arrow-left",
+          "aria-hidden": "true"
+        })), /*#__PURE__*/_react.default.createElement("img", {
           src: "https://img.icons8.com/pastel-glyph/128/2C3E50/communication--v1.png"
         }), /*#__PURE__*/_react.default.createElement("p", null, " ", this.props.name ? this.props.name : window.location.pathname.slice(1) ? "Chat # ".concat(window.location.pathname.slice(1)) : null, /*#__PURE__*/_react.default.createElement("br", null), this.props.admins && this.props.admins.includes(this.props.currentUser) ? /*#__PURE__*/_react.default.createElement(_antd.Popover, {
           style: {
@@ -209868,7 +209917,11 @@ var Chat = /*#__PURE__*/function (_React$Component) {
           "aria-hidden": "true"
         })), /*#__PURE__*/_react.default.createElement("button", {
           id: "chat-message-attach",
-          onClick: this.showModal
+          onClick: function onClick() {
+            (function (e) {
+              return _this4.showModal(e);
+            });
+          }
         }, /*#__PURE__*/_react.default.createElement("i", {
           className: "fa fa-paperclip attachment",
           "aria-hidden": "true"
@@ -215542,7 +215595,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "2535" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "10526" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
