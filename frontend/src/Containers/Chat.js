@@ -56,11 +56,30 @@ class Chat extends React.Component {
                 console.log(this.pathname,location.pathname)
                 this.pathname = location.pathname;
                     this.initializeChat()
-            }
+                    if(document.body.clientWidth <=735){
+                    document.getElementById('content').style.display = "block" 
+                    document.getElementById('sidepanel').style.display = "none" 
+                    }
+            } 
+            // else if (window.location.pathname == '/'){
+            //     if(document.body.clientWidth <=735){
+            //         document.getElementById('content').style.display = "none" 
+            //         document.getElementById('sidepanel').style.display = "block" 
+            //         }
+            // }
         }
         // https://stackoverflow.com/a/68371679
         window.addEventListener("click",CheckUrlChange);
-
+        window.addEventListener("resize", function(event) {
+            if(document.body.clientWidth > 735){
+                document.getElementById('content').style.display = "block" 
+                document.getElementById('sidepanel').style.display = "block" 
+            }else {
+                document.getElementById('content').style.display = "none" 
+                document.getElementById('sidepanel').style.display = "block" 
+            }
+            console.log(document.body.clientWidth + ' wide by ' + document.body.clientHeight+' high');
+        })
         // window.addEventListener('urlchangeevent',CheckUrlChange);
         
     }
@@ -340,6 +359,10 @@ class Chat extends React.Component {
           onCancel() {},
         });
       };
+    showChats = (e) => {
+        document.getElementById('content').style.display = "none" 
+        document.getElementById('sidepanel').style.display = "block" 
+    }
     render(){
         console.log('props =>>>>>>>>>>>> ',this.props)
         const messages=this.props.messages;
@@ -381,9 +404,10 @@ class Chat extends React.Component {
                 <UploadModal  chatid ={window.location.pathname.slice(1)}  username={this.props.currentUser} token={this.props.token} open={this.state.upload} cancel={this.handleCancel}/>
                 
                 <Sidepanel />
-                <div className="content">
+                <div id="content" className="content">
                 {this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?
                 <div className="contact-profile">
+                <button id="toChats" class="btn" onClick={this.showChats} ><i class="fa fa-arrow-left" aria-hidden="true"></i></button>
                 <img src="https://img.icons8.com/pastel-glyph/128/2C3E50/communication--v1.png"/>
                 <p> {this.props.name ? this.props.name : window.location.pathname.slice(1) ? `Chat # ${window.location.pathname.slice(1)}`:null}
                 <br/>
@@ -440,7 +464,7 @@ class Chat extends React.Component {
                      <i className="fa fa-paper-plane" aria-hidden="true"></i>
                     </button>
             
-                    <button id="chat-message-attach" onClick={this.showModal}>
+                    <button id="chat-message-attach" onClick={()=>{(e) =>this.showModal(e)}}>
                     <i className="fa fa-paperclip attachment" aria-hidden="true"></i>
                     </button>     
 

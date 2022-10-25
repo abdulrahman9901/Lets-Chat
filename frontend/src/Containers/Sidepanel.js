@@ -67,10 +67,17 @@ searchBarHandler= e =>{
   });
 }
 
+toMessages = ()=>{
+ if( window.location.pathname.slice(1) !== "" ){
+  document.getElementById('content').style.display = "block" 
+  document.getElementById('sidepanel').style.display = "none" 
+  }
+}
 render(){
   console.log('at sidepanel',this.props)
   //console.log('at render',this.props.chats[0])
   //const aciveChats=null
+  
   let aciveChats;
   if (this.props.chats){
         console.log(" if chats")
@@ -97,13 +104,15 @@ render(){
     console.log(" else chats")
     aciveChats = null;
   }
+  
     return(
         <div id="sidepanel">
         <div id="profile">
           <div className="wrap">
             <img id="profile-img" src="https://img.icons8.com/ios-filled/100/95a5a6/user-male-circle.png" className="online" alt="" />
             <p>{this.props.username}</p>
-            <Dropmenu />
+            {/* <Dropmenu /> */}
+            <button onClick={this.toMessages} id="toMessages" className="btn"><i className="fa fa-arrow-right" aria-hidden="true"></i></button>
             <div id="expanded">
                 <button className="authBtn" onClick={()=>this.props.onLogout()}>
                   <span>Logout</span>
