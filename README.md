@@ -1,6 +1,6 @@
 # Lets-Chat
-It's a chat app which is a comprehensive chat app with Django Channels and React. <br/>
-The app uses both websockets and Django Channels for websockets to deliver the desired functionality .
+It's a chat app which is a comprehensive chat app with Django Channels and React. 
+The app uses both web-sockets and Django Channels for web-sockets to deliver the desired functionality .
 
 ## Progress So Far
 
@@ -8,16 +8,16 @@ The app uses both websockets and Django Channels for websockets to deliver the d
 * Authenticated connection
 * Chat scrolling and loading chat history
 * Responsive layout that adapts with all screen sizes .
-* System messages that indicate memeber leaving / joining oe being added to chat .
+* System messages that indicate member leaving / joining or being added to chat .
 * Providing error and success messages .
-* Impelement Log in/out and registeration mechanisms .
+* Implement Log in/out and registration mechanisms .
 * Provide the ability to create chats .
-* Provide searchbar for searching through chats .
+* Provide search-bar for searching through chats .
 * Provide 2 types of users in chat normal member or chat admin .
-* Provide the featrue of joining chat using chatkey which is unique and only seen by admins .
-* Provide the ability for admins to add / kick chat memebers .
-* Provide the ability for memebers to Upload images to the chat .
-* Provide the ability for memebers and admins to leave the chat .
+* Provide the feature of joining chat using chat key which is unique and only seen by admins .
+* Provide the ability for admins to add / kick chat members .
+* Provide the ability for members to Upload images to the chat .
+* Provide the ability for members and admins to leave the chat .
 * Provide the ability to know message time and date .
 
 ## Demonstration video 
