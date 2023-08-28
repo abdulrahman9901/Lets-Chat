@@ -5,7 +5,7 @@ from chat.models import Contact
 from rest_framework import serializers
 from rest_framework.fields import CurrentUserDefault
 from chat.models import Chat ,Message
-
+from OpenSSL import crypto
 from django.db import transaction
 
 from dj_rest_auth.registration.serializers import RegisterSerializer
@@ -19,14 +19,24 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
 from cryptography.fernet import Fernet
+import base64
 # https://www.tutorialspoint.com/how-to-encrypt-and-decrypt-data-in-python
 # https://nitratine.net/blog/post/encryption-and-decryption-in-python/
-key = Fernet.generate_key()
-f = Fernet(key)
-print(key.decode())
 
-def decrypter(key):
-    return int(f.decrypt(key).decode())
+def generate_key():
+    key = Fernet.generate_key()
+    return key.decode()
+
+key = generate_key()
+f = Fernet(key)
+print("Generated Key:", key)
+
+def decrypter(encrypted_key):
+    global key , f
+    print("decrypter Key:", key)
+    decrypted_value = f.decrypt(encrypted_key.encode())
+    return decrypted_value.decode()
+
 
 class CustomRegisterSerializer(RegisterSerializer):
     gender = serializers.ChoiceField(choices=GENDER_SELECTION)
@@ -71,9 +81,13 @@ class ChatSerializer(serializers.ModelSerializer):
     admins = ContactSerializer(many=True)
     chatKey = serializers.SerializerMethodField('get_chat_key')
 
-    def get_chat_key(self, instance):
-        print("decrypted chat id is ",decrypter(f.encrypt(bytes(str(instance.id), 'utf-8')).decode()),"and real chat id ",instance.id)
-        return f.encrypt(bytes(str(instance.id), 'utf-8')).decode()
+    # def get_chat_key(self, instance):
+    #     print("decrypted chat id is ",decrypter(f.encrypt(bytes(str(instance.id), 'utf-8')).decode()),"and real chat id ",instance.id)
+    #     return f.encrypt(bytes(str(instance.id), 'utf-8')).decode()
+    def get_chat_key(self , instance):
+        encrypted_id = f.encrypt(bytes(str(instance.id), 'utf-8')).decode()
+        #print("Decrypted chat id is", decrypted_id, "and real chat id is", instance.id)
+        return encrypted_id
 
     allowed_methods = ['get', 'post', 'put', 'delete', 'options','update']
     

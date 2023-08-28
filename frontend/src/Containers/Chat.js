@@ -259,6 +259,7 @@ class Chat extends React.Component {
         });
     }
     showModal= e =>{
+        console.log('upload');
         this.setState({
             upload:true,
         },function () {
@@ -463,8 +464,7 @@ class Chat extends React.Component {
                     <button id="chat-message-submit" className="submit">
                      <i className="fa fa-paper-plane" aria-hidden="true"></i>
                     </button>
-            
-                    <button id="chat-message-attach" onClick={()=>{(e) =>this.showModal(e)}}>
+                    <button id="chat-message-attach" onClick={(e) => this.showModal(e)}>
                     <i className="fa fa-paperclip attachment" aria-hidden="true"></i>
                     </button>     
 

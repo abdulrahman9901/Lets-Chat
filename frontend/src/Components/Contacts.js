@@ -11,7 +11,7 @@ const Contact = props => (
         <span className={`contact-status ${props.status}`} />
         <img src={props.picURL} alt="" />
         <div className="meta">
-          <p className="name">{props.name}</p><p> You {props.members.length > 2 ? `and ${props.members.length - 1} others` : props.members.length > 1 ? `and ${props.members[1]}` : 'only'}
+          <p className="name">{props.name}</p><p> You {props.members.length > 2 ? `and ${props.members.length - 1} others` : props.members.length > 1 ? `and ${props.members.find(member => member !== props.currentUser)}` : 'only'}
           {props.members.length > 2 ?
           <Dropdown overlay={
               <Menu

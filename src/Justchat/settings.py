@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'dj_rest_auth',
-    'corsheaders',  
+    'corsheaders',
 
     'rest_framework',
     'rest_framework.authtoken',
@@ -71,7 +71,6 @@ SITE_ID = 1
 REST_AUTH_REGISTER_SERIALIZERS = {
     'REGISTER_SERIALIZER': 'chat.api.serializers.CustomRegisterSerializer',
 }
-
 
 
 # https://www.rootstrap.com/blog/registration-and-authentication-in-django-apps-with-dj-rest-auth/
@@ -109,13 +108,19 @@ TEMPLATES = [
 WSGI_APPLICATION = 'Justchat.wsgi.application'
 ASGI_APPLICATION = 'Justchat.asgi.application'
 CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
-        },
-    },
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
 }
+
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
+#         'CONFIG': {
+#             "hosts": [('127.0.0.1', 6379)],
+#         },
+#     },
+# }
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
@@ -165,8 +170,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS=[
-    os.path.join(BASE_DIR,'static')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static')
 ]
 
 # Default primary key field type
@@ -174,19 +179,19 @@ STATICFILES_DIRS=[
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ORIGIN_ALLOW_ALL =True
+CORS_ORIGIN_ALLOW_ALL = True
 
 CORS_ALLOWED_ORIGINS = [
-        'http://siteyouwantto.allow.com',
-        'http://anothersite.allow.com',
-        #'http://127.0.0.1:8000/rest-auth/registration/',
-    ]
+    'http://siteyouwantto.allow.com',
+    'http://anothersite.allow.com',
+    # 'http://127.0.0.1:8000/rest-auth/registration/',
+]
 # https://django-allauth.readthedocs.io/en/latest/advanced.html
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 
-ACCOUNT_EMAIL_VERIFICATION ='none'
+ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_AUTHENTICATION_METHOD = 'username'
-ACCOUNT_EMAIL_REQUIRED =False
+ACCOUNT_EMAIL_REQUIRED = False
 
 # https://github.com/Tivix/django-rest-auth/issues/502
 # https://stackoverflow.com/questions/6800894/django-returns-403-error-when-sending-a-post-request
@@ -207,4 +212,3 @@ CSRF_HEADER_NAME = 'HTTP_X_XSRF_TOKEN'
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-

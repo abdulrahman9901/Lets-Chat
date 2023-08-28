@@ -5,5 +5,4 @@ node_modules
 .cache
 static
 Documentation site
-media
-db.sqlite
+

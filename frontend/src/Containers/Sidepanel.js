@@ -98,6 +98,7 @@ render(){
         picURL ="https://img.icons8.com/pastel-glyph/128/E6EAEA/communication--v1.png"
         name={ chat.name ? chat.name :`Chat # ${chat.id}`}
         members={chat.participants}
+        currentUser = {this.props.username}
     />
     })
   }else {
