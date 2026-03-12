@@ -18,3 +18,7 @@ frontend/dist/
 # Local SQLite DB
 db.sqlite3
 src/db.sqlite3
+
+# Local environment
+frontend/.env
+.env
