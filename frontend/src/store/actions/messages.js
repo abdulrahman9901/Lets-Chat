@@ -1,5 +1,6 @@
 import * as actions from './actionTypes'
 import axios from 'axios'
+import { API_BASE_URL } from '../../config'
 
 export const addMessages =(message)=>{
     return {
@@ -40,7 +41,7 @@ export const getUserChats = (username, token) => {
         Authorization: `Token ${token}`
         };
         axios
-        .get(`http://127.0.0.1:8000/chat/?username=${username}`)
+        .get(`${API_BASE_URL}/chat/?username=${username}`)
         .then(res => {dispatch(getUserChatsSuccess(res.data))
             console.log('res.data at getUserChats ',res.data)
         } ).catch(err =>{

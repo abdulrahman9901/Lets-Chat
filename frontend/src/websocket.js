@@ -1,3 +1,5 @@
+import { WS_BASE_URL } from './config';
+
 class WebSocketService{
 
     static instance=null;
@@ -16,7 +18,7 @@ class WebSocketService{
 
     connect(chatURL){
         console.log('url : ',chatURL)
-        const path=`ws://127.0.0.1:8000/ws/chat/${chatURL}/`;
+        const path=`${WS_BASE_URL}/ws/chat/${chatURL}/`;
     
         this.socketRef=new WebSocket(path);
 

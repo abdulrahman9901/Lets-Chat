@@ -7,3 +7,14 @@ static
 Documentation site
 media
 db.sqlite
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Frontend build artifacts
+frontend/dist/
+
+# Local SQLite DB
+db.sqlite3
+src/db.sqlite3

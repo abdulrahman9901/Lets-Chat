@@ -6,6 +6,7 @@ import Login from './Login';
 import AddChatModal from './Popup';
 import {connect} from 'react-redux'
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 import AddMemberModal from './MemeberPopup'
 import * as navActions from '../store/actions/nav'
 import * as messageActions from '../store/actions/messages'
@@ -202,7 +203,7 @@ class Chat extends React.Component {
                 {
                 message.content === null ?
                 // "image has been uploaded to the chat"
-                  <img src={`http://127.0.0.1:8000/media/`.concat(message.image)} onClick={(e) => this.changeVisibility(e,message.timestamp)} id={message.id} className={`messageImage  ${participants.includes(message.author)? currentUser === message.author ? 'imgsent' :'imgrecv' :'imgout'}`} alt="" />
+                  <img src={`${API_BASE_URL}/media/`.concat(message.image)} onClick={(e) => this.changeVisibility(e,message.timestamp)} id={message.id} className={`messageImage  ${participants.includes(message.author)? currentUser === message.author ? 'imgsent' :'imgrecv' :'imgout'}`} alt="" />
                 : <p onClick={(e) => this.changeVisibility(e,message.timestamp)} id={message.id}>{message.content}</p>
                 }
              <br/>
@@ -302,7 +303,7 @@ class Chat extends React.Component {
             'Content-Type' : 'application/json',
             Authorization :`Token ${this.props.token}`
         }
-        axios.put(`http://127.0.0.1:8000/chat/${chatId}/update/`,
+        axios.put(`${API_BASE_URL}/chat/${chatId}/update/`,
                 {
                 "name": "new name",
                 "messages": [],
@@ -331,7 +332,7 @@ class Chat extends React.Component {
             'Content-Type' : 'application/json',
             Authorization :`Token ${this.props.token}`
         }
-        axios.delete(`http://127.0.0.1:8000/chat/${chatId}/delete/`,
+        axios.delete(`${API_BASE_URL}/chat/${chatId}/delete/`,
                 {}
         ).then(res=>{
             console.log(res.data)

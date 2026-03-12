@@ -1,6 +1,7 @@
 import { Button, Form, Input ,Select , message } from 'antd';
 import React, { useState } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 import * as navActions from '../store/actions/nav' 
 import * as messageActions from '../store/actions/messages' 
 import { connect } from 'react-redux';
@@ -32,7 +33,7 @@ const JoinChatForm = (props) => {
       'Content-Type' : 'application/json',
       Authorization :`Token ${props.token}`
     }
-    axios.post(`http://127.0.0.1:8000/chat/join/`,
+    axios.post(`${API_BASE_URL}/chat/join/`,
             { "command" :"join",
               "username":props.username,
               "Chatkey":values.Chat_key

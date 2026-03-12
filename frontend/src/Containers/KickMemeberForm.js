@@ -1,6 +1,7 @@
 import { Button, Form, message ,Select ,Radio } from 'antd';
 import React, { useState } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 import * as navActions from '../store/actions/nav' 
 import * as messageActions from '../store/actions/messages' 
 import { connect } from 'react-redux';
@@ -46,7 +47,7 @@ const KickMemeberForm = (props) => {
           'admins':[]
           }
     console.log(content)
-    axios.put(`http://127.0.0.1:8000/chat/${chatId}/update/`,content
+    axios.put(`${API_BASE_URL}/chat/${chatId}/update/`,content
         ).then(res=>{
             console.log(res.data)
             message.success('Memeber(s) were kicked successfully',5)

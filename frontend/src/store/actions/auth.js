@@ -1,5 +1,6 @@
 import * as actionTypes from './actionTypes'
 import axios from 'axios'
+import { API_BASE_URL } from '../../config'
 
 export const authStart=()=>{
     return{
@@ -45,7 +46,7 @@ export const logout=()=>{
     
     axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
     axios.defaults.xsrfCookieName = "csrftoken";
-    axios.post('http://127.0.0.1:8000/rest-auth/logout/',{}
+    axios.post(`${API_BASE_URL}/rest-auth/logout/`,{}
     ).then((res)=>{
         console.log("err at actions ",res.data)
     }).catch(err =>{
@@ -74,7 +75,7 @@ export const authLogin =(username,password)=>{
         axios.defaults.headers = {
             'Content-Type' : 'application/json',
           }
-        axios.post('http://127.0.0.1:8000/rest-auth/login/',
+        axios.post(`${API_BASE_URL}/rest-auth/login/`,
             {
                 username:username,
                 password:password
@@ -100,7 +101,7 @@ export const authSignup =(username,email,password1,password2,gender,phone_number
         dispatch(authStart());
         axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
         axios.defaults.xsrfCookieName = "csrftoken";
-        axios.post('http://127.0.0.1:8000/rest-auth/registration/',
+        axios.post(`${API_BASE_URL}/rest-auth/registration/`,
             {
                 username:username,
                 email:email,

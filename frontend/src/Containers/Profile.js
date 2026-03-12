@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Dropdown, Menu, message } from 'antd';
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 import { useNavigate } from "react-router-dom"
 const Profile = (props) =>{
     const navigate = useNavigate();
@@ -14,7 +15,7 @@ const Profile = (props) =>{
             'Content-Type' : 'application/json',
             Authorization :`Token ${props.token}`
         }
-        axios.put(`http://127.0.0.1:8000/chat/${chatId}/update/`,
+        axios.put(`${API_BASE_URL}/chat/${chatId}/update/`,
                 {
                 "name": "new name",
                 "messages": [],

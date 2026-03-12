@@ -2,6 +2,7 @@ import { Button, Modal ,Upload ,message} from 'antd';
 import ImgCrop from 'antd-img-crop';
 import React, { useState } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 
 const UploadModal = (props) => {
 
@@ -25,7 +26,7 @@ const UploadModal = (props) => {
         "Content-Type": "multipart/form-data",
         Authorization :`Token ${props.token}`
       }
-      axios.post('http://127.0.0.1:8000/chat/upload/',formData
+      axios.post(`${API_BASE_URL}/chat/upload/`,formData
             
           ).then(res=>{
             console.log(res)
