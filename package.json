@@ -1,0 +1,12 @@
+{
+  "name": "lets-chat",
+  "private": true,
+  "scripts": {
+    "start": "concurrently -n backend,frontend -c blue,green \"npm run start:backend\" \"npm run start:frontend\"",
+    "start:backend": "cd src && ..\\.venv\\Scripts\\python.exe manage.py runserver 8000",
+    "start:frontend": "cd frontend && npm run start"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
