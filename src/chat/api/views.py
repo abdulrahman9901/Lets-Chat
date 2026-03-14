@@ -1,23 +1,26 @@
-from rest_framework import permissions
+import json
+import logging
+
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models.fields.files import ImageFieldFile
+from django.shortcuts import get_object_or_404
+from rest_framework import permissions, status
 from rest_framework.generics import (
     ListAPIView,
     RetrieveAPIView,
     CreateAPIView,
     UpdateAPIView,
-    DestroyAPIView
+    DestroyAPIView,
 )
-from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
-from .serializers import ChatSerializer , decrypter
-from chat.models import Chat ,Contact ,CustomUser,Message
-from channels.layers import get_channel_layer
-from django.shortcuts import get_object_or_404
-from asgiref.sync import async_to_sync
+from rest_framework.views import APIView
 
-import json
-from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models.fields.files import ImageFieldFile
+from chat.models import Chat, Contact, CustomUser, Message
+from .serializers import ChatSerializer, decrypter
+
+frontend_logger = logging.getLogger("frontend")
 
 class ExtendedEncoder(DjangoJSONEncoder):
     def default(self, o):
@@ -25,6 +28,27 @@ class ExtendedEncoder(DjangoJSONEncoder):
             return str(o)
         else:
             return super().default(o)
+
+
+class FrontendLogView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        level = request.data.get("level", "info").lower()
+        message = request.data.get("message", "")
+        context = request.data.get("context", {})
+
+        extra = {"context": context}
+        if level == "debug":
+            frontend_logger.debug(message, extra=extra)
+        elif level == "warning" or level == "warn":
+            frontend_logger.warning(message, extra=extra)
+        elif level == "error":
+            frontend_logger.error(message, extra=extra)
+        else:
+            frontend_logger.info(message, extra=extra)
+
+        return Response({"status": "ok"}, status=status.HTTP_201_CREATED)
 
 def get_user_contact(username):
     user = get_object_or_404(CustomUser,username=username)

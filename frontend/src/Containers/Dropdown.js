@@ -1,13 +1,13 @@
 import { DownOutlined } from '@ant-design/icons';
 import { Dropdown, Menu, Space } from 'antd';
 import React from 'react';
-import * as actions from '../store/actions/auth'
 import { connect } from 'react-redux';
+import { logout } from '../features/auth';
 
 const Dropmenu = (props) => (
   <Dropdown overlay={
   <Menu theme={'dark'}
-  onClick={()=>props.onLogout()}
+  onClick={() => props.onLogout()}
   items={[
     {
       label: <a href="#">Logout</a>,
@@ -25,10 +25,8 @@ trigger={['click']}
   </Dropdown>
 );
 
-  const mapDispatchToProps=(dispatch)=>{
-    return {
-        onLogout:()=>dispatch(actions.logout())
-  
-    }
-  }
-export default connect(null,mapDispatchToProps)(Dropmenu);
+const mapDispatchToProps = (dispatch) => ({
+  onLogout: () => dispatch(logout()),
+});
+
+export default connect(null, mapDispatchToProps)(Dropmenu);

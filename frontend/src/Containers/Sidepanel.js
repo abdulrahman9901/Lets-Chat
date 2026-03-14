@@ -2,7 +2,7 @@
 import React from "react";
 import Dropmenu from "./Dropdown";
 import { connect } from "react-redux";
-import * as authActions from '../store/actions/auth'
+import { logout } from '../features/auth'
 import * as navActions from '../store/actions/nav'
 import * as messageActions from '../store/actions/messages'
 import Contact from "../Components/Contacts";
@@ -148,7 +148,7 @@ const mapStateToProps=(state)=>{
 }
 const mapDispatchToProps=(dispatch)=>{
   return {
-      onLogout:()=>dispatch(authActions.logout()),
+      onLogout: () => dispatch(logout()),
       addChat : () =>dispatch(navActions.openAddChatPopup()),
       joinChat : () =>dispatch(navActions.openJoinChatPopup()),
       getChats : (username,token) =>dispatch(messageActions.getUserChats(username,token))
