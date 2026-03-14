@@ -32,6 +32,9 @@ let { chatId } = $props();
 
 let messageInput = $state('');
 let showConfirm = $state<{ action: 'leave' | 'delete'; fn: () => void } | null>(null);
+let showChatKeyPopup = $state(false);
+let copiedFeedback = $state(false);
+let copiedFeedbackTimeout: ReturnType<typeof setTimeout> | null = null;
 let messagesEnd = $state<HTMLDivElement | undefined>(undefined);
 
 let validChatId = $derived(chatId && chatId !== '' && chatId !== 'undefined' && !isNaN(parseInt(chatId, 10)));
@@ -100,8 +103,37 @@ $effect(() => {
 		return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()} at ${d.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true })}`;
 	}
 
+	function handleEscape(e: KeyboardEvent) {
+		if (e.key === 'Escape') showChatKeyPopup = false;
+	}
+
+	$effect(() => {
+		if (!showChatKeyPopup) {
+			copiedFeedback = false;
+			if (copiedFeedbackTimeout) {
+				clearTimeout(copiedFeedbackTimeout);
+				copiedFeedbackTimeout = null;
+			}
+		}
+	});
+
+	async function copyChatKey() {
+		if (!$chatKey) return;
+		if (copiedFeedbackTimeout) clearTimeout(copiedFeedbackTimeout);
+		try {
+			await navigator.clipboard.writeText($chatKey);
+			copiedFeedback = true;
+			copiedFeedbackTimeout = setTimeout(() => {
+				copiedFeedbackTimeout = null;
+				copiedFeedback = false;
+			}, 2500);
+		} catch (_) {}
+	}
+
 	let dedupedMessages = $derived([...new Map(($messages ?? []).map((m) => [m.id, m])).values()]);
 </script>
+
+<svelte:window onkeydown={handleEscape} />
 
 {#if !validChatId}
 	<div class="placeholder">
@@ -118,7 +150,7 @@ $effect(() => {
 		<p>
 			{$chatName ?? `Chat # ${chatId}`}
 			{#if isAdmin && $chatKey}
-				<small class="chatkey" title={$chatKey}>@chatkey</small>
+				<button type="button" class="chatkey" title="Click to show chat key" onclick={() => (showChatKeyPopup = true)}>@chatkey</button>
 			{/if}
 		</p>
 		<div class="actions">
@@ -201,6 +233,36 @@ $effect(() => {
 	</div>
 {/if}
 
+{#if showChatKeyPopup && $chatKey}
+	<div
+		class="modal-overlay chatkey-overlay"
+		role="dialog"
+		aria-modal="true"
+		aria-label="Chat key"
+		onclick={() => (showChatKeyPopup = false)}
+	>
+		<div class="modal chatkey-popup" onclick={(e) => e.stopPropagation()} role="document">
+			<p class="chatkey-label">Chat key (share to invite)</p>
+			<div class="chatkey-row">
+				<output class="chatkey-value" id="chatkey-value">{$chatKey}</output>
+				<div class="chatkey-copy-wrap">
+					{#if copiedFeedback}
+						<span class="chatkey-copy-tooltip">Copied!</span>
+					{/if}
+					<button type="button" class="chatkey-copy" class:copied={copiedFeedback} onclick={copyChatKey} aria-label={copiedFeedback ? 'Copied' : 'Copy chat key'}>
+						{#if copiedFeedback}
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+						{:else}
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+						{/if}
+					</button>
+				</div>
+			</div>
+			<button type="button" class="chatkey-close" onclick={() => (showChatKeyPopup = false)}>Close</button>
+		</div>
+	</div>
+{/if}
+
 {#if showConfirm}
 	<div class="modal-overlay" role="dialog" aria-modal="true">
 		<div class="modal">
@@ -247,6 +309,112 @@ $effect(() => {
 		cursor: pointer;
 		color: var(--accent-glow);
 		margin-left: 8px;
+		background: none;
+		border: none;
+		font: inherit;
+		padding: 0;
+	}
+	.chatkey:hover {
+		text-decoration: underline;
+	}
+	.chatkey-overlay {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.chatkey-popup {
+		max-width: 320px;
+		width: 100%;
+	}
+	.chatkey-label {
+		margin: 0 0 8px 0;
+		font-size: 14px;
+		color: var(--Text-Heading-Medium);
+	}
+	.chatkey-row {
+		display: flex;
+		align-items: stretch;
+		gap: 0;
+		margin-bottom: 12px;
+		border: 1px solid var(--Border-Subtle);
+		border-radius: 8px;
+		background: var(--Background-Lift-8);
+		overflow: visible;
+	}
+	.chatkey-value {
+		flex: 1;
+		padding: 10px 12px;
+		border: none;
+		background: transparent;
+		font-family: ui-monospace, monospace;
+		font-size: 13px;
+		word-break: break-all;
+		user-select: all;
+		min-width: 0;
+	}
+	.chatkey-copy-wrap {
+		position: relative;
+		display: flex;
+		align-items: stretch;
+		overflow: visible;
+	}
+	.chatkey-copy-tooltip {
+		position: absolute;
+		bottom: 100%;
+		left: 50%;
+		transform: translateX(-50%) translateY(-6px);
+		padding: 4px 8px;
+		font-size: 11px;
+		font-weight: 600;
+		color: #fff;
+		background: #374151;
+		border-radius: 4px;
+		white-space: nowrap;
+		pointer-events: none;
+		z-index: 10;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+	}
+	.chatkey-copy-tooltip::after {
+		content: '';
+		position: absolute;
+		top: 100%;
+		left: 50%;
+		margin-left: -4px;
+		border: 4px solid transparent;
+		border-top-color: #374151;
+	}
+	.chatkey-copy {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 10px 12px;
+		background: var(--Button-Secondary-Default-Background-subtle);
+		border: none;
+		border-left: 1px solid var(--Border-Subtle);
+		border-radius: 0 8px 8px 0;
+		cursor: pointer;
+		color: var(--Text-Heading-Medium);
+	}
+	.chatkey-copy:hover {
+		background: var(--Button-Secondary-Hover-Background-subtle);
+	}
+	.chatkey-copy.copied {
+		color: var(--accent-glow, #22c55e);
+	}
+	.chatkey-close {
+		width: 100%;
+		padding: 10px 16px;
+		font-size: 14px;
+		font-weight: 500;
+		color: var(--Text-Heading-Strong);
+		background: var(--Button-Secondary-Default-Background-subtle);
+		border: 1px solid var(--Button-Secondary-Default-Border);
+		border-radius: 8px;
+		cursor: pointer;
+	}
+	.chatkey-close:hover {
+		background: var(--Button-Secondary-Hover-Background-subtle);
+		border-color: var(--Button-Secondary-Hover-Border);
 	}
 	.actions {
 		display: flex;
