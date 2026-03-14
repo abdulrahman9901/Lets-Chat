@@ -30,6 +30,7 @@
 							admins: payload.admins,
 							system_message: payload.system_message,
 							chatKey: payload.chatKey,
+							room_id: payload.room_id,
 						}),
 					(msg) => addMessage(msg),
 					(u) => {

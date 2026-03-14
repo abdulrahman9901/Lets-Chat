@@ -10,6 +10,7 @@
 		admins,
 		chatKey,
 		setChats,
+		setCurrentRoom,
 		type ChatMessage,
 	} from '$lib/stores/message';
 	import { API_BASE_URL } from '$lib/config';
@@ -27,33 +28,26 @@
 		chatId: string | undefined;
 	}
 
-	let { chatId } = $props();
+let { chatId } = $props();
 
-	let messageInput = $state('');
-	let showConfirm = $state<{ action: 'leave' | 'delete'; fn: () => void } | null>(null);
-	let messagesEnd = $state<HTMLDivElement | undefined>(undefined);
+let messageInput = $state('');
+let showConfirm = $state<{ action: 'leave' | 'delete'; fn: () => void } | null>(null);
+let messagesEnd = $state<HTMLDivElement | undefined>(undefined);
 
-	let validChatId = $derived(chatId && chatId !== '' && chatId !== 'undefined' && !isNaN(parseInt(chatId, 10)));
-	let currentUser = $derived($username ?? '');
-	let isParticipant = $derived($participants.length > 0 && $participants.includes(currentUser));
-	let isAdmin = $derived($admins.includes(currentUser));
+let validChatId = $derived(chatId && chatId !== '' && chatId !== 'undefined' && !isNaN(parseInt(chatId, 10)));
+let currentUser = $derived($username ?? '');
+let isParticipant = $derived($participants.length > 0 && $participants.includes(currentUser));
+let isAdmin = $derived($admins.includes(currentUser));
 
-	function waitForSocket(cb: () => void) {
-		const id = setInterval(() => {
-			if (ws.state() === WebSocket.OPEN) {
-				clearInterval(id);
-				cb();
-			}
-		}, 100);
+$effect(() => {
+	if (!validChatId) {
+		setCurrentRoom(null);
+		return;
 	}
-
-	$effect(() => {
-		if (!validChatId) return;
-		waitForSocket(() => {
-			ws.fetchMessages(currentUser, chatId!, 50);
-		});
-		ws.connect(chatId);
-	});
+	setCurrentRoom(chatId!);
+	ws.connect(chatId);
+	ws.fetchMessages(currentUser, chatId!, 50);
+});
 
 	$effect(() => {
 		const _ = $messages;
@@ -69,7 +63,6 @@
 			content,
 			chatId: chatId!,
 		});
-		ws.fetchMessages(currentUser, chatId!, 50);
 		messageInput = '';
 	}
 

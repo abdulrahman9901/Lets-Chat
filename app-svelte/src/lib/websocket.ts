@@ -10,6 +10,7 @@ type MessagesCallback = (payload: {
 	system_message?: string;
 	image?: string;
 	chatKey?: string;
+	room_id?: string;
 }) => void;
 
 const callbacks: {
@@ -19,28 +20,62 @@ const callbacks: {
 } = {};
 
 let socketRef: WebSocket | null = null;
-let currentChatURL: string | null = null;
-let reconnectIntent = false;
+let currentRoomId: string | null = null;
 let reconnectAttempts = 0;
+let reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+const pendingQueue: Record<string, unknown>[] = [];
 
-export function connect(chatURL: string | number | null | undefined): void {
-	if (chatURL == null || chatURL === '' || String(chatURL) === 'undefined') return;
-	const room = String(chatURL);
-	if (socketRef?.readyState === WebSocket.OPEN && currentChatURL === room) return;
-	if (socketRef && (socketRef.readyState === WebSocket.OPEN || socketRef.readyState === WebSocket.CONNECTING)) {
-		reconnectIntent = true;
-		socketRef.close();
-		socketRef = null;
+const SESSION_WS_PATH = `${WS_BASE_URL.replace(/^http/, 'ws')}/ws/chat/`;
+
+function send(data: Record<string, unknown>): void {
+	if (socketRef?.readyState === WebSocket.OPEN) {
+		try {
+			socketRef.send(JSON.stringify(data));
+			return;
+		} catch (_) {}
 	}
-	currentChatURL = room;
-	reconnectIntent = false;
-	const path = `${WS_BASE_URL}/ws/chat/${room}/`;
-	logger.info('ws:connect', { url: path, room });
-	socketRef = new WebSocket(path);
+	pendingQueue.push(data);
+}
+
+export function connect(roomId: string | number | null | undefined): void {
+	if (roomId == null || roomId === '' || String(roomId) === 'undefined') return;
+	const room = String(roomId);
+
+	if (socketRef?.readyState === WebSocket.OPEN) {
+		if (currentRoomId === room) return;
+		if (currentRoomId) {
+			send({ command: 'leave_room', room_id: currentRoomId, chatId: currentRoomId });
+		}
+		send({ command: 'join_room', room_id: room, chatId: room });
+		currentRoomId = room;
+		logger.debug('ws:subscribe', { room });
+		return;
+	}
+
+	if (socketRef && socketRef.readyState === WebSocket.CONNECTING) {
+		pendingQueue.push({ command: 'join_room', room_id: room, chatId: room });
+		currentRoomId = room;
+		return;
+	}
+
+	currentRoomId = room;
+	pendingQueue.push({ command: 'join_room', room_id: room, chatId: room });
+	logger.info('ws:connect', { url: SESSION_WS_PATH });
+	socketRef = new WebSocket(SESSION_WS_PATH);
 
 	socketRef.onopen = () => {
 		reconnectAttempts = 0;
-		logger.debug('ws:open', { url: path, room });
+		logger.debug('ws:open', { url: SESSION_WS_PATH });
+		const queue = [...pendingQueue];
+		pendingQueue.length = 0;
+		for (const item of queue) {
+			try {
+				socketRef?.send(JSON.stringify(item));
+			} catch (_) {
+				pendingQueue.unshift(item);
+				break;
+			}
+		}
 	};
 
 	socketRef.onmessage = (e: MessageEvent) => {
@@ -56,6 +91,7 @@ export function connect(chatURL: string | number | null | undefined): void {
 					system_message: parsed.system_message,
 					image: parsed.image,
 					chatKey: parsed.chatKey,
+					room_id: parsed.room_id,
 				});
 			} else if (cmd === 'new_message') {
 				callbacks.new_message?.(parsed.message);
@@ -67,21 +103,36 @@ export function connect(chatURL: string | number | null | undefined): void {
 		} catch (_) {}
 	};
 
-	socketRef.onerror = (e) => {
-		logger.error('ws:error', { url: path, room, error: String(e) });
+	socketRef.onerror = () => {
+		logger.error('ws:error', { url: SESSION_WS_PATH });
 	};
+
 	socketRef.onclose = () => {
-		const url = currentChatURL;
 		socketRef = null;
-		if (url && !reconnectIntent) {
-			const delay = Math.min(2000 + reconnectAttempts * 1000, 10000);
+		const room = currentRoomId;
+		currentRoomId = null;
+		if (room) {
+			const delay = Math.min(1000 + reconnectAttempts * 1000, 10000);
 			reconnectAttempts += 1;
-			setTimeout(() => {
-				reconnectAttempts = 0;
-				connect(url);
+			reconnectTimeout = setTimeout(() => {
+				reconnectTimeout = null;
+				connect(room);
 			}, delay);
 		}
 	};
+}
+
+export function disconnect(): void {
+	if (reconnectTimeout) {
+		clearTimeout(reconnectTimeout);
+		reconnectTimeout = null;
+	}
+	currentRoomId = null;
+	pendingQueue.length = 0;
+	if (socketRef) {
+		socketRef.close();
+		socketRef = null;
+	}
 }
 
 export function fetchMessages(username: string, chatId: string, msgCount = 50): void {
@@ -102,12 +153,10 @@ export function addCallbacks(
 	callbacks.chatsUpdate = chatsUpdateCb;
 }
 
-function send(data: Record<string, unknown>): void {
-	try {
-		socketRef?.send(JSON.stringify(data));
-	} catch (_) {}
-}
-
 export function state(): number | null {
 	return socketRef?.readyState ?? null;
+}
+
+export function getCurrentRoomId(): string | null {
+	return currentRoomId;
 }

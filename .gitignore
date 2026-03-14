@@ -8,6 +8,7 @@ staticfiles
 Documentation site
 media
 db.sqlite
+.cursor
 
 # Python bytecode
 __pycache__/
