@@ -1,8 +1,4 @@
-import imp
-from .views import *
 from django.urls import path
-<<<<<<< HEAD
-=======
 from .views import (
     ChatListView,
     ChatCreateView,
@@ -13,7 +9,6 @@ from .views import (
     uploadimageView,
     FrontendLogView,
 )
->>>>>>> 299af1b (feat(frontend): add Svelte app and auth refactor)
 
 app_name = 'chat'
 

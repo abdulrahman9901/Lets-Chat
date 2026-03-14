@@ -2,7 +2,7 @@
   "name": "lets-chat",
   "private": true,
   "scripts": {
-    "start": "concurrently -n redis,backend,app -c cyan,blue,magenta \"npm run start:redis\" \"npm run start:backend\" \"npm run start:svelte\"",
+    "start": "concurrently -n backend,app -c blue,magenta \"npm run start:backend\" \"npm run start:svelte\"",
     "start:redis": "docker compose up -d redis",
     "start:backend": "cd src && ..\\.venv\\Scripts\\python.exe -m daphne -b 127.0.0.1 -p 8000 Justchat.asgi:application",
     "start:frontend": "cd frontend && npm run start",

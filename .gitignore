@@ -4,6 +4,7 @@ comments
 node_modules
 .cache
 static
+staticfiles
 Documentation site
 media
 db.sqlite
