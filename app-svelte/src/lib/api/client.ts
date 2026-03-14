@@ -39,8 +39,17 @@ export async function apiRequest<T>(
 	}
 	const res = await fetch(url, init);
 	if (!res.ok) {
-		const errBody = await res.json().catch(() => ({}));
-		throw new Error((errBody as { detail?: string }).detail ?? res.statusText);
+		const errBody = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+		const msg =
+			typeof errBody?.detail === 'string'
+				? errBody.detail
+				: Array.isArray(errBody?.non_field_errors) && errBody.non_field_errors.length > 0
+					? String(errBody.non_field_errors[0])
+					: typeof errBody === 'object' && errBody !== null
+						? (Object.values(errBody).flat().find((v) => typeof v === 'string') as string) ??
+							res.statusText
+						: res.statusText;
+		throw new Error(msg || res.statusText);
 	}
 	return res.json() as Promise<T>;
 }
