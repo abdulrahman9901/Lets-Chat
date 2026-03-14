@@ -99,7 +99,7 @@ class ChatConsumer(WebsocketConsumer):
         self.accept()
         room_name = self.scope.get('url_route', {}).get('kwargs', {}).get('room_name')
         if room_name:
-            self.join_room(self, {'room_id': room_name, 'chatId': room_name})
+            self.join_room({'room_id': room_name, 'chatId': room_name})
 
     def disconnect(self, close_code):
         for room_id in list(self.subscribed_rooms):
