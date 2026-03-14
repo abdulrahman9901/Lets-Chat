@@ -36,12 +36,13 @@ class Chat extends React.Component {
         },function () {
             console.log("new msgCount ",this.state.msgCount)
         })
-        const chatId =window.location.pathname.slice(1);
-        console.log('==============>match',chatId)
-        if(chatId!='' && Number.isInteger(parseInt(chatId))){
-        this.waitForSocketConnection(()=>{
-            webSocketInstance.fetchMessages(this.props.currentUser,chatId,50);
-        });
+        const chatId = window.location.pathname.slice(1).replace(/^\//, '') || '';
+        const validChatId = chatId !== '' && chatId !== 'undefined' && !isNaN(parseInt(chatId, 10));
+        console.log('==============>match', chatId, 'valid=', validChatId);
+        if (validChatId) {
+            this.waitForSocketConnection(() => {
+                webSocketInstance.fetchMessages(this.props.currentUser, chatId, 50);
+            });
             webSocketInstance.connect(chatId);
         }
     }
@@ -89,7 +90,9 @@ class Chat extends React.Component {
 
         console.log('newProps',newProps.messages,'Props',this.props.messages)
         console.log('componentWillReceiveProps')
-        this.props.getChats()
+        if (this.props.currentUser && this.props.token) {
+            this.props.getChats(this.props.currentUser, this.props.token);
+        }
         if (newProps && newProps.messages){
             if (newProps.messages.length == 1 && newProps.messages[0].system_message)
                 this.pathname = location.pathname;
@@ -408,7 +411,7 @@ class Chat extends React.Component {
                 <div id="content" className="content">
                 {this.props.participants && this.props.participants.includes(localStorage.getItem('username')) ?
                 <div className="contact-profile">
-                <button id="toChats" class="btn" onClick={this.showChats} ><i class="fa fa-arrow-left" aria-hidden="true"></i></button>
+                <button id="toChats" className="btn" onClick={this.showChats}><i className="fa fa-arrow-left" aria-hidden="true"></i></button>
                 <img src="https://img.icons8.com/pastel-glyph/128/2C3E50/communication--v1.png"/>
                 <p> {this.props.name ? this.props.name : window.location.pathname.slice(1) ? `Chat # ${window.location.pathname.slice(1)}`:null}
                 <br/>

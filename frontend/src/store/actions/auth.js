@@ -85,8 +85,8 @@ export const authLogin =(username,password)=>{
             const expirationDate = new Date(new Date().getTime() + 3600 *1000);
             localStorage.setItem('token',token);
             localStorage.setItem('expirationDate',expirationDate);
-            username = localStorage.getItem("username")
-            dispatch(authSuccess(token,username));
+            localStorage.setItem('username', username);
+            dispatch(authSuccess(token, username));
             dispatch(checkAuthTimeout(3600));
         }).catch(err =>{
             console.log("err at actions ",err.message)
@@ -115,8 +115,8 @@ export const authSignup =(username,email,password1,password2,gender,phone_number
             const expirationDate = new Date(new Date().getTime() + 3600 *1000);
             localStorage.setItem('token',token);
             localStorage.setItem('expirationDate',expirationDate);
-            console.log('reg req',username)
-            dispatch(authSuccess(token,username));
+            localStorage.setItem('username', username);
+            dispatch(authSuccess(token, username));
             dispatch(checkAuthTimeout(3600));
         }).catch(err =>{
             dispatch(authFail(err.message))

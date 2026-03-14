@@ -14,35 +14,58 @@ class WebSocketService{
     }
     constructor(){
         this.socketRef=null;
+        this.currentChatURL=null;
     }
 
     connect(chatURL){
-        console.log('url : ',chatURL)
-        const path=`${WS_BASE_URL}/ws/chat/${chatURL}/`;
-    
-        this.socketRef=new WebSocket(path);
+        if (chatURL == null || chatURL === '' || String(chatURL) === 'undefined') {
+            console.log('websocket: skip connect, invalid chatURL', chatURL);
+            return;
+        }
+        const room = String(chatURL);
+        if (this.socketRef && this.socketRef.readyState === WebSocket.OPEN && this.currentChatURL === room) {
+            return;
+        }
+        if (this.socketRef && (this.socketRef.readyState === WebSocket.OPEN || this.socketRef.readyState === WebSocket.CONNECTING)) {
+            this.reconnectIntent = true;
+            this.socketRef.close();
+            this.socketRef = null;
+        }
+        this.currentChatURL = room;
+        this.reconnectIntent = false;
+        const path = `${WS_BASE_URL}/ws/chat/${this.currentChatURL}/`;
+        console.log('url : ', path);
+
+        this.socketRef = new WebSocket(path);
 
         this.socketRef.addEventListener('message', (event) => {
-        console.log('Message from server ', event);
-         });
-         
-        this.socketRef.onopen = ()=>{
-            console.log("Wensocket is open")
+            console.log('Message from server ', event);
+        });
+
+        this.socketRef.onopen = () => {
+            this.reconnectAttempts = 0;
+            console.log("Websocket is open");
         };
-        this.socketNewMessage(JSON.stringify({
-            command:'messages'
-        }))
-        this.socketRef.onmessage=(e)=>{
-            this.socketNewMessage(e.data)
-            console.log('Message from server json : ', JSON.parse(e.data).command);
-        }
-        this.socketRef.onerror=(e)=>{
-            console.log(e.message);
-        }
-        this.socketRef.onclose=()=>{
-            console.log("websocket closed ");
-            this.connect();
-        }
+        this.socketRef.onmessage = (e) => {
+            this.socketNewMessage(e.data);
+            try { console.log('Message from server json : ', JSON.parse(e.data).command); } catch (_) {}
+        };
+        this.socketRef.onerror = (e) => {
+            console.log('WebSocket error', e.message || e);
+        };
+        this.socketRef.onclose = () => {
+            console.log("websocket closed");
+            const url = this.currentChatURL;
+            this.socketRef = null;
+            if (url && !this.reconnectIntent) {
+                const delay = Math.min(2000 + (this.reconnectAttempts || 0) * 1000, 10000);
+                this.reconnectAttempts = (this.reconnectAttempts || 0) + 1;
+                setTimeout(() => {
+                    this.reconnectAttempts = 0;
+                    this.connect(url);
+                }, delay);
+            }
+        };
     }
     socketNewMessage(data){
         const parsedData=JSON.parse(data)
