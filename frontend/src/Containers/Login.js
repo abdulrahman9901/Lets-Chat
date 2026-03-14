@@ -83,7 +83,7 @@ return (
       <Button type="primary" htmlType="submit" className="login-form-button" >
         Log in
       </Button>
-      Or <Link to={{pathname:'/register'}} activeclassname="active" onClick={props.onReset}>register now!</Link>
+      Or <Link to={{pathname:'/register'}} activeClassName="active" onClick={props.onReset}>register now!</Link>
     </Form.Item>
   </Form>
   </Spin>

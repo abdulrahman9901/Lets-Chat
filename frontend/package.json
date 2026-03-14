@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "parcel index.html",
-    "build": "parcel build index.html"
+    "build": "parcel build index.html",
+    "clean": "node -e \"const fs=require('fs');['.cache','dist'].forEach(d=>{try{fs.rmSync(d,{recursive:true});console.log('Deleted',d)}catch(e){}})\""
   },
   "keywords": [],
   "author": "",
