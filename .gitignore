@@ -9,18 +9,35 @@ Documentation site
 media
 db.sqlite
 .cursor
+*.dist
 
-# Python bytecode
+# Python
 __pycache__/
 *.py[cod]
+.venv/
+venv/
+*.egg-info/
+.eggs/
 
-# Frontend build artifacts
-frontend/dist/
-
-# Local SQLite DB
+# SQLite (dev DB)
+*.sqlite
+*.sqlite3
 db.sqlite3
 src/db.sqlite3
 
+# Build / dist
+dist/
+frontend/dist/
+app-svelte/build/
+app-svelte/.svelte-kit/
+
+# Logs
+src/logs/
+*.log
+
 # Local environment
-frontend/.env
 .env
+.env.local
+.env.*.local
+frontend/.env
+frontend/.env.local
