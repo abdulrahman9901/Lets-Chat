@@ -1,10 +1,13 @@
 import json
 import logging
+import os
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.fields.files import ImageFieldFile
+from django.conf import settings
+from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status
 from rest_framework.generics import (
@@ -51,13 +54,8 @@ class FrontendLogView(APIView):
         return Response({"status": "ok"}, status=status.HTTP_201_CREATED)
 
 def get_user_contact(username):
-    user = get_object_or_404(CustomUser,username=username)
-    try :
-        contact = get_object_or_404(Contact,user=user)
-    except:
-        contact = Contact()
-        contact.user = user
-        print(contact)
+    user = get_object_or_404(CustomUser, username=username)
+    contact, _ = Contact.objects.get_or_create(user=user, defaults={})
     return contact
 def send_socket_message(instance,message):
     channel_layer = get_channel_layer()
@@ -151,3 +149,20 @@ class uploadimageView(APIView):
                 send_socket_message(chat,message)
        
         return Response({"status": "success", "data": "image"}, status=status.HTTP_200_OK)
+
+
+class MediaDownloadView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request):
+        path = request.GET.get("file", "").strip().lstrip("/").replace("\\", "/")
+        if not path or ".." in path:
+            return Response({"detail": "Invalid file"}, status=status.HTTP_400_BAD_REQUEST)
+        root = os.path.abspath(settings.MEDIA_ROOT)
+        full_path = os.path.normpath(os.path.join(root, path))
+        if not full_path.startswith(root):
+            return Response({"detail": "Invalid file"}, status=status.HTTP_400_BAD_REQUEST)
+        if not os.path.isfile(full_path):
+            return Response({"detail": "Not found"}, status=status.HTTP_404_NOT_FOUND)
+        filename = os.path.basename(full_path)
+        return FileResponse(open(full_path, "rb"), as_attachment=True, filename=filename)

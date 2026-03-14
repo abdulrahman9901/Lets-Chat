@@ -35,6 +35,8 @@ let showConfirm = $state<{ action: 'leave' | 'delete'; fn: () => void } | null>(
 let showChatKeyPopup = $state(false);
 let copiedFeedback = $state(false);
 let copiedFeedbackTimeout: ReturnType<typeof setTimeout> | null = null;
+let expandedImage = $state<{ url: string; filename: string; mediaPath: string } | null>(null);
+let expandedImageGroup = $state<ChatMessage[] | null>(null);
 let messagesEnd = $state<HTMLDivElement | undefined>(undefined);
 
 let validChatId = $derived(chatId && chatId !== '' && chatId !== 'undefined' && !isNaN(parseInt(chatId, 10)));
@@ -104,7 +106,35 @@ $effect(() => {
 	}
 
 	function handleEscape(e: KeyboardEvent) {
-		if (e.key === 'Escape') showChatKeyPopup = false;
+		if (e.key === 'Escape') {
+			if (expandedImage) expandedImage = null;
+			else if (expandedImageGroup) expandedImageGroup = null;
+			else showChatKeyPopup = false;
+		}
+	}
+
+	function openImageGroup(messages: ChatMessage[]) {
+		expandedImageGroup = messages;
+	}
+
+	function openImageFromGroup(msg: ChatMessage) {
+		if (!msg.image) return;
+		openImage(`${API_BASE_URL}/media/${msg.image}`, msg.image);
+	}
+
+	function openImage(url: string, path: string) {
+		const filename = path.split(/[/\\]/).pop() ?? 'image';
+		expandedImage = { url, filename, mediaPath: path };
+	}
+
+	function downloadImage() {
+		if (!expandedImage) return;
+		const downloadUrl = `${API_BASE_URL}/chat/media/download/?file=${encodeURIComponent(expandedImage.mediaPath)}`;
+		const iframe = document.createElement('iframe');
+		iframe.style.display = 'none';
+		iframe.setAttribute('src', downloadUrl);
+		document.body.appendChild(iframe);
+		setTimeout(() => document.body.removeChild(iframe), 5000);
 	}
 
 	$effect(() => {
@@ -131,6 +161,46 @@ $effect(() => {
 	}
 
 	let dedupedMessages = $derived([...new Map(($messages ?? []).map((m) => [m.id, m])).values()]);
+
+	type MessageBlock =
+		| { type: 'system'; msg: ChatMessage }
+		| { type: 'single'; msg: ChatMessage }
+		| { type: 'imageGroup'; messages: ChatMessage[] };
+
+	function isImageMsg(m: ChatMessage): boolean {
+		return m.content == null && m.image != null && m.image !== '';
+	}
+
+	let messageBlocks = $derived.by(() => {
+		const list = dedupedMessages;
+		const blocks: MessageBlock[] = [];
+		let i = 0;
+		while (i < list.length) {
+			const msg = list[i];
+			if (msg.system_message) {
+				blocks.push({ type: 'system', msg });
+				i += 1;
+				continue;
+			}
+			if (isImageMsg(msg)) {
+				let j = i;
+				while (j + 1 < list.length && list[j + 1].author === msg.author && isImageMsg(list[j + 1])) {
+					j += 1;
+				}
+				if (j > i) {
+					blocks.push({ type: 'imageGroup', messages: list.slice(i, j + 1) });
+					i = j + 1;
+				} else {
+					blocks.push({ type: 'single', msg });
+					i += 1;
+				}
+				continue;
+			}
+			blocks.push({ type: 'single', msg });
+			i += 1;
+		}
+		return blocks;
+	});
 </script>
 
 <svelte:window onkeydown={handleEscape} />
@@ -186,10 +256,11 @@ $effect(() => {
 
 	<div id="messagesWindow" class="messages">
 		<ul class="chat-log">
-			{#each dedupedMessages as msg (msg.id)}
-				{#if msg.system_message}
-					<li class="sys"><p class="sys">{msg.content}</p></li>
-				{:else}
+			{#each messageBlocks as block (block.type === 'imageGroup' ? block.messages.map((m) => m.id).join('-') : block.msg.id)}
+				{#if block.type === 'system'}
+					<li class="sys"><p class="sys">{block.msg.content}</p></li>
+				{:else if block.type === 'single'}
+					{@const msg = block.msg}
 					{@const isSelf = currentUser === msg.author}
 					{@const inChat = $participants.includes(msg.author)}
 					<li class={inChat ? (isSelf ? 'sent' : 'replies') : 'replies out'}>
@@ -198,16 +269,50 @@ $effect(() => {
 						{/if}
 						<br />
 						{#if msg.content == null && msg.image}
-							<img
-								src="{API_BASE_URL}/media/{msg.image}"
-								alt=""
-								class="messageImage {inChat ? (isSelf ? 'imgsent' : 'imgrecv') : 'imgout'}"
-							/>
+							<button
+								type="button"
+								class="messageImage-wrap"
+								onclick={() => openImage(`${API_BASE_URL}/media/${msg.image}`, msg.image ?? '')}
+							>
+								<img
+									src="{API_BASE_URL}/media/{msg.image}"
+									alt="Chat image"
+									class="messageImage {inChat ? (isSelf ? 'imgsent' : 'imgrecv') : 'imgout'}"
+								/>
+							</button>
 						{:else}
 							<p>{msg.content ?? ''}</p>
 						{/if}
 						<br />
 						<small class="timestamp">{timestampDisplay(msg.timestamp)}</small>
+					</li>
+				{:else}
+					{@const group = block.messages}
+					{@const isSelf = currentUser === group[0].author}
+					{@const inChat = $participants.includes(group[0].author)}
+					{@const displayCount = Math.min(4, group.length)}
+					{@const extraCount = group.length > 4 ? group.length - 4 : 0}
+					<li class={inChat ? (isSelf ? 'sent' : 'replies') : 'replies out'}>
+						{#if $participantsCount >= 0}
+							<small class={inChat ? (isSelf ? 'sender' : 'reciever') : 'out'}>{group[0].author}</small>
+						{/if}
+						<br />
+						<button
+							type="button"
+							class="image-group image-group-{displayCount} {inChat ? (isSelf ? 'imgsent' : 'imgrecv') : 'imgout'}"
+							onclick={() => openImageGroup(group)}
+						>
+							{#each group.slice(0, 4) as msg, idx}
+								<span class="image-group-cell">
+									<img src="{API_BASE_URL}/media/{msg.image}" alt="" />
+									{#if idx === 3 && extraCount > 0}
+										<span class="image-group-more">+{extraCount}</span>
+									{/if}
+								</span>
+							{/each}
+						</button>
+						<br />
+						<small class="timestamp">{timestampDisplay(group[group.length - 1].timestamp)}</small>
 					</li>
 				{/if}
 			{/each}
@@ -259,6 +364,61 @@ $effect(() => {
 				</div>
 			</div>
 			<button type="button" class="chatkey-close" onclick={() => (showChatKeyPopup = false)}>Close</button>
+		</div>
+	</div>
+{/if}
+
+{#if expandedImageGroup && expandedImageGroup.length > 0}
+	<div
+		class="image-gallery-overlay"
+		role="dialog"
+		aria-modal="true"
+		aria-label="Image gallery"
+		onclick={() => (expandedImageGroup = null)}
+	>
+		<div class="image-gallery-popup" onclick={(e) => e.stopPropagation()}>
+			<div class="image-gallery-header">
+				<span class="image-gallery-title">{expandedImageGroup.length} image{expandedImageGroup.length === 1 ? '' : 's'}</span>
+				<button type="button" class="image-gallery-close" onclick={() => (expandedImageGroup = null)} aria-label="Close">
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+				</button>
+			</div>
+			<div class="image-gallery-scroll">
+				{#each expandedImageGroup as msg (msg.id)}
+					{#if msg.image}
+						<button
+							type="button"
+							class="image-gallery-item"
+							onclick={() => openImageFromGroup(msg)}
+						>
+							<img src="{API_BASE_URL}/media/{msg.image}" alt="" />
+						</button>
+					{/if}
+				{/each}
+			</div>
+		</div>
+	</div>
+{/if}
+
+{#if expandedImage}
+	<div
+		class="image-viewer-overlay"
+		role="dialog"
+		aria-modal="true"
+		aria-label="View image"
+		onclick={() => (expandedImage = null)}
+		onkeydown={(e) => e.key === 'Escape' && (expandedImage = null)}
+	>
+		<div class="image-viewer-toolbar">
+			<button type="button" class="image-viewer-icon-btn" onclick={(e) => (e.stopPropagation(), downloadImage())} aria-label="Download">
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+			</button>
+			<button type="button" class="image-viewer-icon-btn" onclick={(e) => (e.stopPropagation(), expandedImage = null)} aria-label="Close">
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+			</button>
+		</div>
+		<div class="image-viewer-content" onclick={(e) => e.stopPropagation()}>
+			<img src={expandedImage.url} alt="" class="image-viewer-img" />
 		</div>
 	</div>
 {/if}
@@ -457,6 +617,9 @@ $effect(() => {
 		text-align: left;
 		margin: 8px 0;
 	}
+	.chat-log li.sent .image-group {
+		margin-left: auto;
+	}
 	.chat-log .sender,
 	.chat-log .reciever {
 		font-size: 12px;
@@ -466,8 +629,217 @@ $effect(() => {
 		font-size: 11px;
 		color: var(--Text-Heading-Medium);
 	}
+	.messageImage-wrap {
+		display: inline-block;
+		padding: 0;
+		margin: 0;
+		border: none;
+		background: none;
+		cursor: pointer;
+		border-radius: 8px;
+	}
 	.chat-log .messageImage {
 		max-width: 200px;
+		max-height: 200px;
+		object-fit: cover;
+		border-radius: 8px;
+		display: block;
+		vertical-align: middle;
+	}
+	.messageImage-wrap:hover .messageImage {
+		opacity: 0.9;
+	}
+	.image-group {
+		display: grid;
+		gap: 3px;
+		max-width: 320px;
+		border-radius: 12px;
+		overflow: hidden;
+		padding: 0;
+		margin: 0;
+		border: none;
+		background: none;
+		cursor: pointer;
+		text-align: left;
+	}
+	.image-group-2 {
+		grid-template-columns: 1fr 1fr;
+	}
+	.image-group-3 {
+		grid-template-columns: 1fr 1fr;
+		grid-template-rows: 1fr 1fr;
+	}
+	.image-group-3 .image-group-cell:first-child {
+		grid-row: span 2;
+	}
+	.image-group-4 {
+		grid-template-columns: 1fr 1fr;
+		grid-template-rows: 1fr 1fr;
+	}
+	.image-group-cell {
+		position: relative;
+		display: block;
+		padding: 0;
+		margin: 0;
+		border: none;
+		background: var(--Border-Subtle);
+		cursor: pointer;
+		aspect-ratio: 1;
+		overflow: hidden;
+		min-width: 0;
+		min-height: 0;
+	}
+	.image-group-cell img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+		vertical-align: middle;
+	}
+	.image-group-cell:hover img {
+		opacity: 0.92;
+	}
+	.image-group-more {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(0, 0, 0, 0.55);
+		color: #fff;
+		font-size: 24px;
+		font-weight: 700;
+	}
+	.image-gallery-overlay {
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.9);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 1001;
+		padding: 16px;
+		box-sizing: border-box;
+	}
+	.image-gallery-popup {
+		display: flex;
+		flex-direction: column;
+		background: var(--Background-Lift-8, #1a1a1a);
+		border-radius: 16px;
+		border: 1px solid var(--Border-Subtle);
+		max-width: 90vw;
+		max-height: 90vh;
+		width: 640px;
+		overflow: hidden;
+	}
+	.image-gallery-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 12px 16px;
+		border-bottom: 1px solid var(--Border-Subtle);
+		flex-shrink: 0;
+	}
+	.image-gallery-title {
+		font-size: 16px;
+		font-weight: 600;
+		color: var(--Text-Heading-Strong);
+	}
+	.image-gallery-close {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 40px;
+		height: 40px;
+		padding: 0;
+		border: none;
+		background: none;
+		color: var(--Text-Heading-Strong);
+		cursor: pointer;
+		border-radius: 8px;
+	}
+	.image-gallery-close:hover {
+		background: var(--Button-Secondary-Hover-Background-subtle);
+	}
+	.image-gallery-scroll {
+		overflow-y: auto;
+		overflow-x: hidden;
+		padding: 16px;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+		gap: 12px;
+		align-content: start;
+		min-height: 200px;
+	}
+	.image-gallery-item {
+		display: block;
+		aspect-ratio: 1;
+		padding: 0;
+		margin: 0;
+		border: none;
+		border-radius: 8px;
+		overflow: hidden;
+		background: var(--Border-Subtle);
+		cursor: pointer;
+		min-width: 0;
+	}
+	.image-gallery-item img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+	.image-gallery-item:hover img {
+		opacity: 0.9;
+	}
+	.image-viewer-overlay {
+		position: fixed;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.92);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 1001;
+		padding: 16px;
+		box-sizing: border-box;
+	}
+	.image-viewer-toolbar {
+		position: absolute;
+		top: 16px;
+		right: 16px;
+		display: flex;
+		gap: 12px;
+		z-index: 10;
+	}
+	.image-viewer-icon-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 48px;
+		height: 48px;
+		padding: 0;
+		border: none;
+		border-radius: 50%;
+		background: rgba(0, 0, 0, 0.6);
+		color: #fff;
+		cursor: pointer;
+	}
+	.image-viewer-icon-btn:hover {
+		background: rgba(0, 0, 0, 0.8);
+	}
+	.image-viewer-content {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		max-width: 100%;
+		max-height: 100%;
+		padding: 60px 16px 16px;
+		box-sizing: border-box;
+	}
+	.image-viewer-img {
+		max-width: 100%;
+		max-height: calc(100vh - 80px);
+		object-fit: contain;
 		border-radius: 8px;
 	}
 	.messages-dial {

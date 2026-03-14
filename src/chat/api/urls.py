@@ -8,11 +8,13 @@ from .views import (
     joinChatView,
     uploadimageView,
     FrontendLogView,
+    MediaDownloadView,
 )
 
 app_name = 'chat'
 
 urlpatterns = [
+    path('media/download/', MediaDownloadView.as_view()),
     path('', ChatListView.as_view()),
     path('create/', ChatCreateView.as_view()),
     path('<int:pk>/update/', ChatUpdateView.as_view()),
