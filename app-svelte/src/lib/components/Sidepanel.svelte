@@ -48,7 +48,9 @@
 				<li class="contact">
 					<a href="/{chat.id}" class="contact-link">
 						<span class="contact-status online"></span>
-						<img src="https://img.icons8.com/pastel-glyph/128/E6EAEA/communication--v1.png" alt="" />
+						<span class="chat-icon" aria-hidden="true">
+							<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+						</span>
 						<div class="meta">
 							<p class="name">{chat.name ?? `Chat # ${chat.id}`}</p>
 							<p class="members">
@@ -152,11 +154,19 @@
 		background: var(--accent-glow);
 		flex-shrink: 0;
 	}
-	.contact-link img {
+	.contact-link .chat-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		width: 40px;
 		height: 40px;
-		border-radius: 50%;
+		border-radius: 12px;
+		background: rgba(56, 189, 248, 0.2);
+		color: var(--accent-glow);
 		flex-shrink: 0;
+	}
+	.contact-link .chat-icon svg {
+		display: block;
 	}
 	.meta {
 		flex: 1;
