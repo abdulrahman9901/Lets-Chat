@@ -1,0 +1,14 @@
+.git
+.gitignore
+.env
+*.md
+app-svelte
+docs
+node_modules
+*.log
+__pycache__
+*.pyc
+*.sqlite3
+.pytest_cache
+.coverage
+htmlcov
