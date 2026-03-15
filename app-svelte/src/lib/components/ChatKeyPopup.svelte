@@ -80,12 +80,12 @@
 		z-index: 1000;
 	}
 	.popup {
+		width: var(--modal-width);
+		max-width: var(--modal-width);
 		background: #1a1a1a;
 		border-radius: 16px;
 		padding: 24px;
 		border: 1px solid var(--Border-Subtle);
-		max-width: 320px;
-		width: 100%;
 	}
 	.label {
 		margin: 0 0 8px 0;

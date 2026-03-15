@@ -73,11 +73,14 @@
 		z-index: 1000;
 	}
 	.modal {
+		width: var(--modal-width);
+		max-width: var(--modal-width);
 		background: #1a1a1a;
 		border-radius: 16px;
 		padding: 24px;
 		border: 1px solid var(--Border-Subtle);
-		min-width: 320px;
+		max-height: calc(100vh - 48px);
+		overflow-y: auto;
 	}
 	.modal h2 {
 		margin: 0 0 16px;
