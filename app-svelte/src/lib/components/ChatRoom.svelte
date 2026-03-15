@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { username } from '$lib/stores/auth';
 	import {
@@ -57,7 +58,9 @@
 
 	$effect(() => {
 		const _ = $messages;
-		messagesEnd?.scrollIntoView({ behavior: 'smooth' });
+		tick().then(() => {
+			messagesEnd?.scrollIntoView({ behavior: 'auto' });
+		});
 	});
 
 	function sendMessage(e: SubmitEvent) {
