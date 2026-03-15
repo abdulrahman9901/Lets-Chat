@@ -27,7 +27,12 @@
 	{@const inChat = participants.includes(msg.author)}
 	<li class={inChat ? (isSelf ? 'sent' : 'replies') : 'replies out'}>
 		{#if participantsCount >= 0}
-			<small class={inChat ? (isSelf ? 'sender' : 'reciever') : 'out'}>{msg.author}</small>
+			<small class="name-row name-{inChat ? (isSelf ? 'sender' : 'reciever') : 'out'}">
+				<span class="name-icon" aria-hidden="true">
+					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+				</span>
+				{msg.author}
+			</small>
 		{/if}
 		<br />
 		{#if msg.content == null && msg.image}
@@ -56,7 +61,12 @@
 	{@const extraCount = group.length > 4 ? group.length - 4 : 0}
 	<li class={inChat ? (isSelf ? 'sent' : 'replies') : 'replies out'}>
 		{#if participantsCount >= 0}
-			<small class={inChat ? (isSelf ? 'sender' : 'reciever') : 'out'}>{group[0].author}</small>
+			<small class="name-row name-{inChat ? (isSelf ? 'sender' : 'reciever') : 'out'}">
+				<span class="name-icon" aria-hidden="true">
+					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+				</span>
+				{group[0].author}
+			</small>
 		{/if}
 		<br />
 		<button
@@ -95,10 +105,29 @@
 	li.sent .image-group {
 		margin-left: auto;
 	}
-	.sender,
-	.reciever {
-		font-size: 12px;
+	.name-row {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		font-size: 13px;
+		font-weight: 600;
+	}
+	.name-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		opacity: 0.9;
+	}
+	.name-sender {
+		color: #38bdf8;
+	}
+	.name-reciever {
+		color: #34d399;
+	}
+	.name-out {
 		color: var(--Text-Heading-Medium);
+		opacity: 0.85;
 	}
 	.timestamp {
 		font-size: 11px;
