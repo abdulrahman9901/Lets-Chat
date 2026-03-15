@@ -173,9 +173,11 @@
 {:else}
 	<div class="contact-profile">
 		<a href="/" class="btn back">←</a>
-		<img src="https://img.icons8.com/pastel-glyph/128/2C3E50/communication--v1.png" alt="" />
-		<p>
-			{$chatName ?? `Chat # ${chatId}`}
+		<div class="chat-icon" aria-hidden="true">
+			<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+		</div>
+		<p class="chat-title">
+			<span class="chat-name">{$chatName ?? `Chat # ${chatId}`}</span>
 			{#if isAdmin && $chatKey}
 				<button type="button" class="chatkey" title="Click to show chat key" onclick={() => (showChatKeyPopup = true)}>@chatkey</button>
 			{/if}
@@ -237,8 +239,12 @@
 						rows="1"
 						onkeydown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), document.querySelector<HTMLButtonElement>('.submit-msg')?.click())}
 					></textarea>
-					<button type="submit" class="submit submit-msg" aria-label="Send">↗</button>
-					<button type="button" class="attach" onclick={() => openUploadPopup()} aria-label="Attach">📎</button>
+					<button type="submit" class="submit submit-msg" aria-label="Send">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+					</button>
+					<button type="button" class="attach" onclick={() => openUploadPopup()} aria-label="Attach">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+					</button>
 				</div>
 			</div>
 		</form>
@@ -283,14 +289,30 @@
 		text-decoration: none;
 		font-size: 18px;
 	}
-	.contact-profile img {
+	.chat-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		width: 48px;
 		height: 48px;
+		border-radius: 12px;
+		background: rgba(56, 189, 248, 0.2);
+		color: var(--accent-glow);
+		flex-shrink: 0;
 	}
-	.contact-profile p {
+	.contact-profile p.chat-title {
 		flex: 1;
 		margin: 0;
 		font-size: 16px;
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 6px;
+	}
+	.chat-name {
+		font-weight: 700;
+		color: var(--Text-Heading-Strong);
+		letter-spacing: 0.02em;
 	}
 	.chatkey {
 		cursor: pointer;
@@ -355,11 +377,18 @@
 	}
 	.message-input .submit,
 	.message-input .attach {
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		padding: 10px 14px;
 		background: var(--Button-Secondary-Default-Background-subtle);
 		border: 1px solid var(--Button-Secondary-Default-Border);
 		border-radius: 12px;
 		color: var(--Text-Heading-Strong);
 		cursor: pointer;
+	}
+	.message-input .submit:hover,
+	.message-input .attach:hover {
+		color: var(--accent-glow);
 	}
 </style>
