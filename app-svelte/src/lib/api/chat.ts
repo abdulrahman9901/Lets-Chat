@@ -1,6 +1,18 @@
 import { apiRequest, apiFormDataWithProgress } from './client';
 import type { Chat } from '$lib/stores/message';
 
+export interface UserSearchHit {
+	id: number;
+	username: string;
+	email: string;
+}
+
+export async function searchUsers(q: string, limit = 20): Promise<UserSearchHit[]> {
+	if (!q.trim()) return [];
+	const params = new URLSearchParams({ q: q.trim(), limit: String(limit) });
+	return apiRequest<UserSearchHit[]>(`/chat/users/search/?${params}`, { method: 'GET' });
+}
+
 export async function getChats(username: string): Promise<Chat[]> {
 	return apiRequest<Chat[]>(`/chat/?username=${encodeURIComponent(username)}`, {
 		method: 'GET',
