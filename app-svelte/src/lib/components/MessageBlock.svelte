@@ -1,22 +1,38 @@
 <script lang="ts">
-	import { API_BASE_URL } from '$lib/config';
-	import { formatMessageTimestamp } from '$lib/utils/format';
-	import type { ChatMessage } from '$lib/stores/message';
+import { API_BASE_URL } from '$lib/config';
+import { formatMessageTimestamp } from '$lib/utils/format';
+import type { ChatMessage } from '$lib/stores/message';
 
-	type Block =
-		| { type: 'system'; msg: ChatMessage }
-		| { type: 'single'; msg: ChatMessage }
-		| { type: 'imageGroup'; messages: ChatMessage[] };
+type Block =
+	| { type: 'system'; msg: ChatMessage }
+	| { type: 'single'; msg: ChatMessage }
+	| { type: 'imageGroup'; messages: ChatMessage[] };
 
-	interface Props {
-		block: Block;
-		currentUser: string;
-		participants: string[];
-		participantsCount: number;
-		onOpenImage: (url: string, path: string) => void;
-		onOpenImageGroup: (messages: ChatMessage[]) => void;
-	}
-	let { block, currentUser, participants, participantsCount, onOpenImage, onOpenImageGroup }: Props = $props();
+interface Props {
+	block: Block;
+	currentUser: string;
+	participants: string[];
+	participantsCount: number;
+	onOpenImage: (url: string, path: string) => void;
+	onOpenImageGroup: (messages: ChatMessage[]) => void;
+}
+let { block, currentUser, participants, participantsCount, onOpenImage, onOpenImageGroup }: Props = $props();
+
+const PALETTE = [
+	'#38bdf8',
+	'#34d399', '#f97316', '#a855f7', '#facc15', '#f472b6', '#22c55e', '#0ea5e9',
+	'#e879f9', '#14b8a6', '#fb923c', '#6366f1', '#84cc16', '#ec4899', '#06b6d4', '#f59e0b',
+];
+
+const orderedParticipants = $derived(
+	[currentUser, ...participants.filter((p) => p !== currentUser).sort()]
+);
+
+function getAuthorColor(author: string, inChat: boolean): string {
+	if (!inChat) return 'var(--Text-Heading-Medium)';
+	const i = orderedParticipants.indexOf(author);
+	return PALETTE[i >= 0 ? i % PALETTE.length : 0];
+}
 </script>
 
 {#if block.type === 'system'}
@@ -25,9 +41,13 @@
 	{@const msg = block.msg}
 	{@const isSelf = currentUser === msg.author}
 	{@const inChat = participants.includes(msg.author)}
+	{@const authorColor = getAuthorColor(msg.author, inChat)}
 	<li class={inChat ? (isSelf ? 'sent' : 'replies') : 'replies out'}>
 		{#if participantsCount >= 0}
-			<small class="name-row name-{inChat ? (isSelf ? 'sender' : 'reciever') : 'out'}">
+			<small
+				class="name-row name-{inChat ? (isSelf ? 'sender' : 'reciever') : 'out'}"
+				style={`color: ${authorColor}`}
+			>
 				<span class="name-icon" aria-hidden="true">
 					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
 				</span>
@@ -59,9 +79,13 @@
 	{@const inChat = participants.includes(group[0].author)}
 	{@const displayCount = Math.min(4, group.length)}
 	{@const extraCount = group.length > 4 ? group.length - 4 : 0}
+	{@const authorColor = getAuthorColor(group[0].author, inChat)}
 	<li class={inChat ? (isSelf ? 'sent' : 'replies') : 'replies out'}>
 		{#if participantsCount >= 0}
-			<small class="name-row name-{inChat ? (isSelf ? 'sender' : 'reciever') : 'out'}">
+			<small
+				class="name-row name-{inChat ? (isSelf ? 'sender' : 'reciever') : 'out'}"
+				style={`color: ${authorColor}`}
+			>
 				<span class="name-icon" aria-hidden="true">
 					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
 				</span>
