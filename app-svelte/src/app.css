@@ -9,6 +9,7 @@
 	--Background-Lift-8: rgba(15, 23, 42, 0.72);
 	--Border-Subtle: rgba(56, 189, 248, 0.45);
 	--accent-glow: #38bdf8;
+	--modal-width: min(420px, 92vw);
 }
 
 *,

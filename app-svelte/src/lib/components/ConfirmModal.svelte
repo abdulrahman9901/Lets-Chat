@@ -31,11 +31,12 @@
 		z-index: 1000;
 	}
 	.modal {
+		width: var(--modal-width);
+		max-width: var(--modal-width);
 		background: #1a1a1a;
 		border-radius: 16px;
 		padding: 24px;
 		border: 1px solid var(--Border-Subtle);
-		min-width: 280px;
 	}
 	.actions {
 		display: flex;
