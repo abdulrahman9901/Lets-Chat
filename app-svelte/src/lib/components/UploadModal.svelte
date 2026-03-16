@@ -4,15 +4,27 @@
 	import { showUploadPopup, closeUploadPopup } from '$lib/stores/nav';
 	import { uploadToChat } from '$lib/api/chat';
 
+	const MAX_FILES_PER_UPLOAD = 50;
+
 	let fileList: File[] = $state([]);
 	let loading = $state(false);
+	let uploadPercent = $state(0);
 	let error = $state('');
 
 	let chatId = $derived($page.params.chatId);
+	let uploadLabel = $derived(
+		fileList.length === 1 ? '1 image' : `${fileList.length} images`
+	);
 
 	function addFiles(e: Event) {
 		const input = e.target as HTMLInputElement;
-		if (input.files) fileList = [...fileList, ...Array.from(input.files)];
+		if (!input.files) return;
+		const added = Array.from(input.files);
+		const kept = fileList.length + added.length <= MAX_FILES_PER_UPLOAD
+			? added
+			: added.slice(0, Math.max(0, MAX_FILES_PER_UPLOAD - fileList.length));
+		fileList = [...fileList, ...kept];
+		input.value = '';
 	}
 
 	function removeFile(i: number) {
@@ -22,15 +34,17 @@
 	async function handleUpload() {
 		if (!chatId || !$username || fileList.length === 0) return;
 		error = '';
+		uploadPercent = 0;
 		loading = true;
 		try {
-			await uploadToChat(chatId, $username, fileList);
+			await uploadToChat(chatId, $username, fileList, (p) => (uploadPercent = p));
 			fileList = [];
 			closeUploadPopup();
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Upload failed';
 		} finally {
 			loading = false;
+			uploadPercent = 0;
 		}
 	}
 </script>
@@ -44,13 +58,30 @@
 					<input type="file" accept="image/*" multiple onchange={addFiles} />
 					+ Add files
 				</label>
-				{#each fileList as file, i}
-					<div class="file-item">
-						<span>{file.name}</span>
-						<button type="button" onclick={() => removeFile(i)} aria-label="Remove">×</button>
-					</div>
-				{/each}
+				<p class="upload-hint">
+					{#if fileList.length > 0}
+						<span class="selected-count">{fileList.length} {fileList.length === 1 ? 'image' : 'images'} selected</span>
+						<span class="hint-sep"> · </span>
+					{/if}
+					Max {MAX_FILES_PER_UPLOAD} images per upload.
+				</p>
+				<div class="file-list">
+					{#each fileList as file, i}
+						<div class="file-item">
+							<span>{file.name}</span>
+							<button type="button" onclick={() => removeFile(i)} aria-label="Remove">×</button>
+						</div>
+					{/each}
+				</div>
 			</div>
+			{#if loading}
+				<div class="progress-section" role="status" aria-live="polite">
+					<p class="progress-label">Uploading {uploadLabel} — {uploadPercent}%</p>
+					<div class="progress-track">
+						<div class="progress-fill" style="width: {uploadPercent}%"></div>
+					</div>
+				</div>
+			{/if}
 			{#if error}<p class="error">{error}</p>{/if}
 			<div class="actions">
 				<button type="button" onclick={closeUploadPopup}>Cancel</button>
@@ -92,6 +123,9 @@
 		padding: 16px;
 		margin-bottom: 12px;
 	}
+	.file-list {
+		margin-top: 12px;
+	}
 	.file-label {
 		display: inline-block;
 		padding: 8px 16px;
@@ -103,6 +137,18 @@
 	.file-label input {
 		display: none;
 	}
+	.upload-hint {
+		margin: 8px 0 0;
+		font-size: 12px;
+		color: var(--Text-Heading-Medium, #9ca3af);
+	}
+	.selected-count {
+		color: var(--accent-glow, #22d3ee);
+		font-weight: 600;
+	}
+	.hint-sep {
+		opacity: 0.7;
+	}
 	.file-item {
 		display: flex;
 		align-items: center;
@@ -110,12 +156,35 @@
 		margin-top: 8px;
 		font-size: 14px;
 	}
+	.file-item:first-child {
+		margin-top: 0;
+	}
 	.file-item button {
 		background: none;
 		border: none;
 		color: var(--Text-Heading-Strong);
 		cursor: pointer;
 		font-size: 18px;
+	}
+	.progress-section {
+		margin-bottom: 16px;
+	}
+	.progress-label {
+		margin: 0 0 8px 0;
+		font-size: 14px;
+		color: var(--Text-Heading-Medium, #e5e7eb);
+	}
+	.progress-track {
+		height: 8px;
+		background: var(--Border-Subtle, #374151);
+		border-radius: 4px;
+		overflow: hidden;
+	}
+	.progress-fill {
+		height: 100%;
+		background: var(--accent-glow, #22d3ee);
+		border-radius: 4px;
+		transition: width 0.15s ease-out;
 	}
 	.modal .error {
 		margin: 8px 0 0;
