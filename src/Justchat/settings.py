@@ -15,6 +15,7 @@ import base64
 import hashlib
 import os
 import sys
+from django.contrib.auth.hashers import PBKDF2PasswordHasher
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -137,7 +138,10 @@ else:
 _db_url = os.environ.get('DATABASE_URL')
 if _db_url:
     import dj_database_url
-    DATABASES = {'default': dj_database_url.config(default=_db_url, conn_max_age=600)}
+
+    DATABASES = {
+        'default': dj_database_url.config(default=_db_url, conn_max_age=60),
+    }
 else:
     DATABASES = {
         'default': {
@@ -163,6 +167,15 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
+]
+
+
+class FastPBKDF2PasswordHasher(PBKDF2PasswordHasher):
+    iterations = 120000
+
+
+PASSWORD_HASHERS = [
+    'Justchat.settings.FastPBKDF2PasswordHasher',
 ]
 
 
