@@ -1,5 +1,17 @@
-import { apiRequest, apiFormData } from './client';
+import { apiRequest, apiFormDataWithProgress } from './client';
 import type { Chat } from '$lib/stores/message';
+
+export interface UserSearchHit {
+	id: number;
+	username: string;
+	email: string;
+}
+
+export async function searchUsers(q: string, limit = 20): Promise<UserSearchHit[]> {
+	if (!q.trim()) return [];
+	const params = new URLSearchParams({ q: q.trim(), limit: String(limit) });
+	return apiRequest<UserSearchHit[]>(`/chat/users/search/?${params}`, { method: 'GET' });
+}
 
 export async function getChats(username: string): Promise<Chat[]> {
 	return apiRequest<Chat[]>(`/chat/?username=${encodeURIComponent(username)}`, {
@@ -82,10 +94,15 @@ export async function deleteChat(chatId: string): Promise<unknown> {
 	return apiRequest(`/chat/${chatId}/delete/`, { method: 'DELETE' });
 }
 
-export async function uploadToChat(chatId: string, username: string, files: File[]): Promise<unknown> {
+export async function uploadToChat(
+	chatId: string,
+	username: string,
+	files: File[],
+	onProgress?: (percent: number) => void
+): Promise<unknown> {
 	const form = new FormData();
 	files.forEach((file, i) => form.append(`image_${i}`, file));
 	form.append('username', username);
 	form.append('chatid', chatId);
-	return apiFormData('/chat/upload/', form);
+	return apiFormDataWithProgress('/chat/upload/', form, onProgress);
 }

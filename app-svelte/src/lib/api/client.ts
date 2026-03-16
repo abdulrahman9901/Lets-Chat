@@ -55,18 +55,41 @@ export async function apiRequest<T>(
 }
 
 export async function apiFormData(endpoint: string, formData: FormData): Promise<unknown> {
+	return apiFormDataWithProgress(endpoint, formData);
+}
+
+export function apiFormDataWithProgress(
+	endpoint: string,
+	formData: FormData,
+	onProgress?: (percent: number) => void
+): Promise<unknown> {
 	const t = get(token);
 	const headers: Record<string, string> = {
 		...(t ? { Authorization: `Token ${t}` } : {}),
 		'X-CSRFToken': getCsrfToken(),
 	};
 	const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
-	const res = await fetch(url, {
-		method: 'POST',
-		headers,
-		credentials: 'omit',
-		body: formData,
+	return new Promise((resolve, reject) => {
+		const xhr = new XMLHttpRequest();
+		xhr.open('POST', url);
+		Object.entries(headers).forEach(([k, v]) => xhr.setRequestHeader(k, v));
+		xhr.withCredentials = false;
+		xhr.upload.onprogress = (e) => {
+			if (e.lengthComputable && e.total > 0) onProgress?.(Math.round((100 * e.loaded) / e.total));
+			else onProgress?.(0);
+		};
+		xhr.onload = () => {
+			if (xhr.status >= 200 && xhr.status < 300) {
+				try {
+					resolve(JSON.parse(xhr.responseText || 'null'));
+				} catch {
+					resolve(null);
+				}
+			} else {
+				reject(new Error(xhr.statusText || `HTTP ${xhr.status}`));
+			}
+		};
+		xhr.onerror = () => reject(new Error('Network error'));
+		xhr.send(formData);
 	});
-	if (!res.ok) throw new Error(res.statusText);
-	return res.json();
 }
