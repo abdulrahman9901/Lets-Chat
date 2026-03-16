@@ -14,6 +14,7 @@ from pathlib import Path
 import base64
 import hashlib
 import os
+import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -259,6 +260,7 @@ LOGGING = {
         'console': {
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
+            'stream': sys.stdout,
         },
         'file_django': {
             'class': 'logging.handlers.RotatingFileHandler',
