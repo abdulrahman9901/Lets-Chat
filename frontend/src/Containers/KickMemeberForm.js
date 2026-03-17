@@ -40,7 +40,7 @@ const KickMemeberForm = (props) => {
     }
      console.log("new Partcipants ",newPart)
      let content =  {
-          "command" :"kick",
+          "command" :"removeMember",
           "username": props.username,
           "messages": [],
           "participants":newPart,
@@ -50,7 +50,7 @@ const KickMemeberForm = (props) => {
     axios.put(`${API_BASE_URL}/chat/${chatId}/update/`,content
         ).then(res=>{
             console.log(res.data)
-            message.success('Memeber(s) were kicked successfully',5)
+            message.success('Member(s) were removed successfully',5)
         }).catch(err =>{
             console.log(`error at create chat ${err}`)
             message.error('something went wrong please try again later...! ',5)
@@ -114,7 +114,7 @@ const KickMemeberForm = (props) => {
         }}
       >
         <Button type="primary" htmlType="submit">
-            Kick
+            Remove
         </Button>
       </Form.Item>
     </Form>

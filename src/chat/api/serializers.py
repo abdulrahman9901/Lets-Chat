@@ -161,17 +161,17 @@ class ChatSerializer(serializers.ModelSerializer):
                 return '{} and {}'.format(names[0], names[1])
             return '{}, and {}'.format(', '.join(names[:-1]), names[-1])
 
-        # leave /kick case 
+        # leave /remove case 
         if len(contacts) < len(instance.participants.all()):
             diff = list(set(instance.participants.all()) - set(contacts))
-            if request.data.get('command') == "kick" :
-                kicked_contacts = list(diff)
-                kicked_usernames = [c.user.username for c in kicked_contacts]
-                for contact in kicked_contacts:
+            if request.data.get('command') == "removeMember" :
+                removed_contacts = list(diff)
+                removed_usernames = [c.user.username for c in removed_contacts]
+                for contact in removed_contacts:
                     instance.participants.remove(contact)
                     if contact in instance.admins.all():
                         instance.admins.remove(contact)
-                content = '{} kicked {} from the chat'.format(currentUser, _format_names(kicked_usernames))
+                content = '{} removed {} from the chat'.format(currentUser, _format_names(removed_usernames))
                 message = Message.objects.create(
                     contact=get_user_contact(currentUser),
                     content=content,
