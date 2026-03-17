@@ -1,0 +1,5 @@
+[2026-03-17 18:23:19,323] WARNING django.request Not Found: /api/chat/
+[2026-03-17 18:23:24,514] WARNING django.request Method Not Allowed: /rest-auth/login/
+[2026-03-17 18:23:55,592] WARNING django.request Not Found: /api/chat/
+[2026-03-17 18:24:06,710] WARNING django.request Not Found: /chat/create/
+[2026-03-17 18:24:54,160] WARNING django.request Not Found: /chat/create/

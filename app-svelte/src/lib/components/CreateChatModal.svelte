@@ -64,10 +64,9 @@
 				<label>Add participants</label>
 				<p class="hint">Type a name or part of it; click a suggestion to add. Chosen persons appear in the bar.</p>
 				<UserSearchBar
-					selected={selectedParticipants}
+					bind:selected={selectedParticipants}
 					exclude={[$username].filter(Boolean) as string[]}
 					loading={loading}
-					on:change={(e) => (selectedParticipants = e.detail)}
 				/>
 				{#if error}<p class="error">{error}</p>{/if}
 				<div class="actions">
