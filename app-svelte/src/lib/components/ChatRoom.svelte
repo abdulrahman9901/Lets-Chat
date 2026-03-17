@@ -20,6 +20,7 @@
 	import {
 		openAddMemberPopup,
 		openParticipantsPanel,
+		openSidepanel,
 		openUploadPopup,
 	} from '$lib/stores/nav';
 	import ChatKeyPopup from '$lib/components/ChatKeyPopup.svelte';
@@ -195,7 +196,13 @@
 	</div>
 {:else}
 	<div class="contact-profile">
-		<a href="/" class="btn back">←</a>
+		<button type="button" class="btn hamburger" aria-label="Open chats list" onclick={openSidepanel}>
+			<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+				<line x1="3" y1="6" x2="21" y2="6" />
+				<line x1="3" y1="12" x2="21" y2="12" />
+				<line x1="3" y1="18" x2="21" y2="18" />
+			</svg>
+		</button>
 		<div class="chat-icon" aria-hidden="true">
 			<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
 		</div>
@@ -234,16 +241,17 @@
 						<button type="button" class="menu-item" role="menuitem" onclick={() => runHeaderAction(() => (showConfirm = { action: 'leave', fn: doLeave }))}>
 							Leave chat
 						</button>
-						<hr class="menu-sep" />
-						<button
-							type="button"
-							class="menu-item danger"
-							role="menuitem"
-							disabled={!isAdmin}
-							onclick={() => runHeaderAction(() => (showConfirm = { action: 'delete', fn: doDelete }))}
-						>
-							Delete chat
-						</button>
+						{#if isAdmin}
+							<hr class="menu-sep" />
+							<button
+								type="button"
+								class="menu-item danger"
+								role="menuitem"
+								onclick={() => runHeaderAction(() => (showConfirm = { action: 'delete', fn: doDelete }))}
+							>
+								Delete chat
+							</button>
+						{/if}
 					</div>
 				{/if}
 			</div>
@@ -321,10 +329,8 @@
 		border-bottom: 1px solid var(--Border-Subtle);
 		background: var(--Background-Lift-8);
 	}
-	.contact-profile .back {
-		color: var(--Text-Heading-Strong);
-		text-decoration: none;
-		font-size: 18px;
+	.contact-profile .hamburger {
+		display: none;
 	}
 	.chat-icon {
 		display: flex;
@@ -502,5 +508,63 @@
 	.message-input .submit:hover,
 	.message-input .attach:hover {
 		color: var(--accent-glow);
+	}
+
+	@media (max-width: 768px) {
+		.contact-profile {
+			padding: 10px 10px;
+			gap: 10px;
+		}
+
+		.contact-profile .hamburger {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			padding: 8px;
+			border-radius: 12px;
+			background: var(--Button-Secondary-Default-Background-subtle);
+			border: 1px solid var(--Button-Secondary-Default-Border);
+			color: var(--Text-Heading-Strong);
+			cursor: pointer;
+		}
+
+		.chat-icon {
+			display: none;
+		}
+
+		.contact-profile p.chat-title {
+			font-size: 15px;
+		}
+
+		.header-actions {
+			gap: 6px;
+			flex-wrap: wrap;
+			justify-content: flex-end;
+		}
+
+		.pill-text {
+			display: none;
+		}
+
+		.pill {
+			padding: 8px 8px;
+		}
+
+		.messages {
+			padding: 12px 10px;
+		}
+
+		.messages-dial {
+			padding: 10px 10px;
+		}
+
+		.message-input .wrap {
+			gap: 6px;
+		}
+
+		.message-input .submit,
+		.message-input .attach {
+			padding: 10px 12px;
+		}
 	}
 </style>

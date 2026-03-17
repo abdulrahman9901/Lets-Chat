@@ -5,8 +5,10 @@
 	import { getChats } from '$lib/api/chat';
 	import { logout } from '$lib/api/auth';
 	import {
+		closeSidepanel,
 		openAddChatPopup,
 		openJoinChatPopup,
+		showSidepanel,
 	} from '$lib/stores/nav';
 	import { onMount } from 'svelte';
 
@@ -23,14 +25,34 @@
 			!searchTerm ? true : (c.name ?? `Chat # ${c.id}`).toLowerCase().includes(searchTerm.toLowerCase())
 		)
 	);
+
+	function closeOnMobile() {
+		closeSidepanel();
+	}
+
+	async function handleLogout() {
+		closeOnMobile();
+		await logout();
+	}
 </script>
 
-<div id="sidepanel" class="sidepanel">
+{#if $showSidepanel}
+	<div
+		class="sidepanel-overlay"
+		tabindex="-1"
+		role="button"
+		aria-label="Close chats list"
+		onclick={(e) => e.target === e.currentTarget && closeSidepanel()}
+		onkeydown={(e) => e.key === 'Escape' && closeSidepanel()}
+	></div>
+{/if}
+
+<div id="sidepanel" class:open={$showSidepanel} class="sidepanel" aria-label="Chats list">
 	<div class="profile">
 		<div class="wrap">
 			<img src="https://img.icons8.com/ios-filled/100/95a5a6/user-male-circle.png" alt="" class="avatar" />
 			<p>{$username}</p>
-			<button class="authBtn" onclick={() => logout()}>Logout</button>
+			<button class="authBtn" onclick={handleLogout}>Logout</button>
 		</div>
 	</div>
 	<div class="search">
@@ -46,7 +68,7 @@
 		<ul>
 			{#each filteredChats as chat (chat.id)}
 				<li class="contact">
-					<a href="/{chat.id}" class="contact-link">
+					<a href="/{chat.id}" class="contact-link" onclick={closeOnMobile}>
 						<span class="contact-status online"></span>
 						<span class="chat-icon" aria-hidden="true">
 							<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -68,8 +90,24 @@
 		</ul>
 	</div>
 	<div class="bottom-bar">
-		<button type="button" onclick={() => openAddChatPopup()}><span>Create Chat</span></button>
-		<button type="button" onclick={() => openJoinChatPopup()}><span>Join chat</span></button>
+		<button
+			type="button"
+			onclick={() => {
+				closeOnMobile();
+				openAddChatPopup();
+			}}
+		>
+			<span>Create Chat</span>
+		</button>
+		<button
+			type="button"
+			onclick={() => {
+				closeOnMobile();
+				openJoinChatPopup();
+			}}
+		>
+			<span>Join chat</span>
+		</button>
 	</div>
 </div>
 
@@ -82,6 +120,38 @@
 		border-right: 1px solid var(--Border-Subtle);
 		display: flex;
 		flex-direction: column;
+	}
+
+	.sidepanel-overlay {
+		display: none;
+	}
+
+	@media (max-width: 768px) {
+		.sidepanel-overlay {
+			display: block;
+			position: fixed;
+			inset: 0;
+			z-index: 40;
+			background: rgba(0, 0, 0, 0.45);
+		}
+
+		.sidepanel {
+			position: fixed;
+			top: 0;
+			left: 0;
+			bottom: 0;
+			z-index: 50;
+			width: min(88vw, 320px);
+			min-width: 0;
+			transform: translateX(-102%);
+			transition: transform 160ms ease-out;
+			background: rgba(18, 18, 18, 0.85);
+			backdrop-filter: blur(16px);
+		}
+
+		.sidepanel.open {
+			transform: translateX(0);
+		}
 	}
 	.profile .wrap {
 		display: flex;

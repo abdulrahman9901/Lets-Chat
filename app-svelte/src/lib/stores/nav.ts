@@ -6,6 +6,7 @@ export const showAddMemberPopup = writable(false);
 export const showKickMemberPopup = writable(false);
 export const showUploadPopup = writable(false);
 export const showParticipantsPanel = writable(false);
+export const showSidepanel = writable(false);
 
 export function openAddChatPopup() {
 	showAddChatPopup.set(true);
@@ -43,4 +44,11 @@ export function openParticipantsPanel() {
 }
 export function closeParticipantsPanel() {
 	showParticipantsPanel.set(false);
+}
+
+export function openSidepanel() {
+	showSidepanel.set(true);
+}
+export function closeSidepanel() {
+	showSidepanel.set(false);
 }

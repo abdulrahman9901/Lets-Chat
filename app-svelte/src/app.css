@@ -10,6 +10,8 @@
 	--Border-Subtle: rgba(56, 189, 248, 0.45);
 	--accent-glow: #38bdf8;
 	--modal-width: min(420px, 92vw);
+	/* Compact layout breakpoint (phones + tablets) */
+	--screen-compact-max: 768px;
 }
 
 *,
@@ -113,6 +115,7 @@ body {
 	width: 100%;
 	height: 100vh;
 	overflow: hidden;
+	position: relative;
 }
 
 .frame .content {
@@ -121,4 +124,14 @@ body {
 	flex-direction: column;
 	min-width: 0;
 	overflow: hidden;
+}
+
+@media (max-width: 768px) {
+	.frame {
+		height: 100dvh;
+	}
+
+	.frame .content {
+		width: 100%;
+	}
 }
