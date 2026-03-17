@@ -18,6 +18,19 @@ For each significant change, add:
 - **Why**
 - **Implications for UX or APIs**
 
+## 2026‑03‑17 – Slack-like participants + header actions menu
+
+- **What changed**
+  - **`ChatRoom.svelte`**: Replaced the row of header action buttons with a **Participants pill** (shows count) and a single **“…” actions menu** for global chat actions only.
+  - **`ParticipantsPanel.svelte`**: Added a centered, narrower participants modal that lists participants and admins; includes search plus an `Everyone / Admins / Members` filter and admin-only member management actions. The filter control now has custom menu-like styling instead of the native select look.
+  - **`stores/nav.ts`**: Added `showParticipantsPanel` state + open/close helpers.
+  - **`api/client.ts`**: Fixed `apiRequest` typing so callers can pass plain payload objects without TypeScript intersection issues.
+  - **Modals/popups**: Improved focusability/backdrop behavior (tabindex + Escape handling) to reduce a11y issues.
+- **Why**
+  - Slack-style UX keeps the header clean while still making participants and chat actions quickly accessible, while ensuring participant management only lives in one place.
+- **Impact**
+  - Chat header is simpler; participants are discoverable and member management is consolidated in the modal with quick filtering, and the filter control visually matches the rest of the UI. No backend API changes.
+
 ## 2026‑03‑16 – Chat open scroll to latest messages (no smooth scroll)
 
 - **What changed**
@@ -65,6 +78,15 @@ For each significant change, add:
   - Avoided ~90 lines of duplicated logic/styles, fixed stale state across modal open/close cycles, ensured users cannot try to add existing participants, and cleaned up SVG / dead API code surfaced during review.
 - **Impact**
   - Participant search UX is consistent and resilient across modals, the favicon renders correctly in all browsers, and the API client surface area stays minimal (no unused exports).
+
+## 2026‑03‑17 – Participants filter styled as menu control
+
+- **What changed**
+  - Updated the `ParticipantsPanel.svelte` filter `<select>` to use a pill-like, rounded style with subtle background, border, and hover states, plus a custom caret, closely matching the header `icon-btn`/menu visual language rather than the browser’s native select look.
+- **Why**
+  - To make the participants filter feel like part of the same Slack-like header/menu system and avoid the jarring native dropdown styling.
+- **Impact**
+  - Filter dropdown now visually matches surrounding controls while keeping native keyboard behavior and accessibility semantics.
 
 ## 2026‑03‑15 – Image groups and gallery (WhatsApp-style)
 

@@ -39,9 +39,11 @@
 		role="dialog"
 		aria-modal="true"
 		aria-label="Chat key"
-		onclick={onClose}
+		tabindex="-1"
+		onclick={(e) => e.target === e.currentTarget && onClose()}
+		onkeydown={(e) => e.key === 'Escape' && onClose()}
 	>
-		<div class="popup" onclick={(e) => e.stopPropagation()} role="document">
+		<div class="popup" role="document">
 			<p class="label">Chat key (share to invite)</p>
 			<div class="row">
 				<output class="value" id="chatkey-value">{chatKey}</output>

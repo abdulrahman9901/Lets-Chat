@@ -49,11 +49,18 @@
 </script>
 
 {#if $showAddMemberPopup}
-	<div class="modal-overlay" role="dialog" aria-modal="true" onclick={(e) => e.target === e.currentTarget && closeAddMemberPopup()}>
-		<div class="modal" onclick={(e) => e.stopPropagation()}>
+	<div
+		class="modal-overlay"
+		role="dialog"
+		aria-modal="true"
+		tabindex="-1"
+		onclick={(e) => e.target === e.currentTarget && closeAddMemberPopup()}
+		onkeydown={(e) => e.key === 'Escape' && closeAddMemberPopup()}
+	>
+		<div class="modal">
 			<h2>Add member(s)</h2>
 			<form onsubmit={handleSubmit}>
-				<label>Add participants</label>
+				<p class="field-label">Add participants</p>
 				<p class="hint">Type a name or part of it; click a suggestion to add. Chosen persons appear in the bar.</p>
 				<UserSearchBar
 					selected={selectedUsernames}
@@ -61,7 +68,7 @@
 					loading={loading}
 					on:change={(e) => (selectedUsernames = e.detail)}
 				/>
-				<label>Role</label>
+				<p class="field-label">Role</p>
 				<div class="role">
 					<label class="radio"><input type="radio" bind:group={role} value="Participant" /> Participant</label>
 					<label class="radio"><input type="radio" bind:group={role} value="Admin" /> Admin</label>

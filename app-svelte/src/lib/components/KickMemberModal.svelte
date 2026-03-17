@@ -35,11 +35,18 @@
 </script>
 
 {#if $showKickMemberPopup}
-	<div class="modal-overlay" role="dialog" aria-modal="true" onclick={(e) => e.target === e.currentTarget && closeKickMemberPopup()}>
-		<div class="modal" onclick={(e) => e.stopPropagation()}>
+	<div
+		class="modal-overlay"
+		role="dialog"
+		aria-modal="true"
+		tabindex="-1"
+		onclick={(e) => e.target === e.currentTarget && closeKickMemberPopup()}
+		onkeydown={(e) => e.key === 'Escape' && closeKickMemberPopup()}
+	>
+		<div class="modal">
 			<h2>Kick member(s)</h2>
 			<form onsubmit={handleSubmit}>
-				<label>Select members to remove</label>
+				<p class="field-label">Select members to remove</p>
 				<div class="checkboxes">
 					{#each others as p}
 						<label class="checkbox">

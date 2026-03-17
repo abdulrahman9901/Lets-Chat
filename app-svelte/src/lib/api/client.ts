@@ -14,28 +14,36 @@ function getCsrfToken(): string {
 
 export async function apiRequest<T>(
 	endpoint: string,
-	options: RequestInit & { body?: Record<string, unknown> } = {}
+	options: Omit<RequestInit, 'body' | 'headers'> & { body?: unknown; headers?: Record<string, string> } = {}
 ): Promise<T> {
 	const t = get(token);
+	const { body, headers: extraHeaders, ...rest } = options;
 	const headers: Record<string, string> = {
 		'Content-Type': 'application/json',
 		...(t ? { Authorization: `Token ${t}` } : {}),
 		'X-CSRFToken': getCsrfToken(),
-		...((options.headers as Record<string, string>) ?? {}),
+		...(extraHeaders ?? {}),
 	};
 	const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
 	const init: RequestInit = {
-		...options,
+		...rest,
 		headers,
 		credentials: 'omit',
 	};
-	if (
-		options.method !== 'GET' &&
-		options.body &&
-		typeof options.body === 'object' &&
-		headers['Content-Type'] === 'application/json'
-	) {
-		init.body = JSON.stringify(options.body);
+
+	const isBodyInit = (v: unknown): v is BodyInit =>
+		typeof v === 'string' ||
+		v instanceof Blob ||
+		v instanceof FormData ||
+		v instanceof URLSearchParams ||
+		v instanceof ArrayBuffer;
+
+	if (rest.method !== 'GET' && body != null) {
+		if (isBodyInit(body)) {
+			init.body = body;
+		} else if (typeof body === 'object' && headers['Content-Type'] === 'application/json') {
+			init.body = JSON.stringify(body);
+		}
 	}
 	const res = await fetch(url, init);
 	if (!res.ok) {

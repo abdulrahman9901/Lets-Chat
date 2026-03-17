@@ -50,8 +50,15 @@
 </script>
 
 {#if $showUploadPopup}
-	<div class="modal-overlay" role="dialog" aria-modal="true" onclick={(e) => e.target === e.currentTarget && closeUploadPopup()}>
-		<div class="modal" onclick={(e) => e.stopPropagation()}>
+	<div
+		class="modal-overlay"
+		role="dialog"
+		aria-modal="true"
+		tabindex="-1"
+		onclick={(e) => e.target === e.currentTarget && closeUploadPopup()}
+		onkeydown={(e) => e.key === 'Escape' && closeUploadPopup()}
+	>
+		<div class="modal">
 			<h2>Upload to chat</h2>
 			<div class="upload-zone">
 				<label class="file-label">

@@ -19,7 +19,7 @@
 	import { leaveChat, deleteChat } from '$lib/api/chat';
 	import {
 		openAddMemberPopup,
-		openKickMemberPopup,
+		openParticipantsPanel,
 		openUploadPopup,
 	} from '$lib/stores/nav';
 	import ChatKeyPopup from '$lib/components/ChatKeyPopup.svelte';
@@ -37,6 +37,7 @@
 	let messageInput = $state('');
 	let showConfirm = $state<{ action: 'leave' | 'delete'; fn: () => void } | null>(null);
 	let showChatKeyPopup = $state(false);
+	let showHeaderMenu = $state(false);
 	let expandedImage = $state<{ url: string; filename: string; mediaPath: string } | null>(null);
 	let expandedImageGroup = $state<ChatMessage[] | null>(null);
 	let messagesEnd = $state<HTMLDivElement | undefined>(undefined);
@@ -103,7 +104,26 @@
 			if (expandedImage) expandedImage = null;
 			else if (expandedImageGroup) expandedImageGroup = null;
 			else showChatKeyPopup = false;
+			showHeaderMenu = false;
 		}
+	}
+
+	function onHeaderMenuClickOutside(e: MouseEvent) {
+		const target = e.target as HTMLElement | null;
+		if (!target) return;
+		if (target.closest('[data-header-menu-root]')) return;
+		showHeaderMenu = false;
+	}
+
+	$effect(() => {
+		if (!showHeaderMenu) return;
+		window.addEventListener('click', onHeaderMenuClickOutside, true);
+		return () => window.removeEventListener('click', onHeaderMenuClickOutside, true);
+	});
+
+	function runHeaderAction(fn: () => void) {
+		showHeaderMenu = false;
+		fn();
 	}
 
 	function openImageGroup(messages: ChatMessage[]) {
@@ -185,34 +205,48 @@
 				<button type="button" class="chatkey" title="Click to show chat key" onclick={() => (showChatKeyPopup = true)}>@chatkey</button>
 			{/if}
 		</p>
-		<div class="actions">
-			<button type="button" class="dropdown-btn" onclick={() => (showConfirm = { action: 'leave', fn: doLeave })}>
-				Leave Chat
+		<div class="header-actions" data-header-menu-root>
+			<button type="button" class="pill" onclick={() => runHeaderAction(openParticipantsPanel)} aria-label="Show participants">
+				<span class="pill-icon" aria-hidden="true">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+				</span>
+				<span class="pill-text">Participants</span>
+				<span class="pill-count" aria-label="Participant count">{$participantsCount}</span>
 			</button>
-			<button
-				type="button"
-				class="dropdown-btn"
-				disabled={!isAdmin}
-				onclick={() => openAddMemberPopup()}
-			>
-				Add member(s)
-			</button>
-			<button
-				type="button"
-				class="dropdown-btn"
-				disabled={!isAdmin}
-				onclick={() => openKickMemberPopup()}
-			>
-				Kick member(s)
-			</button>
-			<button
-				type="button"
-				class="dropdown-btn"
-				disabled={!isAdmin}
-				onclick={() => (showConfirm = { action: 'delete', fn: doDelete })}
-			>
-				Delete the Chat
-			</button>
+
+			<div class="menu">
+				<button
+					type="button"
+					class="icon-btn"
+					aria-haspopup="menu"
+					aria-expanded={showHeaderMenu}
+					aria-label="Chat actions"
+					onclick={() => (showHeaderMenu = !showHeaderMenu)}
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<circle cx="12" cy="12" r="1" />
+						<circle cx="19" cy="12" r="1" />
+						<circle cx="5" cy="12" r="1" />
+					</svg>
+				</button>
+				{#if showHeaderMenu}
+					<div class="menu-pop" role="menu" aria-label="Chat actions menu">
+						<button type="button" class="menu-item" role="menuitem" onclick={() => runHeaderAction(() => (showConfirm = { action: 'leave', fn: doLeave }))}>
+							Leave chat
+						</button>
+						<hr class="menu-sep" />
+						<button
+							type="button"
+							class="menu-item danger"
+							role="menuitem"
+							disabled={!isAdmin}
+							onclick={() => runHeaderAction(() => (showConfirm = { action: 'delete', fn: doDelete }))}
+						>
+							Delete chat
+						</button>
+					</div>
+				{/if}
+			</div>
 		</div>
 	</div>
 
@@ -329,23 +363,98 @@
 	.chatkey:hover {
 		text-decoration: underline;
 	}
-	.actions {
+	.header-actions {
 		display: flex;
 		gap: 8px;
-		flex-wrap: wrap;
+		align-items: center;
 	}
-	.dropdown-btn {
-		padding: 8px 12px;
-		background: var(--Button-Secondary-Default-Background-subtle);
-		border: 1px solid var(--Button-Secondary-Default-Border);
-		border-radius: 8px;
+	.pill {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		padding: 8px 10px;
+		background: rgba(242, 242, 242, 0.06);
+		border: 1px solid var(--Border-Subtle);
+		border-radius: 999px;
+		color: var(--Text-Heading-Strong);
+		cursor: pointer;
+		font-size: 13px;
+		white-space: nowrap;
+	}
+	.pill:hover {
+		color: var(--accent-glow);
+	}
+	.pill-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		opacity: 0.95;
+	}
+	.pill-count {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 24px;
+		padding: 2px 8px;
+		border-radius: 999px;
+		background: rgba(56, 189, 248, 0.16);
+		color: var(--accent-glow);
+		font-weight: 750;
+	}
+	.menu {
+		position: relative;
+	}
+	.icon-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 8px;
+		border-radius: 10px;
+		background: transparent;
+		border: 1px solid var(--Border-Subtle);
+		color: var(--Text-Heading-Strong);
+		cursor: pointer;
+	}
+	.icon-btn:hover {
+		color: var(--accent-glow);
+	}
+	.menu-pop {
+		position: absolute;
+		right: 0;
+		top: calc(100% + 8px);
+		min-width: 200px;
+		background: var(--Background-Lift-8);
+		border: 1px solid var(--Border-Subtle);
+		border-radius: 12px;
+		padding: 6px;
+		box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+		z-index: 20;
+	}
+	.menu-item {
+		width: 100%;
+		text-align: left;
+		padding: 10px 10px;
+		border: none;
+		border-radius: 10px;
+		background: transparent;
 		color: var(--Text-Heading-Strong);
 		cursor: pointer;
 		font-size: 13px;
 	}
-	.dropdown-btn:disabled {
-		opacity: 0.5;
+	.menu-item:hover:not(:disabled) {
+		background: rgba(255, 255, 255, 0.05);
+	}
+	.menu-item:disabled {
+		opacity: 0.45;
 		cursor: not-allowed;
+	}
+	.menu-sep {
+		border: none;
+		border-top: 1px solid var(--Border-Subtle);
+		margin: 6px 6px;
+	}
+	.menu-item.danger {
+		color: #fb7185;
 	}
 	.messages {
 		flex: 1;

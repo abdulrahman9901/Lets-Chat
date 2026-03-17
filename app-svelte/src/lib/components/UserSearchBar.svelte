@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { searchUsers } from '$lib/api/chat';
+	import { createEventDispatcher } from 'svelte';
 
 	interface Props {
 		selected: string[];
@@ -20,14 +21,11 @@
 	let searchQuery = $state('');
 	let searchResults = $state<{ id: number; username: string; email: string }[]>([]);
 	let searchDebounce: ReturnType<typeof setTimeout> | null = null;
+	const dispatch = createEventDispatcher<{ change: string[] }>();
 
 	function emitSelected(next: string[]) {
 		selected = next;
-		dispatchEvent(
-			new CustomEvent('change', {
-				detail: next,
-			}),
-		);
+		dispatch('change', next);
 	}
 
 	function runSearch() {
@@ -100,7 +98,7 @@
 	{#if searchResults.length > 0}
 		<ul class="search-dropdown" role="listbox">
 			{#each searchResults as u (u.id)}
-				<li role="option">
+				<li role="option" aria-selected="false">
 					<button type="button" onclick={() => addUser(u)}>
 						<span class="username">{u.username}</span>
 						{#if u.email}<span class="email">{u.email}</span>{/if}

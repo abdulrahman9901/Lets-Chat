@@ -5,6 +5,7 @@ export const showJoinChatPopup = writable(false);
 export const showAddMemberPopup = writable(false);
 export const showKickMemberPopup = writable(false);
 export const showUploadPopup = writable(false);
+export const showParticipantsPanel = writable(false);
 
 export function openAddChatPopup() {
 	showAddChatPopup.set(true);
@@ -35,4 +36,11 @@ export function openUploadPopup() {
 }
 export function closeUploadPopup() {
 	showUploadPopup.set(false);
+}
+
+export function openParticipantsPanel() {
+	showParticipantsPanel.set(true);
+}
+export function closeParticipantsPanel() {
+	showParticipantsPanel.set(false);
 }

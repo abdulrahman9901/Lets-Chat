@@ -7,8 +7,8 @@
 	import CreateChatModal from '$lib/components/CreateChatModal.svelte';
 	import JoinChatModal from '$lib/components/JoinChatModal.svelte';
 	import AddMemberModal from '$lib/components/AddMemberModal.svelte';
-	import KickMemberModal from '$lib/components/KickMemberModal.svelte';
 	import UploadModal from '$lib/components/UploadModal.svelte';
+	import ParticipantsPanel from '$lib/components/ParticipantsPanel.svelte';
 
 	let chatId = $derived($page.params.chatId);
 	let isAuthenticated = $derived($token != null);
@@ -21,8 +21,8 @@
 		<CreateChatModal />
 		<JoinChatModal />
 		<AddMemberModal />
-		<KickMemberModal />
 		<UploadModal />
+		<ParticipantsPanel />
 		<Sidepanel />
 		<div id="content" class="content">
 			<ChatRoom {chatId} />

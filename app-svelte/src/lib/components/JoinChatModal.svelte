@@ -28,12 +28,19 @@
 </script>
 
 {#if $showJoinChatPopup}
-	<div class="modal-overlay" role="dialog" aria-modal="true" onclick={(e) => e.target === e.currentTarget && closeJoinChatPopup()}>
-		<div class="modal" onclick={(e) => e.stopPropagation()}>
+	<div
+		class="modal-overlay"
+		role="dialog"
+		aria-modal="true"
+		tabindex="-1"
+		onclick={(e) => e.target === e.currentTarget && closeJoinChatPopup()}
+		onkeydown={(e) => e.key === 'Escape' && closeJoinChatPopup()}
+	>
+		<div class="modal">
 			<h2>Join Chat</h2>
 			<form onsubmit={handleSubmit}>
-				<label>Chat key</label>
-				<input type="text" bind:value={chatKey} required placeholder="Paste chat key" disabled={loading} />
+				<label for="chatkey-input">Chat key</label>
+				<input id="chatkey-input" type="text" bind:value={chatKey} required placeholder="Paste chat key" disabled={loading} />
 				{#if error}<p class="error">{error}</p>{/if}
 				<div class="actions">
 					<button type="button" onclick={closeJoinChatPopup}>Cancel</button>

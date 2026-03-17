@@ -1,0 +1,39 @@
+docs/
+.cursor/
+notes.txt
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Django
+*.log
+src/db.sqlite3
+src/staticfiles/
+src/media/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs
+dist/
+build/
+.svelte-kit/
+.output/
+.vercel/
+.netlify/
+frontend/.cache/
+
+# OS
+.DS_Store
+Thumbs.db
