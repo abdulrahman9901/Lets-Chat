@@ -5,8 +5,10 @@ from .views import (
     ChatUpdateView,
     ChatDeleteView,
     ChatDetailView,
+    UserSearchView,
     joinChatView,
     uploadimageView,
+    MediaDownloadView,
     FrontendLogView,
     MediaDownloadView,
 )
@@ -15,6 +17,7 @@ app_name = 'chat'
 
 urlpatterns = [
     path('media/download/', MediaDownloadView.as_view()),
+    path('users/search/', UserSearchView.as_view()),
     path('', ChatListView.as_view()),
     path('create/', ChatCreateView.as_view()),
     path('<int:pk>/update/', ChatUpdateView.as_view()),

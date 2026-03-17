@@ -11,7 +11,11 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+import base64
+import hashlib
 import os
+import sys
+from django.contrib.auth.hashers import PBKDF2PasswordHasher
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,13 +26,16 @@ LOG_DIR.mkdir(exist_ok=True)
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-jj)01zg+0@oh18e)pu$l54%2=ml6l&2p^i-sy&=ys_zil7bl9z'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-jj)01zg+0@oh18e)pu$l54%2=ml6l&2p^i-sy&=ys_zil7bl9z')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+CHAT_FERNET_KEY = base64.urlsafe_b64encode(
+    hashlib.sha256(SECRET_KEY.encode()).digest()[:32]
+).decode()
 
-ALLOWED_HOSTS = ['*']
+DEBUG = os.environ.get('DEBUG', 'True').lower() in ('1', 'true', 'yes')
+
+_allowed = os.environ.get('ALLOWED_HOSTS', '')
+ALLOWED_HOSTS = [h.strip() for h in _allowed.split(',') if h.strip()] if _allowed else ['*']
 
 
 # Application definition
@@ -79,6 +86,7 @@ REST_AUTH_REGISTER_SERIALIZERS = {
 # https://www.rootstrap.com/blog/registration-and-authentication-in-django-apps-with-dj-rest-auth/
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -111,21 +119,36 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'Justchat.wsgi.application'
 ASGI_APPLICATION = 'Justchat.asgi.application'
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
-    },
-}
+
+_redis_url = os.environ.get('REDIS_URL')
+if _redis_url:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {'hosts': [_redis_url]},
+        }
+    }
+else:
+    CHANNEL_LAYERS = {
+        'default': {'BACKEND': 'channels.layers.InMemoryChannelLayer'},
+    }
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
+_db_url = os.environ.get('DATABASE_URL')
+if _db_url:
+    import dj_database_url
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    DATABASES = {
+        'default': dj_database_url.config(default=_db_url, conn_max_age=60),
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -144,6 +167,15 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
+]
+
+
+class FastPBKDF2PasswordHasher(PBKDF2PasswordHasher):
+    iterations = 120000
+
+
+PASSWORD_HASHERS = [
+    'Justchat.settings.FastPBKDF2PasswordHasher',
 ]
 
 
@@ -185,13 +217,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 DATA_UPLOAD_MAX_NUMBER_FILES = 50
 
-CORS_ORIGIN_ALLOW_ALL =True
-
-CORS_ALLOWED_ORIGINS = [
-        'http://siteyouwantto.allow.com',
-        'http://anothersite.allow.com',
-        #'http://127.0.0.1:8000/rest-auth/registration/',
-    ]
+_cors_origins = os.environ.get('CORS_ALLOWED_ORIGINS', '')
+if _cors_origins:
+    CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_origins.split(',') if o.strip()]
+    CORS_ORIGIN_ALLOW_ALL = False
+else:
+    CORS_ALLOWED_ORIGINS = []
+    CORS_ORIGIN_ALLOW_ALL = True
 # https://django-allauth.readthedocs.io/en/latest/advanced.html
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 
@@ -219,6 +251,11 @@ MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+USER_SEARCH_BACKEND = os.environ.get('USER_SEARCH_BACKEND', 'opensearch')
+OPENSEARCH_URL = os.environ.get('OPENSEARCH_URL', '')
+OPENSEARCH_USER_INDEX = os.environ.get('OPENSEARCH_USER_INDEX', 'users')
+USER_SEARCH_LIMIT_DEFAULT = 20
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -236,6 +273,7 @@ LOGGING = {
         'console': {
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
+            'stream': sys.stdout,
         },
         'file_django': {
             'class': 'logging.handlers.RotatingFileHandler',

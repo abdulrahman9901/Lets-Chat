@@ -1,12 +1,9 @@
 import json
 import logging
 import os
-
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
+from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.fields.files import ImageFieldFile
-from django.conf import settings
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status
@@ -19,11 +16,16 @@ from rest_framework.generics import (
 )
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+from cryptography.fernet import InvalidToken
 
 from chat.models import Chat, Contact, CustomUser, Message
+from chat.user_search import search_users
 from .serializers import ChatSerializer, decrypter
 
 frontend_logger = logging.getLogger("frontend")
+
 
 class ExtendedEncoder(DjangoJSONEncoder):
     def default(self, o):
@@ -106,11 +108,58 @@ class ChatDeleteView(DestroyAPIView):
     serializer_class = ChatSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
+class UserSearchView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request):
+        q = request.query_params.get('q') or ''
+        if isinstance(q, list):
+            q = q[0] if q else ''
+        q = str(q).strip()
+        try:
+            limit = min(int(request.query_params.get('limit', 20)), 50)
+        except (TypeError, ValueError):
+            limit = 20
+        if not q:
+            return Response([], status=status.HTTP_200_OK)
+        results = search_users(q, limit=limit)
+        return Response(results, status=status.HTTP_200_OK)
+
+
+class MediaDownloadView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request):
+        file_param = request.query_params.get('file')
+        if not file_param or '..' in file_param:
+            return Response({'detail': 'Invalid file parameter'}, status=status.HTTP_400_BAD_REQUEST)
+        media_root = os.path.abspath(settings.MEDIA_ROOT)
+        full_path = os.path.abspath(os.path.join(media_root, file_param))
+        if not full_path.startswith(media_root) or not os.path.isfile(full_path):
+            return Response({'detail': 'File not found'}, status=status.HTTP_404_NOT_FOUND)
+        return FileResponse(
+            open(full_path, 'rb'),
+            as_attachment=True,
+            filename=os.path.basename(full_path),
+        )
+
+
 class joinChatView(APIView):
     def post(self, request):
-            id = decrypter(request.data["Chatkey"])
-            print("id at join chat : ",id)
-            chat = get_object_or_404(Chat,id=id)
+            raw_key = request.data.get("Chatkey") or request.data.get("chatKey")
+            if not raw_key:
+                return Response(
+                    {"detail": "Chatkey is required."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            try:
+                id = decrypter(raw_key)
+            except InvalidToken:
+                return Response(
+                    {"detail": "Invalid or expired chat key. Get a new key from the chat admin or re-run the seed command and restart the backend."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            chat = get_object_or_404(Chat, id=id)
             username = get_user_contact(request.data["username"])
             print(username)
             if username not in chat.participants.all() :

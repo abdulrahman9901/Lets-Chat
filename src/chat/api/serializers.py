@@ -18,14 +18,24 @@ from asgiref.sync import async_to_sync
 
 from channels.layers import get_channel_layer
 
+from django.conf import settings
 from cryptography.fernet import Fernet
-# https://www.tutorialspoint.com/how-to-encrypt-and-decrypt-data-in-python
-# https://nitratine.net/blog/post/encryption-and-decryption-in-python/
-key = Fernet.generate_key()
-f = Fernet(key)
-print(key.decode())
+
+_key = getattr(settings, 'CHAT_FERNET_KEY', None)
+if _key is None:
+    _key = Fernet.generate_key()
+elif isinstance(_key, str):
+    _key = _key.encode('utf-8')
+f = Fernet(_key)
+
+
+def get_chat_key_for_id(chat_id):
+    return f.encrypt(bytes(str(chat_id), 'utf-8')).decode()
+
 
 def decrypter(key):
+    if isinstance(key, str):
+        key = key.encode('utf-8')
     return int(f.decrypt(key).decode())
 
 class CustomRegisterSerializer(RegisterSerializer):
@@ -72,8 +82,7 @@ class ChatSerializer(serializers.ModelSerializer):
     chatKey = serializers.SerializerMethodField('get_chat_key')
 
     def get_chat_key(self, instance):
-        print("decrypted chat id is ",decrypter(f.encrypt(bytes(str(instance.id), 'utf-8')).decode()),"and real chat id ",instance.id)
-        return f.encrypt(bytes(str(instance.id), 'utf-8')).decode()
+        return get_chat_key_for_id(instance.id)
 
     allowed_methods = ['get', 'post', 'put', 'delete', 'options','update']
     

@@ -11,6 +11,9 @@
 	let selectedParticipants = $state<string[]>([]);
 	let loading = $state(false);
 	let error = $state('');
+	let searchQuery = $state('');
+	let searchResults = $state<{ id: number; username: string; email: string }[]>([]);
+	let searchDebounce: ReturnType<typeof setTimeout> | null = null;
 
 	function resetState() {
 		chatName = '';
