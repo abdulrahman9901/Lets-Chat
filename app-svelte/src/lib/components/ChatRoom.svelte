@@ -516,18 +516,6 @@
 			gap: 10px;
 		}
 
-		.contact-profile .hamburger {
-			display: inline-flex;
-			align-items: center;
-			justify-content: center;
-			padding: 8px;
-			border-radius: 12px;
-			background: var(--Button-Secondary-Default-Background-subtle);
-			border: 1px solid var(--Button-Secondary-Default-Border);
-			color: var(--Text-Heading-Strong);
-			cursor: pointer;
-		}
-
 		.chat-icon {
 			display: none;
 		}
