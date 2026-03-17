@@ -169,7 +169,11 @@ class joinChatView(APIView):
             print(username)
             if username not in chat.participants.all() :
                 chat.participants.add(username)
-                message = Message.objects.create(contact=username,content='{} has joined the chat .'.format(username.user.username),system_message=True)
+                message = Message.objects.create(
+                    contact=username,
+                    content='{} has joined the chat'.format(username.user.username),
+                    system_message=True,
+                )
                 chat.messages.add(message)
                 chat.save()
                 send_socket_message(chat,message)

@@ -106,7 +106,11 @@ class ChatSerializer(serializers.ModelSerializer):
 
         chat.admins.add(get_user_contact(admins[0]))
 
-        message = Message.objects.create(contact=get_user_contact(admins[0]),content='{} created the chat .'.format(admins[0]),system_message=True)
+        message = Message.objects.create(
+            contact=get_user_contact(admins[0]),
+            content='{} created the chat'.format(admins[0]),
+            system_message=True,
+        )
         chat.messages.add(message)
 
         chat.save()
@@ -136,7 +140,6 @@ class ChatSerializer(serializers.ModelSerializer):
                 'command': 'chatsUpdate'     
                 }       
             })
-        message = None
         participants = validated_data['participants']
         admins = validated_data['admins']
         currentUser = request.data.get('username')
@@ -148,43 +151,86 @@ class ChatSerializer(serializers.ModelSerializer):
         for admin in admins:
                 new_admins.append(get_user_contact(admin))
 
+        def _format_names(usernames):
+            names = [str(u) for u in usernames]
+            if not names:
+                return ''
+            if len(names) == 1:
+                return names[0]
+            if len(names) == 2:
+                return '{} and {}'.format(names[0], names[1])
+            return '{}, and {}'.format(', '.join(names[:-1]), names[-1])
+
         # leave /kick case 
         if len(contacts) < len(instance.participants.all()):
             diff = list(set(instance.participants.all()) - set(contacts))
-            print(diff[0])
             if request.data.get('command') == "kick" :
-                for contact in diff :     
-                    message = Message.objects.create(contact=contact,content='{} kicked {} from the chat .'.format(currentUser,contact.user.username),system_message=True)
-                    instance.messages.add(message)
-                    send_socket_message(instance,message)
+                kicked_contacts = list(diff)
+                kicked_usernames = [c.user.username for c in kicked_contacts]
+                for contact in kicked_contacts:
                     instance.participants.remove(contact)
                     if contact in instance.admins.all():
                         instance.admins.remove(contact)
-            else :
-                message = Message.objects.create(contact=diff[0],content='{} left the chat .'.format(diff[0].user.username),system_message=True)
+                content = '{} kicked {} from the chat'.format(currentUser, _format_names(kicked_usernames))
+                message = Message.objects.create(
+                    contact=get_user_contact(currentUser),
+                    content=content,
+                    system_message=True,
+                )
                 instance.messages.add(message)
-                send_socket_message(instance,message)
-                instance.participants.remove(diff[0])
-                if diff[0] in instance.admins.all():
-                    instance.admins.remove(diff[0])    
+                send_socket_message(instance, message)
+            else :
+                leaving = list(diff)
+                leaving_usernames = [c.user.username for c in leaving]
+                for contact in leaving:
+                    instance.participants.remove(contact)
+                    if contact in instance.admins.all():
+                        instance.admins.remove(contact)
+                content = '{} left the chat'.format(_format_names(leaving_usernames))
+                message = Message.objects.create(
+                    contact=leaving[0],
+                    content=content,
+                    system_message=True,
+                )
+                instance.messages.add(message)
+                send_socket_message(instance, message)
             
         # add memeber and/or assign memeber to be an admin 
 
         else:
+            added_contacts = []
             for contact in contacts :
                 if contact not in instance.participants.all():
                     instance.participants.add(contact)
-                    message = Message.objects.create(contact=get_user_contact(currentUser),content='{} added {} to the chat .'.format(currentUser,contact.user.username),system_message=True)
-                    instance.messages.add(message)
-                    send_socket_message(instance,message)
+                    added_contacts.append(contact)
 
+            if added_contacts:
+                added_usernames = [c.user.username for c in added_contacts]
+                content = '{} added {} to the chat'.format(currentUser, _format_names(added_usernames))
+                message = Message.objects.create(
+                    contact=get_user_contact(currentUser),
+                    content=content,
+                    system_message=True,
+                )
+                instance.messages.add(message)
+                send_socket_message(instance, message)
 
+            promoted_admins = []
             for admin in new_admins :
                 if admin not in instance.admins.all():
                     instance.admins.add(admin)
-                    message = Message.objects.create(contact=get_user_contact(currentUser),content='{} made {} an admin in the chat .'.format(currentUser,admin.user.username),system_message=True)
-                    instance.messages.add(message)
-                    send_socket_message(instance,message)
+                    promoted_admins.append(admin)
+
+            if promoted_admins:
+                promoted_names = [a.user.username for a in promoted_admins]
+                content = '{} made {} an admin in the chat'.format(currentUser, _format_names(promoted_names))
+                message = Message.objects.create(
+                    contact=get_user_contact(currentUser),
+                    content=content,
+                    system_message=True,
+                )
+                instance.messages.add(message)
+                send_socket_message(instance, message)
 
 
         return instance
