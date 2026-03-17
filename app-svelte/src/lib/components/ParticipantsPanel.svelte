@@ -185,17 +185,17 @@
 	.overlay {
 		position: fixed;
 		inset: 0;
-		background: rgba(0, 0, 0, 0.45);
+		background: rgba(0, 0, 0, 0.32);
 		display: flex;
 		justify-content: center;
 		align-items: center;
 		padding: 18px;
-		z-index: 60;
+		z-index: 70;
 	}
 	.panel {
 		width: min(420px, 92vw);
 		max-height: min(72vh, 720px);
-		background: var(--Background-Lift-8);
+		background: rgba(15, 23, 42, 1);
 		border: 1px solid var(--Border-Subtle);
 		border-radius: 12px;
 		padding: 10px;
@@ -428,6 +428,17 @@
 		border-radius: 999px;
 		border: 1px solid var(--Border-Subtle);
 		color: var(--Text-Heading-Medium);
+	}
+	@media (max-width: 768px) {
+		.overlay {
+			align-items: center;
+			padding: 10px 8px;
+		}
+		.panel {
+			width: min(100vw - 16px, 420px);
+			max-height: calc(100vh - 32px);
+			padding: 10px;
+		}
 	}
 </style>
 
