@@ -1,0 +1,12 @@
+---
+description: TypeScript conventions for Lets-Chat
+globs: **/*.ts
+alwaysApply: false
+---
+
+# TypeScript conventions
+
+- Prefer explicit types for public APIs and component props.
+- Avoid `any`; use narrow unions and small interfaces/types.
+- Keep exported functions/components side-effect free where possible; separate pure helpers into `$lib/utils/`.
+

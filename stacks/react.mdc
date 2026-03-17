@@ -1,0 +1,12 @@
+---
+description: Legacy React frontend conventions for Lets-Chat
+globs: frontend/**/*.{js,jsx,ts,tsx}
+alwaysApply: false
+---
+
+# Legacy React conventions
+
+- Avoid large components; extract reusable UI into components/modules.
+- Keep changes isolated; do not introduce new React patterns into Svelte codepaths.
+- Update `docs/refactor-frontend.md` for meaningful UX/API usage changes.
+
