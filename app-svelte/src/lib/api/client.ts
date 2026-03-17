@@ -54,10 +54,6 @@ export async function apiRequest<T>(
 	return res.json() as Promise<T>;
 }
 
-export async function apiFormData(endpoint: string, formData: FormData): Promise<unknown> {
-	return apiFormDataWithProgress(endpoint, formData);
-}
-
 export function apiFormDataWithProgress(
 	endpoint: string,
 	formData: FormData,

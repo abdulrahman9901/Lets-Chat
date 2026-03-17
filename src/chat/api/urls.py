@@ -10,6 +10,7 @@ from .views import (
     uploadimageView,
     MediaDownloadView,
     FrontendLogView,
+    MediaDownloadView,
 )
 
 app_name = 'chat'
