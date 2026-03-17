@@ -3,7 +3,6 @@ import { writable } from 'svelte/store';
 export const showAddChatPopup = writable(false);
 export const showJoinChatPopup = writable(false);
 export const showAddMemberPopup = writable(false);
-export const showKickMemberPopup = writable(false);
 export const showUploadPopup = writable(false);
 export const showParticipantsPanel = writable(false);
 export const showSidepanel = writable(false);
@@ -25,12 +24,6 @@ export function openAddMemberPopup() {
 }
 export function closeAddMemberPopup() {
 	showAddMemberPopup.set(false);
-}
-export function openKickMemberPopup() {
-	showKickMemberPopup.set(true);
-}
-export function closeKickMemberPopup() {
-	showKickMemberPopup.set(false);
 }
 export function openUploadPopup() {
 	showUploadPopup.set(true);

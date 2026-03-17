@@ -62,7 +62,7 @@ export async function kickMembers(
 	return apiRequest(`/chat/${chatId}/update/`, {
 		method: 'PUT',
 		body: {
-			command: 'kick',
+			command: 'removeMember',
 			username: localStorage.getItem('username'),
 			messages: [],
 			participants,
