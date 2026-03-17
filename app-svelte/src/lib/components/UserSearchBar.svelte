@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { searchUsers } from '$lib/api/chat';
-	import { createEventDispatcher } from 'svelte';
 
 	interface Props {
 		selected: string[];
@@ -11,7 +10,7 @@
 	}
 
 	let {
-		selected = $bindable(),
+		selected,
 		exclude = [],
 		loading = false,
 		placeholderEmpty = 'e.g. charlie or cha',
@@ -24,6 +23,11 @@
 
 	function emitSelected(next: string[]) {
 		selected = next;
+		dispatchEvent(
+			new CustomEvent('change', {
+				detail: next,
+			}),
+		);
 	}
 
 	function runSearch() {
