@@ -1,10 +1,6 @@
-from email import message
-from importlib.resources import contents
-from urllib import request
 from chat.models import Contact
 from rest_framework import serializers
-from rest_framework.fields import CurrentUserDefault
-from chat.models import Chat ,Message
+from chat.models import Chat, Message
 
 from django.db import transaction
 
@@ -56,7 +52,6 @@ class CustomRegisterSerializer(RegisterSerializer):
 
 class ContactSerializer(serializers.StringRelatedField):
     def to_internal_value(self, value):
-        print(value)
         return value
 
 
@@ -80,25 +75,40 @@ class ChatSerializer(serializers.ModelSerializer):
     participants = ContactSerializer(many=True)
     admins = ContactSerializer(many=True)
     chatKey = serializers.SerializerMethodField('get_chat_key')
+    participantsMeta = serializers.SerializerMethodField('get_participants_meta')
+    adminsMeta = serializers.SerializerMethodField('get_admins_meta')
 
     def get_chat_key(self, instance):
         return get_chat_key_for_id(instance.id)
+
+    def get_participants_meta(self, instance):
+        return [{'id': c.id, 'username': c.user.username} for c in instance.participants.all()]
+
+    def get_admins_meta(self, instance):
+        return [{'id': c.id, 'username': c.user.username} for c in instance.admins.all()]
 
     allowed_methods = ['get', 'post', 'put', 'delete', 'options','update']
     
     class Meta:
         model = Chat
-        fields = ('id','name','messages', 'participants','admins','chatKey')
+        fields = (
+            'id',
+            'name',
+            'messages',
+            'participants',
+            'admins',
+            'participantsMeta',
+            'adminsMeta',
+            'chatKey',
+        )
         read_only = ('id')
 
     def create(self, validated_data):
-        print(validated_data)
         participants = validated_data.pop('participants')
         admins = validated_data.pop('admins')
         name = validated_data.pop('name')
         chat = Chat()
         chat.name = name
-        print('first element ',admins[0])
         chat.save()
         for username in participants:
             contact = get_user_contact(username)
@@ -118,41 +128,28 @@ class ChatSerializer(serializers.ModelSerializer):
 
         
     def update(self, instance, validated_data):
-
-        # https://stackoverflow.com/questions/30203652/how-to-get-request-user-in-django-rest-framework-serializer
         request = self.context.get("request")
-        print("request",request.data.get('username'))
-        print(validated_data['participants'],instance.participants.all())
-
-        print(validated_data['admins'],instance.admins.all())
-
-        # https://channels.readthedocs.io/en/stable/topics/channel_layers.html
-        # https://django.fun/en/qa/421495/
-        # https://django.fun/en/qa/420074/
-        # https://stackoverflow.com/a/48631111
+        data = request.data
 
         channel_layer = get_channel_layer()
-        print('chat_{}'.format(instance.id))
-        async_to_sync(channel_layer.group_send)('chat_{}'.format(instance.id),{
-             
+        async_to_sync(channel_layer.group_send)(
+            'chat_{}'.format(instance.id),
+            {
                 'type': 'chat_message',
-                'message':{
-                'command': 'chatsUpdate'     
-                }       
-            })
-        participants = validated_data['participants']
-        admins = validated_data['admins']
-        currentUser = request.data.get('username')
-        contacts=[]
-        new_admins = []
-        for username in participants:
-                contacts.append(get_user_contact(username))
+                'message': {'command': 'chatsUpdate'},
+            },
+        )
 
-        for admin in admins:
-                new_admins.append(get_user_contact(admin))
+        command = data.get('command') or ''
+        actor_id = data.get('actorId')
+        actor = Contact.objects.filter(id=actor_id).first() if actor_id is not None else None
+        if actor is None:
+            username = data.get('username')
+            if username:
+                actor = get_user_contact(username)
 
-        def _format_names(usernames):
-            names = [str(u) for u in usernames]
+        def _format_names(contacts):
+            names = [c.user.username for c in contacts]
             if not names:
                 return ''
             if len(names) == 1:
@@ -161,79 +158,106 @@ class ChatSerializer(serializers.ModelSerializer):
                 return '{} and {}'.format(names[0], names[1])
             return '{}, and {}'.format(', '.join(names[:-1]), names[-1])
 
-        # leave /remove case 
-        if len(contacts) < len(instance.participants.all()):
-            diff = list(set(instance.participants.all()) - set(contacts))
-            if request.data.get('command') == "removeMember" :
-                removed_contacts = list(diff)
-                removed_usernames = [c.user.username for c in removed_contacts]
-                for contact in removed_contacts:
-                    instance.participants.remove(contact)
-                    if contact in instance.admins.all():
-                        instance.admins.remove(contact)
-                content = '{} removed {} from the chat'.format(currentUser, _format_names(removed_usernames))
-                message = Message.objects.create(
-                    contact=get_user_contact(currentUser),
-                    content=content,
-                    system_message=True,
-                )
-                instance.messages.add(message)
-                send_socket_message(instance, message)
-            else :
-                leaving = list(diff)
-                leaving_usernames = [c.user.username for c in leaving]
-                for contact in leaving:
-                    instance.participants.remove(contact)
-                    if contact in instance.admins.all():
-                        instance.admins.remove(contact)
-                content = '{} left the chat'.format(_format_names(leaving_usernames))
-                message = Message.objects.create(
-                    contact=leaving[0],
-                    content=content,
-                    system_message=True,
-                )
-                instance.messages.add(message)
-                send_socket_message(instance, message)
-            
-        # add memeber and/or assign memeber to be an admin 
+        def _contacts_from_ids(ids):
+            if not ids:
+                return []
+            return list(Contact.objects.filter(id__in=ids))
 
-        else:
-            added_contacts = []
-            for contact in contacts :
-                if contact not in instance.participants.all():
-                    instance.participants.add(contact)
-                    added_contacts.append(contact)
+        if command == 'removeMember':
+            removed_ids = data.get('removedIds') or []
+            removed_contacts = _contacts_from_ids(removed_ids)
+            actually_removed = [c for c in removed_contacts if c in instance.participants.all()]
+            if not actually_removed and 'participants' in validated_data:
+                snapshot_usernames = validated_data.get('participants') or []
+                snapshot_contacts = [get_user_contact(u) for u in snapshot_usernames if u]
+                actually_removed = list(set(instance.participants.all()) - set(snapshot_contacts))
+            for c in actually_removed:
+                instance.participants.remove(c)
+                if c in instance.admins.all():
+                    instance.admins.remove(c)
+            if actually_removed and actor:
+                content = '{} removed {} from the chat'.format(actor.user.username, _format_names(actually_removed))
+                msg = Message.objects.create(contact=actor, content=content, system_message=True)
+                instance.messages.add(msg)
+                send_socket_message(instance, msg)
 
-            if added_contacts:
-                added_usernames = [c.user.username for c in added_contacts]
-                content = '{} added {} to the chat'.format(currentUser, _format_names(added_usernames))
-                message = Message.objects.create(
-                    contact=get_user_contact(currentUser),
-                    content=content,
-                    system_message=True,
-                )
-                instance.messages.add(message)
-                send_socket_message(instance, message)
+            instance.save()
+            return instance
 
-            promoted_admins = []
-            for admin in new_admins :
-                if admin not in instance.admins.all():
-                    instance.admins.add(admin)
-                    promoted_admins.append(admin)
+        if command == 'leave':
+            if actor and actor in instance.participants.all():
+                instance.participants.remove(actor)
+                if actor in instance.admins.all():
+                    instance.admins.remove(actor)
+                content = '{} left the chat'.format(actor.user.username)
+                msg = Message.objects.create(contact=actor, content=content, system_message=True)
+                instance.messages.add(msg)
+                send_socket_message(instance, msg)
 
-            if promoted_admins:
-                promoted_names = [a.user.username for a in promoted_admins]
-                content = '{} made {} an admin in the chat'.format(currentUser, _format_names(promoted_names))
-                message = Message.objects.create(
-                    contact=get_user_contact(currentUser),
-                    content=content,
-                    system_message=True,
-                )
-                instance.messages.add(message)
-                send_socket_message(instance, message)
+            instance.save()
+            return instance
 
+        if command == 'addParticipant':
+            added_ids = data.get('addedIds') or []
+            added_contacts = _contacts_from_ids(added_ids)
+            if not added_contacts and 'participants' in validated_data:
+                snapshot_usernames = validated_data.get('participants') or []
+                added_contacts = [get_user_contact(u) for u in snapshot_usernames if u]
+            actually_added = []
+            for c in added_contacts:
+                if c not in instance.participants.all():
+                    instance.participants.add(c)
+                    actually_added.append(c)
+            if actually_added and actor:
+                content = '{} added {} to the chat'.format(actor.user.username, _format_names(actually_added))
+                msg = Message.objects.create(contact=actor, content=content, system_message=True)
+                instance.messages.add(msg)
+                send_socket_message(instance, msg)
 
-        return instance
+            instance.save()
+            return instance
+
+        if command == 'promoteAdmin':
+            promoted_ids = data.get('promotedIds') or []
+            promoted_contacts = _contacts_from_ids(promoted_ids)
+            if not promoted_contacts and 'admins' in validated_data:
+                snapshot_admins = validated_data.get('admins') or []
+                promoted_contacts = [get_user_contact(u) for u in snapshot_admins if u]
+            actually_promoted = []
+            for c in promoted_contacts:
+                if c not in instance.admins.all():
+                    instance.admins.add(c)
+                    actually_promoted.append(c)
+            if actually_promoted and actor:
+                content = '{} made {} an admin in the chat'.format(actor.user.username, _format_names(actually_promoted))
+                msg = Message.objects.create(contact=actor, content=content, system_message=True)
+                instance.messages.add(msg)
+                send_socket_message(instance, msg)
+
+            instance.save()
+            return instance
+
+        if command == 'addAdmin':
+            promoted_ids = data.get('promotedIds') or []
+            promoted_contacts = _contacts_from_ids(promoted_ids)
+            if not promoted_contacts and 'admins' in validated_data:
+                snapshot_admins = validated_data.get('admins') or []
+                promoted_contacts = [get_user_contact(u) for u in snapshot_admins if u]
+            actually_promoted = []
+            for c in promoted_contacts:
+                if c not in instance.admins.all():
+                    instance.admins.add(c)
+                    actually_promoted.append(c)
+            if actually_promoted and actor:
+                content = '{} made {} an admin in the chat'.format(actor.user.username, _format_names(actually_promoted))
+                msg = Message.objects.create(contact=actor, content=content, system_message=True)
+                instance.messages.add(msg)
+                send_socket_message(instance, msg)
+
+            instance.save()
+            return instance
+
+        return super().update(instance, validated_data)
 
 #  from chat.models import Chat  
 #  from chat.api.serializers import ChatSerializer
