@@ -7,6 +7,15 @@ export const showUploadPopup = writable(false);
 export const showParticipantsPanel = writable(false);
 export const showSidepanel = writable(false);
 
+export function resetNavState() {
+	showAddChatPopup.set(false);
+	showJoinChatPopup.set(false);
+	showAddMemberPopup.set(false);
+	showUploadPopup.set(false);
+	showParticipantsPanel.set(false);
+	showSidepanel.set(false);
+}
+
 export function openAddChatPopup() {
 	showAddChatPopup.set(true);
 }

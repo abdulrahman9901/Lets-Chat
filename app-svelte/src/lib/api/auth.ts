@@ -1,5 +1,6 @@
 import { apiRequest } from './client';
 import { setAuth, clearError } from '$lib/stores/auth';
+import { resetNavState } from '$lib/stores/nav';
 
 export interface LoginPayload {
 	username: string;
@@ -46,6 +47,7 @@ export async function logout(): Promise<void> {
 		// ignore
 	} finally {
 		setAuth(null, null);
+		resetNavState();
 	}
 }
 
