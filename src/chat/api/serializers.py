@@ -102,6 +102,10 @@ class ChatSerializer(serializers.ModelSerializer):
             'chatKey',
         )
         read_only = ('id')
+        extra_kwargs = {
+            'participants': {'required': False},
+            'admins': {'required': False},
+        }
 
     def create(self, validated_data):
         participants = validated_data.pop('participants')
