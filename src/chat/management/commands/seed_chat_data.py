@@ -4,7 +4,6 @@ from datetime import timedelta
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from django.conf import settings
 
 from chat.models import CustomUser, Contact, Chat, Message
 from chat.api.serializers import get_chat_key_for_id

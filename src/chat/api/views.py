@@ -1,10 +1,9 @@
-import json
 import logging
 import os
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.fields.files import ImageFieldFile
-from django.http import FileResponse
+from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status
 from rest_framework.generics import (
@@ -59,7 +58,7 @@ def get_user_contact(username):
     user = get_object_or_404(CustomUser,username=username)
     try :
         contact = get_object_or_404(Contact,user=user)
-    except:
+    except Http404:
         contact = Contact()
         contact.user = user
         print(contact)

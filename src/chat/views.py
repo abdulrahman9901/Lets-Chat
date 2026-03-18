@@ -1,9 +1,6 @@
 # chat/views.py
 from django.shortcuts import render
-from django.utils.safestring import mark_safe
-from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
-import json
 from .models import Chat ,CustomUser ,Contact
 def index(request):
     return render(request, 'chat/index.html')
