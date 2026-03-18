@@ -72,8 +72,8 @@ def send_socket_message(instance,message):
                 })
 
 class ChatSerializer(serializers.ModelSerializer):
-    participants = ContactSerializer(many=True)
-    admins = ContactSerializer(many=True)
+    participants = ContactSerializer(many=True, required=False)
+    admins = ContactSerializer(many=True, required=False)
     chatKey = serializers.SerializerMethodField('get_chat_key')
     participantsMeta = serializers.SerializerMethodField('get_participants_meta')
     adminsMeta = serializers.SerializerMethodField('get_admins_meta')
