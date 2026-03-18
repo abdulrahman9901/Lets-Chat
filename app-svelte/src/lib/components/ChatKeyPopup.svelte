@@ -109,14 +109,17 @@
 	}
 	.value {
 		flex: 1;
-		padding: 10px 12px;
+		padding: 8px 10px;
 		border: none;
 		background: transparent;
 		font-family: ui-monospace, monospace;
-		font-size: 13px;
+		font-size: 11px;
+		line-height: 1.35;
 		word-break: break-all;
 		user-select: all;
 		min-width: 0;
+		max-height: 84px;
+		overflow-y: auto;
 	}
 	.copy-wrap {
 		position: relative;
