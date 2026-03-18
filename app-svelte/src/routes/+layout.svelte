@@ -26,8 +26,10 @@
 						setMessages({
 							messages: payload.messages ?? [],
 							participants: payload.participants ?? [],
+							participantsMeta: payload.participantsMeta ?? [],
 							name: payload.name,
 							admins: payload.admins,
+							adminsMeta: payload.adminsMeta ?? [],
 							system_message: payload.system_message,
 							chatKey: payload.chatKey,
 							room_id: payload.room_id,

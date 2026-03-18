@@ -5,8 +5,10 @@ import { logger } from '$lib/logger';
 type MessagesCallback = (payload: {
 	messages: ChatMessage[];
 	participants: string[];
+	participantsMeta?: { id: number; username: string }[];
 	name?: string;
 	admins?: string[];
+	adminsMeta?: { id: number; username: string }[];
 	system_message?: string;
 	image?: string;
 	chatKey?: string;
@@ -88,6 +90,8 @@ export function connect(roomId: string | number | null | undefined): void {
 					participants: parsed.participants ?? [],
 					name: parsed.name,
 					admins: parsed.admins,
+					participantsMeta: parsed.participantsMeta,
+					adminsMeta: parsed.adminsMeta,
 					system_message: parsed.system_message,
 					image: parsed.image,
 					chatKey: parsed.chatKey,

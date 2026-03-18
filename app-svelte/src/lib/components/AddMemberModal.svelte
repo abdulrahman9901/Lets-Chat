@@ -75,9 +75,8 @@
 		onkeydown={(e) => e.key === 'Escape' && closeAddMemberPopup()}
 	>
 		<div class="modal">
-			<h2>Add member(s)</h2>
+			<h2>Add participant(s)</h2>
 			<form onsubmit={handleSubmit}>
-				<p class="field-label">Add participants</p>
 				<p class="hint">Type a name or part of it; click a suggestion to add. Chosen persons appear in the bar.</p>
 				<UserSearchBar
 					selected={selectedUsers}
