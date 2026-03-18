@@ -8,12 +8,9 @@
 	import * as ws from '$lib/websocket';
 
 	let chatName = $state('');
-	let selectedParticipants = $state<string[]>([]);
+	let selectedParticipants = $state<{ id: number; username: string }[]>([]);
 	let loading = $state(false);
 	let error = $state('');
-	let searchQuery = $state('');
-	let searchResults = $state<{ id: number; username: string; email: string }[]>([]);
-	let searchDebounce: ReturnType<typeof setTimeout> | null = null;
 
 	function resetState() {
 		chatName = '';
@@ -29,7 +26,7 @@
 	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault();
 		error = '';
-		const participants = [$username!].concat(selectedParticipants);
+		const participants = [$username!].concat(selectedParticipants.map((p) => p.username));
 		if (participants.length < 2) {
 			error = 'Add at least one participant.';
 			return;

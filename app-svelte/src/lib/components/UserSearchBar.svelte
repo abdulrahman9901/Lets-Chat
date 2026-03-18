@@ -3,7 +3,7 @@
 	import { createEventDispatcher } from 'svelte';
 
 	interface Props {
-		selected: string[];
+		selected: { id: number; username: string }[];
 		exclude?: string[];
 		loading?: boolean;
 		placeholderEmpty?: string;
@@ -21,9 +21,9 @@
 	let searchQuery = $state('');
 	let searchResults = $state<{ id: number; username: string; email: string }[]>([]);
 	let searchDebounce: ReturnType<typeof setTimeout> | null = null;
-	const dispatch = createEventDispatcher<{ change: string[] }>();
+	const dispatch = createEventDispatcher<{ change: { id: number; username: string }[] }>();
 
-	function emitSelected(next: string[]) {
+	function emitSelected(next: { id: number; username: string }[]) {
 		selected = next;
 		dispatch('change', next);
 	}
@@ -38,7 +38,10 @@
 			.then((list) => {
 				if (searchQuery.trim() !== q) return;
 				const arr = Array.isArray(list) ? list : [];
-				const blocked = new Set<string>([...selected, ...exclude]);
+				const blocked = new Set<string>([
+					...selected.map((s) => s.username),
+					...exclude,
+				]);
 				searchResults = arr.filter(
 					(u) => u && typeof u.username === 'string' && !blocked.has(u.username),
 				);
@@ -54,31 +57,31 @@
 		searchDebounce = setTimeout(runSearch, 120);
 	}
 
-	function addUser(u: { username: string }) {
+	function addUser(u: { id: number; username: string }) {
 		if (!u?.username) return;
-		if (selected.includes(u.username)) return;
+		if (selected.some((s) => s.id === u.id || s.username === u.username)) return;
 		if (exclude.includes(u.username)) return;
-		const next = [...selected, u.username];
+		const next = [...selected, { id: u.id, username: u.username }];
 		emitSelected(next);
 		searchQuery = '';
 		searchResults = [];
 	}
 
 	function removeUser(username: string) {
-		const next = selected.filter((p) => p !== username);
+		const next = selected.filter((p) => p.username !== username);
 		emitSelected(next);
 	}
 </script>
 
 <div class="search-wrap">
 	<div class="search-bar">
-		{#each selected as name (name)}
+		{#each selected as s (s.username)}
 			<span class="chip">
-				{name}
+				{s.username}
 				<button
 					type="button"
 					class="chip-remove"
-					onclick={() => removeUser(name)}
+					onclick={() => removeUser(s.username)}
 					aria-label="Remove"
 				>
 					×

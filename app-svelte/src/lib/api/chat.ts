@@ -42,50 +42,39 @@ export async function joinChat(username: string, chatKey: string): Promise<{ dat
 	});
 }
 
-export async function leaveChat(chatId: string, participantsWithoutSelf: string[]): Promise<unknown> {
+export async function leaveChat(chatId: string, actorId: number): Promise<unknown> {
 	return apiRequest(`/chat/${chatId}/update/`, {
 		method: 'PUT',
 		body: {
-			name: 'new name',
-			messages: [],
-			admins: [],
-			participants: participantsWithoutSelf,
+			command: 'leave',
+			actorId,
 		},
 	});
 }
 
-export async function kickMembers(
-	chatId: string,
-	participants: string[],
-	admins: string[] = []
-): Promise<unknown> {
+export async function kickMembers(chatId: string, actorId: number, removedIds: number[]): Promise<unknown> {
 	return apiRequest(`/chat/${chatId}/update/`, {
 		method: 'PUT',
 		body: {
 			command: 'removeMember',
-			username: localStorage.getItem('username'),
-			messages: [],
-			participants,
-			admins,
+			actorId,
+			removedIds,
 		},
 	});
 }
 
 export async function addParticipants(
 	chatId: string,
-	currentParticipants: string[],
-	newUsernames: string[],
+	actorId: number,
+	addedIds: number[],
 	asAdmin: boolean
 ): Promise<unknown> {
-	const participants = [...currentParticipants, ...newUsernames];
 	return apiRequest(`/chat/${chatId}/update/`, {
 		method: 'PUT',
 		body: {
 			command: asAdmin ? 'addAdmin' : 'addParticipant',
-			username: localStorage.getItem('username'),
-			messages: [],
-			participants,
-			admins: asAdmin ? newUsernames : [],
+			actorId,
+			addedIds,
 		},
 	});
 }

@@ -1,22 +1,26 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { admins, participants, participantsCount } from '$lib/stores/message';
+	import { admins, adminsMeta, participants, participantsCount, participantsMeta } from '$lib/stores/message';
 	import { showAddMemberPopup, closeAddMemberPopup } from '$lib/stores/nav';
 	import { addParticipants } from '$lib/api/chat';
 	import UserSearchBar from '$lib/components/UserSearchBar.svelte';
+	import { username } from '$lib/stores/auth';
 
-	let selectedUsernames = $state<string[]>([]);
+	let selectedUsers = $state<{ id: number; username: string }[]>([]);
 	let role = $state<'Participant' | 'Admin'>('Participant');
 	let loading = $state(false);
 	let error = $state('');
-	let searchQuery = $state('');
-	let searchResults = $state<{ id: number; username: string; email: string }[]>([]);
-	let searchDebounce: ReturnType<typeof setTimeout> | null = null;
 
 	let chatId = $derived($page.params.chatId);
+	let currentUsername = $derived($username ?? '');
+	let actorId = $derived(
+		($participantsMeta ?? []).find((p) => p.username === currentUsername)?.id ??
+			($adminsMeta ?? []).find((p) => p.username === currentUsername)?.id ??
+			null
+	);
 
 	function resetState() {
-		selectedUsernames = [];
+		selectedUsers = [];
 		role = 'Participant';
 		error = '';
 		loading = false;
@@ -30,22 +34,28 @@
 		e.preventDefault();
 		if (!chatId) return;
 		error = '';
-		if (selectedUsernames.length === 0) {
+		if (selectedUsers.length === 0) {
 			error = 'Add at least one participant.';
+			return;
+		}
+		if (!actorId) {
+			error = 'Unable to identify current user.';
 			return;
 		}
 		loading = true;
 		try {
-			await addParticipants(chatId, $participants, selectedUsernames, role === 'Admin');
-			const nextParticipants = Array.from(new Set([...($participants ?? []), ...selectedUsernames]));
+			const addedIds = selectedUsers.map((u) => u.id);
+			const addedUsernames = selectedUsers.map((u) => u.username);
+			await addParticipants(chatId, actorId, addedIds, role === 'Admin');
+			const nextParticipants = Array.from(new Set([...($participants ?? []), ...addedUsernames]));
 			participants.set(nextParticipants);
 			participantsCount.set(nextParticipants.length);
 			if (role === 'Admin') {
-				const nextAdmins = Array.from(new Set([...($admins ?? []), ...selectedUsernames]));
+				const nextAdmins = Array.from(new Set([...($admins ?? []), ...addedUsernames]));
 				admins.set(nextAdmins);
 			}
 			closeAddMemberPopup();
-			selectedUsernames = [];
+			selectedUsers = [];
 			role = 'Participant';
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to add member(s)';
@@ -70,10 +80,10 @@
 				<p class="field-label">Add participants</p>
 				<p class="hint">Type a name or part of it; click a suggestion to add. Chosen persons appear in the bar.</p>
 				<UserSearchBar
-					selected={selectedUsernames}
+					selected={selectedUsers}
 					exclude={$participants}
 					loading={loading}
-					on:change={(e) => (selectedUsernames = e.detail)}
+					on:change={(e) => (selectedUsers = e.detail)}
 				/>
 				<p class="field-label">Role</p>
 				<div class="role">

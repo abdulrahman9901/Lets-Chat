@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { admins, chatName, participants } from '$lib/stores/message';
+	import { admins, adminsMeta, chatName, participants, participantsMeta } from '$lib/stores/message';
 	import { username } from '$lib/stores/auth';
 	import {
 		closeParticipantsPanel,
@@ -14,6 +14,11 @@
 	let currentUser = $derived($username ?? '');
 	let list = $derived(($participants ?? []).slice().sort((a, b) => a.localeCompare(b)));
 	let isAdmin = $derived($admins.includes(currentUser));
+	let actorId = $derived(
+		($participantsMeta ?? []).find((p) => p.username === currentUser)?.id ??
+			($adminsMeta ?? []).find((p) => p.username === currentUser)?.id ??
+			null
+	);
 	let search = $state('');
 	let filter = $state<'everyone' | 'admins' | 'members'>('everyone');
 	let filtered = $derived.by(() => {
@@ -56,7 +61,14 @@
 	async function doKick(target: string) {
 		if (!chatId) return;
 		if (target === currentUser) return;
+		if (!actorId) return;
 		kickError = '';
+
+		const targetId = ($participantsMeta ?? []).find((p) => p.username === target)?.id ?? null;
+		if (!targetId) {
+			kickError = 'Unable to identify participant.';
+			return;
+		}
 
 		const nextParticipants = ($participants ?? []).filter((p) => p !== target);
 		if (nextParticipants.length === 0) {
@@ -67,7 +79,7 @@
 
 		kickLoading = target;
 		try {
-			await kickMembers(chatId, nextParticipants, nextAdmins);
+			await kickMembers(chatId, actorId, [targetId]);
 			participants.set(nextParticipants);
 			participantsCount.set(nextParticipants.length);
 			admins.set(nextAdmins);

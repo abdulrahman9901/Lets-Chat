@@ -5,9 +5,11 @@
 	import {
 		messages,
 		participants,
+		participantsMeta,
 		participantsCount,
 		chatName,
 		admins,
+		adminsMeta,
 		chatKey,
 		setChats,
 		setCurrentRoom,
@@ -47,6 +49,11 @@
 	let currentUser = $derived($username ?? '');
 	let isParticipant = $derived($participants.length > 0 && $participants.includes(currentUser));
 	let isAdmin = $derived($admins.includes(currentUser));
+	let actorId = $derived(
+		($participantsMeta ?? []).find((p) => p.username === currentUser)?.id ??
+			($adminsMeta ?? []).find((p) => p.username === currentUser)?.id ??
+			null
+	);
 
 	$effect(() => {
 		if (!validChatId) {
@@ -79,8 +86,8 @@
 
 	function doLeave() {
 		if (!validChatId || !currentUser) return;
-		const withoutSelf = $participants.filter((p) => p !== currentUser);
-		leaveChat(chatId!, withoutSelf)
+		if (!actorId) return;
+		leaveChat(chatId!, actorId)
 			.then(() => {
 				getChats(currentUser).then(setChats);
 				goto('/');
