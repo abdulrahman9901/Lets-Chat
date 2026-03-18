@@ -257,10 +257,6 @@ class ChatSerializer(serializers.ModelSerializer):
             instance.save()
             return instance
 
+        validated_data.pop('participants', None)
+        validated_data.pop('admins', None)
         return super().update(instance, validated_data)
-
-#  from chat.models import Chat  
-#  from chat.api.serializers import ChatSerializer
-#  chat = Chat.objects.get(id=1) 
-#  s = ChatSerializer(chat)
-#  s

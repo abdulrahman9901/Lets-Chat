@@ -66,6 +66,9 @@ class ChatConsumer(WebsocketConsumer):
         username = data.get('username', '')
         members = [c.user.username for c in chat.participants.all()]
         admins = [a.user.username for a in chat.admins.all()]
+        chat_data = ChatSerializer(chat).data
+        participants_meta = chat_data.get('participantsMeta') or []
+        admins_meta = chat_data.get('adminsMeta') or []
 
         if username in members:
             content = {
@@ -74,6 +77,8 @@ class ChatConsumer(WebsocketConsumer):
                 'messages': self.messages_to_json(messages_qs),
                 'participants': members,
                 'admins': admins,
+                'participantsMeta': participants_meta,
+                'adminsMeta': admins_meta,
                 'name': chat.name,
                 'chatKey': ChatSerializer(chat).data['chatKey'],
             }
@@ -84,6 +89,8 @@ class ChatConsumer(WebsocketConsumer):
                 'messages': [],
                 'participants': members,
                 'admins': [],
+                'participantsMeta': participants_meta,
+                'adminsMeta': admins_meta,
                 'name': chat.name,
             }
         self.send_message(content)
