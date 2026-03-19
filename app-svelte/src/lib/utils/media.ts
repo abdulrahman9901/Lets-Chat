@@ -17,6 +17,10 @@ export function mediaDownloadUrl(file: string, options: MediaDownloadOptions = {
 	}
 
 	params.set('download', options.download ? '1' : '0');
+	const authToken = getStoredAuthToken();
+	if (authToken) {
+		params.set('token', authToken);
+	}
 	return `${API_BASE_URL}/chat/media/download/?${params.toString()}`;
 }
 
@@ -56,5 +60,10 @@ function normalizeMediaKey(file: string): string {
 		.replace(/^https?:\/\/[^/]+\//, '')
 		.replace(/\\/g, '/')
 		.replace(/^\/+/, '');
+}
+
+function getStoredAuthToken(): string {
+	if (typeof localStorage === 'undefined') return '';
+	return String(localStorage.getItem('token') ?? '').trim();
 }
 
