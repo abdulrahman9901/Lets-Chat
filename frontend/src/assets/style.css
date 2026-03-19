@@ -658,7 +658,6 @@ body {
     background-color: rgba(0, 0, 0, 0.3);
   }
   #frame .content .messages ul li {
-    display: inline-block;
     clear: both;
     float: left;
     margin: 15px 15px 5px 15px;
@@ -670,9 +669,6 @@ body {
   }
   #frame .content .messages ul li:nth-last-child(1) {
     margin-bottom: 20px;
-  }
-  #frame .content .messages ul li.sent img {
-    /* margin: 6px 8px 0 0; */
   }
   #frame .content .messages ul li.sent p {
     /* background: #435f7a;
@@ -1037,7 +1033,7 @@ div.ant-popover.ant-popover-placement-bottom{
 }
 
 .btn {
-    background-color: DodgerBlue; /* Blue background */
+    background-color: DodgerBlue; /* Blue background */
     border: none; /* Remove borders */
     color: white; /* White text */
     padding: 12px 16px; /* Some padding */
@@ -1049,18 +1045,22 @@ div.ant-popover.ant-popover-placement-bottom{
     float: left;
     margin-top: 20px;
     margin-left: 10px;
-    background-color:lightslategray;
+    background-color: rgba(119, 136, 153, 0.6);
+    position: relative;
+    z-index: 60;
   }
   #toMessages{
     float: right;
     margin-top: 20px;
     margin-right: 10px;
-    background-color: #668BB0;
+    background-color: rgba(102, 139, 176, 0.6);
+    position: relative;
+    z-index: 60;
   }
   /* Darker background on mouse-over */
   #toChats:hover {
-    background-color: RoyalBlue !important;
+    background-color: rgba(65, 105, 225, 0.75) !important;
   }
   #toMessages:hover {
-      background-color: rgb(98, 123, 199) !important;
+    background-color: rgba(98, 123, 199, 0.75) !important;
   }
