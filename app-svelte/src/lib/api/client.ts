@@ -14,7 +14,7 @@ function getCsrfToken(): string {
 
 export async function apiRequest<T>(
 	endpoint: string,
-	options: RequestInit & { body?: Record<string, unknown> } = {}
+	options: Omit<RequestInit, 'body'> & { body?: unknown } = {}
 ): Promise<T> {
 	const t = get(token);
 	const headers: Record<string, string> = {
@@ -24,18 +24,18 @@ export async function apiRequest<T>(
 		...((options.headers as Record<string, string>) ?? {}),
 	};
 	const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+	const { body, ...rest } = options;
 	const init: RequestInit = {
-		...options,
+		...rest,
 		headers,
 		credentials: 'omit',
 	};
 	if (
 		options.method !== 'GET' &&
-		options.body &&
-		typeof options.body === 'object' &&
+		body !== undefined &&
 		headers['Content-Type'] === 'application/json'
 	) {
-		init.body = JSON.stringify(options.body);
+		init.body = JSON.stringify(body);
 	}
 	const res = await fetch(url, init);
 	if (!res.ok) {
