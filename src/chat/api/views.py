@@ -5,6 +5,7 @@ import os
 from urllib.parse import urljoin
 import requests
 from django.conf import settings
+from rest_framework.authtoken.models import Token
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.files.storage import default_storage
 from django.db.models.fields.files import ImageFieldFile
@@ -22,7 +23,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from cryptography.fernet import InvalidToken
 
-from chat.models import Chat, Message
+from chat.models import Chat, Message, Contact
 from chat.user_search import search_users
 from .serializers import ChatSerializer
 from chat.services.invite_keys import decrypter
@@ -116,7 +117,26 @@ class MediaDownloadView(APIView):
     @staticmethod
     def _processed_object_key(file_param: str, width: int, height: int) -> str:
         digest = hashlib.sha256(f'{file_param}:{width}x{height}'.encode('utf-8')).hexdigest()
-        return f'processed/{digest}.jpg'
+        return f'processed/{digest}.webp'
+
+    @staticmethod
+    def _resolve_authenticated_user(request):
+        if getattr(request.user, 'is_authenticated', False):
+            return request.user
+        token_key = request.query_params.get('token')
+        if not token_key:
+            return None
+        token_obj = Token.objects.filter(key=token_key).select_related('user').first()
+        if not token_obj:
+            return None
+        return token_obj.user
+
+    @staticmethod
+    def _can_user_download_file(user, file_param: str) -> bool:
+        contact = Contact.objects.filter(user=user).first()
+        if not contact:
+            return False
+        return Message.objects.filter(image=file_param, chat__participants=contact).exists()
 
     def get(self, request):
         file_param = request.query_params.get('file')
@@ -158,7 +178,7 @@ class MediaDownloadView(APIView):
                     as_attachment=download,
                     filename=os.path.basename(file_param),
                 )
-                processed_response['Content-Type'] = 'image/jpeg'
+                processed_response['Content-Type'] = 'image/webp'
                 processed_response['Cache-Control'] = 'public, max-age=31536000, immutable'
                 if download:
                     processed_response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_param)}"'
@@ -184,6 +204,18 @@ class MediaDownloadView(APIView):
             if download:
                 http_resp['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_param)}"'
             return http_resp
+
+        if not download and settings.STORAGES.get('default', {}).get('BACKEND', '') == 'storages.backends.s3boto3.S3Boto3Storage':
+            return Response(
+                {'detail': 'Inline original serving is disabled; use processed image endpoints'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user = self._resolve_authenticated_user(request)
+        if not user:
+            return Response({'detail': 'Authentication credentials were not provided'}, status=status.HTTP_401_UNAUTHORIZED)
+        if not self._can_user_download_file(user, file_param):
+            return Response({'detail': 'You do not have access to this file'}, status=status.HTTP_403_FORBIDDEN)
 
         try:
             file_obj = default_storage.open(file_param, mode='rb')

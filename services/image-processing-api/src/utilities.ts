@@ -14,6 +14,10 @@ type ServedImage = {
 	contentType: string;
 };
 
+const PROCESSED_CONTENT_TYPE = 'image/webp';
+const PROCESSED_EXTENSION = 'webp';
+const PROCESSED_QUALITY = 80;
+
 function localFileExists(file: string): Promise<boolean> {
 	return fsPromises
 		.access(file, constants.F_OK)
@@ -64,12 +68,12 @@ function getLocalOriginalPath(filename: string): string {
 }
 
 function getLocalThumbPath(filename: string, width: number, height: number): string {
-	return `./assets/thumb/${filename}-${height}x${width}-thumb.jpg`;
+	return `./assets/thumb/${filename}-${height}x${width}-thumb.${PROCESSED_EXTENSION}`;
 }
 
 function getProcessedObjectKey(originalKey: string, width: number, height: number): string {
 	const digest = crypto.createHash('sha256').update(`${originalKey}:${width}x${height}`).digest('hex');
-	return `processed/${digest}.jpg`;
+	return `processed/${digest}.${PROCESSED_EXTENSION}`;
 }
 
 export async function serveImage(params: {
@@ -117,29 +121,29 @@ export async function serveImage(params: {
 			const bodyBuffer = await streamToBuffer(processed.Body as Readable | undefined);
 			return {
 				buffer: bodyBuffer,
-				contentType: processed.ContentType ?? 'image/jpeg',
+				contentType: processed.ContentType ?? PROCESSED_CONTENT_TYPE,
 			};
 		}
 
 		const original = await client.send(new GetObjectCommand({ Bucket: bucketName, Key: originalKey }));
 		const originalBuffer = await streamToBuffer(original.Body as Readable | undefined);
-		const resizedJpeg = await sharp(originalBuffer)
+		const resizedWebp = await sharp(originalBuffer)
 			.resize(width, height, { fit: 'cover', position: 'center', withoutEnlargement: true })
-			.jpeg({ quality: 80 })
+			.webp({ quality: PROCESSED_QUALITY })
 			.toBuffer();
 
 		await client.send(
 			new PutObjectCommand({
 				Bucket: bucketName,
 				Key: processedKey,
-				Body: resizedJpeg,
-				ContentType: 'image/jpeg',
+				Body: resizedWebp,
+				ContentType: PROCESSED_CONTENT_TYPE,
 			}),
 		);
 
 		return {
-			buffer: resizedJpeg,
-			contentType: 'image/jpeg',
+			buffer: resizedWebp,
+			contentType: PROCESSED_CONTENT_TYPE,
 		};
 	}
 
@@ -156,15 +160,15 @@ export async function serveImage(params: {
 	const thumbExists = await localFileExists(thumbPath);
 	if (thumbExists) {
 		const buffer = await fsPromises.readFile(thumbPath);
-		return { buffer, contentType: 'image/jpeg' };
+		return { buffer, contentType: PROCESSED_CONTENT_TYPE };
 	}
 
 	const originalPath = getLocalOriginalPath(filename);
 	await sharp(originalPath)
 		.resize(width, height, { fit: 'cover', position: 'center', withoutEnlargement: true })
-		.jpeg({ quality: 80 })
+		.webp({ quality: PROCESSED_QUALITY })
 		.toFile(thumbPath);
 
 	const buffer = await fsPromises.readFile(thumbPath);
-	return { buffer, contentType: 'image/jpeg' };
+	return { buffer, contentType: PROCESSED_CONTENT_TYPE };
 }

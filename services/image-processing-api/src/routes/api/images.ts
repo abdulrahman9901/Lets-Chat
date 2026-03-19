@@ -75,6 +75,10 @@ images.get('/images', async (req: Request, res: Response): Promise<void> => {
 		res.status(400).send('Please provide positive numerical values for width and height');
 		return;
 	}
+	if (!hasWidth && !hasHeight) {
+		res.status(400).send('Width and height are required for processed image serving');
+		return;
+	}
 	if (width !== undefined && height !== undefined) {
 		if (width > MAX_RESIZE_DIMENSION || height > MAX_RESIZE_DIMENSION) {
 			res.status(400).send('Requested dimensions are too large');
