@@ -3,7 +3,7 @@ import os
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.fields.files import ImageFieldFile
-from django.http import FileResponse, Http404
+from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status
 from rest_framework.generics import (
@@ -19,9 +19,10 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from cryptography.fernet import InvalidToken
 
-from chat.models import Chat, Contact, CustomUser, Message
+from chat.models import Chat, Message
 from chat.user_search import search_users
 from .serializers import ChatSerializer, decrypter
+from chat.services.contacts import get_user_contact
 
 frontend_logger = logging.getLogger("frontend")
 
@@ -54,15 +55,6 @@ class FrontendLogView(APIView):
 
         return Response({"status": "ok"}, status=status.HTTP_201_CREATED)
 
-def get_user_contact(username):
-    user = get_object_or_404(CustomUser,username=username)
-    try :
-        contact = get_object_or_404(Contact,user=user)
-    except Http404:
-        contact = Contact()
-        contact.user = user
-        print(contact)
-    return contact
 def send_socket_message(instance,message):
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)('chat_{}'.format(instance.id),{

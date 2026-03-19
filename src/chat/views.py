@@ -1,7 +1,7 @@
 # chat/views.py
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
-from .models import Chat ,CustomUser ,Contact
+from .models import Chat
 def index(request):
     return render(request, 'chat/index.html')
 
@@ -17,10 +17,5 @@ def load_last_messages(chatId,msgCount=10):
     chat = get_object_or_404(Chat,id=chatId)
     return chat.messages.order_by('-created_at').all()[:msgCount]
 
-def get_user_contact(username):
-    user = get_object_or_404(CustomUser,username=username)
-    contact = get_object_or_404(Contact,user=user)
-    return contact
-    
 def get_current_chat(chatId):
     return get_object_or_404(Chat,id=chatId)
