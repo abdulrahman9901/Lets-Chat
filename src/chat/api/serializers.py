@@ -5,7 +5,7 @@ from django.db import transaction
 
 from dj_rest_auth.registration.serializers import RegisterSerializer
 
-from chat.views import get_user_contact
+from chat.services.contacts import get_user_contact
 from chat.services.chat_update_commands import dispatch_chat_update_command, resolve_actor
 from chat.services.chat_broadcast import broadcast_chats_update, broadcast_new_message
 

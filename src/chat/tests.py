@@ -46,6 +46,21 @@ class ChatUpdateCommandsTests(TestCase):
         self.assertTrue(updated.messages.filter(system_message=True, content__icontains='removed').exists())
 
     @patch('chat.services.chat_broadcast.get_channel_layer', return_value=_DummyChannelLayer())
+    def test_remove_member_by_username(self, _layer):
+        django_req = self.factory.put(
+            f'/chat/{self.chat.id}/update/',
+            {'command': 'removeMember', 'username': self.user_admin.username, 'removedIds': [self.contact_a.id]},
+            format='json',
+        )
+        req = Request(django_req, parsers=[JSONParser()])
+        s = ChatSerializer(self.chat, data={}, partial=True, context={'request': req})
+        s.is_valid(raise_exception=True)
+        updated = s.save()
+
+        self.assertFalse(updated.participants.filter(id=self.contact_a.id).exists())
+        self.assertTrue(updated.messages.filter(system_message=True, content__icontains='removed').exists())
+
+    @patch('chat.services.chat_broadcast.get_channel_layer', return_value=_DummyChannelLayer())
     def test_leave_by_ids(self, _layer):
         django_req = self.factory.put(
             f'/chat/{self.chat.id}/update/',

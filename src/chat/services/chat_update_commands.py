@@ -7,7 +7,7 @@ from django.db.models import QuerySet
 
 from chat.models import Contact, Message
 
-from chat.views import get_user_contact
+from chat.services.contacts import get_user_contact
 
 
 def format_contact_names(contacts: QuerySet[Contact] | list[Contact]) -> str:
