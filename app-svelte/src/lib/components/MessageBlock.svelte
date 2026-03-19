@@ -1,6 +1,6 @@
 <script lang="ts">
-import { API_BASE_URL } from '$lib/config';
 import { formatMessageTimestamp } from '$lib/utils/format';
+import { mediaDownloadUrl, mediaInlineUrl } from '$lib/utils/media';
 import type { ChatMessage } from '$lib/stores/message';
 
 type Block =
@@ -23,6 +23,8 @@ const PALETTE = [
 	'#34d399', '#f97316', '#a855f7', '#facc15', '#f472b6', '#22c55e', '#0ea5e9',
 	'#e879f9', '#14b8a6', '#fb923c', '#6366f1', '#84cc16', '#ec4899', '#06b6d4', '#f59e0b',
 ];
+
+const THUMB_SIZE = 200;
 
 const orderedParticipants = $derived(
 	[currentUser, ...participants.filter((p) => p !== currentUser).sort()]
@@ -59,10 +61,10 @@ function getAuthorColor(author: string, inChat: boolean): string {
 			<button
 				type="button"
 				class="messageImage-wrap"
-				onclick={() => onOpenImage(`${API_BASE_URL}/media/${msg.image}`, msg.image ?? '')}
+				onclick={() => onOpenImage(mediaInlineUrl(msg.image ?? ''), msg.image ?? '')}
 			>
 				<img
-					src="{API_BASE_URL}/media/{msg.image}"
+					src={mediaDownloadUrl(msg.image, { width: THUMB_SIZE, height: THUMB_SIZE })}
 					alt="Chat image"
 					class="messageImage {inChat ? (isSelf ? 'imgsent' : 'imgrecv') : 'imgout'}"
 				/>
@@ -100,7 +102,10 @@ function getAuthorColor(author: string, inChat: boolean): string {
 		>
 			{#each group.slice(0, 4) as msg, idx}
 				<span class="image-group-cell">
-					<img src="{API_BASE_URL}/media/{msg.image}" alt="" />
+					<img
+						src={mediaDownloadUrl(msg.image, { width: THUMB_SIZE, height: THUMB_SIZE })}
+						alt=""
+					/>
 					{#if idx === 3 && extraCount > 0}
 						<span class="image-group-more">+{extraCount}</span>
 					{/if}

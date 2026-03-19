@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { API_BASE_URL } from '$lib/config';
+	import { mediaDownloadUrl } from '$lib/utils/media';
 
 	interface ImageRef {
 		url: string;
@@ -15,7 +15,7 @@
 
 	function download() {
 		if (!image) return;
-		const downloadUrl = `${API_BASE_URL}/chat/media/download/?file=${encodeURIComponent(image.mediaPath)}`;
+		const downloadUrl = mediaDownloadUrl(image.mediaPath, { download: true });
 		const iframe = document.createElement('iframe');
 		iframe.style.display = 'none';
 		iframe.setAttribute('src', downloadUrl);
