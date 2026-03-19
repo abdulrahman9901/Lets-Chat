@@ -1,9 +1,13 @@
 import logging
+import mimetypes
 import os
+from urllib.parse import urljoin
+import requests
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
+from django.core.files.storage import default_storage
 from django.db.models.fields.files import ImageFieldFile
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status
 from rest_framework.generics import (
@@ -110,17 +114,65 @@ class MediaDownloadView(APIView):
 
     def get(self, request):
         file_param = request.query_params.get('file')
-        if not file_param or '..' in file_param:
+        if not file_param or '..' in file_param or file_param.startswith('/') or '\\' in file_param:
             return Response({'detail': 'Invalid file parameter'}, status=status.HTTP_400_BAD_REQUEST)
-        media_root = os.path.abspath(settings.MEDIA_ROOT)
-        full_path = os.path.abspath(os.path.join(media_root, file_param))
-        if not full_path.startswith(media_root) or not os.path.isfile(full_path):
+
+        width_raw = request.query_params.get('width')
+        height_raw = request.query_params.get('height')
+        download = request.query_params.get('download', '0').lower() in ('1', 'true', 'yes')
+
+        if width_raw is not None or height_raw is not None:
+            if not width_raw or not height_raw:
+                return Response({'detail': 'width and height are both required'}, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                width = int(width_raw)
+                height = int(height_raw)
+            except (TypeError, ValueError):
+                return Response({'detail': 'Invalid width/height'}, status=status.HTTP_400_BAD_REQUEST)
+            if width < 1 or height < 1:
+                return Response({'detail': 'Invalid width/height'}, status=status.HTTP_400_BAD_REQUEST)
+
+            default_backend = settings.STORAGES.get('default', {}).get('BACKEND', '')
+            if default_backend != 'storages.backends.s3boto3.S3Boto3Storage':
+                try:
+                    file_obj = default_storage.open(file_param, mode='rb')
+                except Exception:
+                    return Response({'detail': 'File not found'}, status=status.HTTP_404_NOT_FOUND)
+                guessed_type, _ = mimetypes.guess_type(file_param)
+                content_type = guessed_type or 'application/octet-stream'
+                response = FileResponse(file_obj, as_attachment=download, filename=os.path.basename(file_param))
+                response['Content-Type'] = content_type
+                return response
+
+            processing_base = getattr(settings, 'IMAGE_PROCESSING_API_BASE_URL', '').strip()
+            if not processing_base:
+                return Response({'detail': 'Image processing service is not configured'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            url = urljoin(processing_base.rstrip('/') + '/', 'api/images')
+            resp = requests.get(
+                url,
+                params={'key': file_param, 'width': width, 'height': height},
+                timeout=60,
+            )
+            if resp.status_code != 200:
+                return Response({'detail': 'Failed to process image'}, status=status.HTTP_404_NOT_FOUND)
+
+            content_type = resp.headers.get('content-type', 'image/jpeg')
+            http_resp = HttpResponse(resp.content, content_type=content_type)
+            if download:
+                http_resp['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_param)}"'
+            return http_resp
+
+        try:
+            file_obj = default_storage.open(file_param, mode='rb')
+        except Exception:
             return Response({'detail': 'File not found'}, status=status.HTTP_404_NOT_FOUND)
-        return FileResponse(
-            open(full_path, 'rb'),
-            as_attachment=True,
-            filename=os.path.basename(full_path),
-        )
+
+        guessed_type, _ = mimetypes.guess_type(file_param)
+        content_type = guessed_type or 'application/octet-stream'
+        response = FileResponse(file_obj, as_attachment=download, filename=os.path.basename(file_param))
+        response['Content-Type'] = content_type
+        return response
 
 
 class joinChatView(APIView):

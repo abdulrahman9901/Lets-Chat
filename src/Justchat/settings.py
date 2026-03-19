@@ -202,9 +202,29 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ] if (BASE_DIR / 'static').exists() else []
 STORAGES = {
-    'default': {
-        'BACKEND': 'django.core.files.storage.FileSystemStorage',
-    },
+    'default': (
+        {
+            'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage',
+            'OPTIONS': {
+                'access_key': os.environ.get('AWS_ACCESS_KEY_ID', ''),
+                'secret_key': os.environ.get('AWS_SECRET_ACCESS_KEY', ''),
+                'bucket_name': os.environ.get('AWS_STORAGE_BUCKET_NAME', ''),
+                'endpoint_url': os.environ.get('AWS_S3_ENDPOINT_URL', ''),
+                'region_name': os.environ.get('AWS_S3_REGION_NAME', 'auto'),
+                    'addressing_style': os.environ.get('AWS_S3_ADDRESSING_STYLE', 'path'),
+                'default_acl': os.environ.get('AWS_DEFAULT_ACL', 'private'),
+                'querystring_auth': os.environ.get('AWS_QUERYSTRING_AUTH', 'false').lower()
+                in ('1', 'true', 'yes'),
+            },
+        }
+        if os.environ.get('AWS_STORAGE_BUCKET_NAME')
+        and os.environ.get('AWS_S3_ENDPOINT_URL')
+        and os.environ.get('AWS_ACCESS_KEY_ID')
+        and os.environ.get('AWS_SECRET_ACCESS_KEY')
+        else {
+            'BACKEND': 'django.core.files.storage.FileSystemStorage',
+        }
+    ),
     'staticfiles': {
         'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage',
     },
@@ -250,6 +270,8 @@ CSRF_HEADER_NAME = 'HTTP_X_XSRF_TOKEN'
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+IMAGE_PROCESSING_API_BASE_URL = os.environ.get('IMAGE_PROCESSING_API_BASE_URL', 'http://127.0.0.1:3000').strip()
 
 USER_SEARCH_BACKEND = os.environ.get('USER_SEARCH_BACKEND', 'opensearch')
 OPENSEARCH_URL = os.environ.get('OPENSEARCH_URL', '')
