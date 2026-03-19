@@ -15,14 +15,13 @@ from rest_framework.generics import (
 )
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
 from cryptography.fernet import InvalidToken
 
 from chat.models import Chat, Message
 from chat.user_search import search_users
 from .serializers import ChatSerializer, decrypter
 from chat.services.contacts import get_user_contact
+from chat.services.chat_broadcast import broadcast_chats_update, broadcast_new_message
 
 frontend_logger = logging.getLogger("frontend")
 
@@ -54,23 +53,6 @@ class FrontendLogView(APIView):
             frontend_logger.info(message, extra=extra)
 
         return Response({"status": "ok"}, status=status.HTTP_201_CREATED)
-
-def send_socket_message(instance,message):
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)('chat_{}'.format(instance.id),{
-                    'type': 'chat_message',
-                    'message': {
-                    'command': 'new_message',
-                    'message':{
-                    'id':message.id,
-                    'author':message.contact.user.username,
-                    'content':message.content,
-                    'timestamp':str(message.created_at),
-                    'system_message':message.system_message ,
-                    "image" : str(message.image)
-                    }
-                }       
-                })
 
 class ChatListView(ListAPIView):
     serializer_class = ChatSerializer
@@ -167,18 +149,10 @@ class joinChatView(APIView):
                 )
                 chat.messages.add(message)
                 chat.save()
-                send_socket_message(chat,message)
+                broadcast_new_message(chat, message)
             schat = ChatSerializer(chat)
             print(schat.data)
-            channel_layer = get_channel_layer()
-            print('chat_{}'.format(chat.id))
-            async_to_sync(channel_layer.group_send)('chat_{}'.format(chat.id),{
-             
-                'type': 'chat_message',
-                'message':{
-                'command': 'chatsUpdate'     
-                }       
-            })
+            broadcast_chats_update(chat)
             return Response({"status": "success", "data": schat.data}, status=status.HTTP_200_OK)
 
 class uploadimageView(APIView):
@@ -195,6 +169,6 @@ class uploadimageView(APIView):
                 message = Message.objects.create(contact=username,content=None,image=request.data[item],system_message=False)
                 chat.messages.add(message)
                 chat.save()  
-                send_socket_message(chat,message)
+                broadcast_new_message(chat, message)
        
         return Response({"status": "success", "data": "image"}, status=status.HTTP_200_OK)
