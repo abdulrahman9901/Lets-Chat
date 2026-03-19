@@ -67,6 +67,11 @@
 		color: var(--Text-Heading-Strong);
 		cursor: pointer;
 		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+		opacity: 0.65;
+		transition:
+			opacity 120ms ease,
+			color 120ms ease,
+			border-color 120ms ease;
 	}
 
 	.sidepanel-tongue .tongue-icon {
@@ -76,8 +81,13 @@
 	}
 
 	.sidepanel-tongue:hover {
+		opacity: 1;
 		color: var(--accent-glow);
 		border-color: var(--accent-glow);
+	}
+
+	.sidepanel-tongue:focus-visible {
+		opacity: 1;
 	}
 
 	@media (max-width: 768px) {

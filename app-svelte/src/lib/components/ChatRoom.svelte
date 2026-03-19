@@ -498,7 +498,13 @@
 		border-radius: 12px;
 		color: var(--Text-Heading-Strong);
 		font-size: 15px;
+		line-height: 1.35;
 		resize: none;
+	}
+
+	.message-input textarea::placeholder {
+		font-size: inherit;
+		line-height: inherit;
 	}
 	.message-input .submit,
 	.message-input .attach {
@@ -553,6 +559,10 @@
 			padding: 10px 10px;
 		}
 
+		.message-input textarea {
+			font-size: 14px;
+		}
+
 		.message-input .wrap {
 			gap: 6px;
 		}
@@ -560,6 +570,29 @@
 		.message-input .submit,
 		.message-input .attach {
 			padding: 10px 12px;
+		}
+	}
+
+	@media (max-width: 310px) {
+		.message-input .wrap {
+			gap: 4px;
+		}
+
+		.message-input textarea {
+			min-height: 40px;
+			padding: 8px 10px;
+			font-size: 13px;
+		}
+
+		.message-input .submit,
+		.message-input .attach {
+			padding: 8px 10px;
+		}
+
+		.message-input .submit svg,
+		.message-input .attach svg {
+			width: 18px;
+			height: 18px;
 		}
 	}
 </style>
