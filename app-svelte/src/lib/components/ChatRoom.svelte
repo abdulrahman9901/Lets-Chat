@@ -15,10 +15,10 @@
 		setCurrentRoom,
 		type ChatMessage,
 	} from '$lib/stores/message';
-	import { API_BASE_URL } from '$lib/config';
 	import * as ws from '$lib/websocket';
 	import { getChats } from '$lib/api/chat';
 	import { leaveChat, deleteChat } from '$lib/api/chat';
+	import { mediaInlineUrl } from '$lib/utils/media';
 	import {
 		openAddMemberPopup,
 		openParticipantsPanel,
@@ -140,7 +140,7 @@
 
 	function openImageFromGroup(msg: ChatMessage) {
 		if (!msg.image) return;
-		openImage(`${API_BASE_URL}/chat/media/download/?file=${encodeURIComponent(msg.image)}`, msg.image);
+		openImage(mediaInlineUrl(msg.image), msg.image);
 	}
 
 	function openImage(url: string, path: string) {

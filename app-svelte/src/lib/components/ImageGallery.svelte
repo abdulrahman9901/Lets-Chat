@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { API_BASE_URL } from '$lib/config';
 	import type { ChatMessage } from '$lib/stores/message';
+	import { mediaDownloadUrl } from '$lib/utils/media';
 
 	interface Props {
 		images: ChatMessage[] | null;
@@ -8,6 +8,8 @@
 		onSelectImage: (msg: ChatMessage) => void;
 	}
 	let { images, onClose, onSelectImage }: Props = $props();
+
+	const GALLERY_THUMB_SIZE = 320;
 </script>
 
 {#if images && images.length > 0}
@@ -33,7 +35,13 @@
 							class="item"
 							onclick={() => onSelectImage(msg)}
 						>
-							<img src={`${API_BASE_URL}/chat/media/download/?file=${encodeURIComponent(msg.image)}`} alt="" />
+							<img
+								src={mediaDownloadUrl(msg.image, {
+									width: GALLERY_THUMB_SIZE,
+									height: GALLERY_THUMB_SIZE,
+								})}
+								alt=""
+							/>
 						</button>
 					{/if}
 				{/each}
