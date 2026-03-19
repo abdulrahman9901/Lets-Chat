@@ -144,3 +144,4 @@ class ChatUpdateCommandsTests(TestCase):
 
         self.assertTrue(updated.admins.filter(id=self.contact_b.id).exists())
         self.assertTrue(updated.messages.filter(system_message=True, content__icontains='admin').exists())
+

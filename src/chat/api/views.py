@@ -19,7 +19,8 @@ from cryptography.fernet import InvalidToken
 
 from chat.models import Chat, Message
 from chat.user_search import search_users
-from .serializers import ChatSerializer, decrypter
+from .serializers import ChatSerializer
+from chat.services.invite_keys import decrypter
 from chat.services.contacts import get_user_contact
 from chat.services.chat_broadcast import broadcast_chats_update, broadcast_new_message
 
