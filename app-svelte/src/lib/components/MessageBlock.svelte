@@ -59,10 +59,14 @@ function getAuthorColor(author: string, inChat: boolean): string {
 			<button
 				type="button"
 				class="messageImage-wrap"
-				onclick={() => onOpenImage(`${API_BASE_URL}/media/${msg.image}`, msg.image ?? '')}
+				onclick={() =>
+					onOpenImage(
+						`${API_BASE_URL}/chat/media/download/?file=${encodeURIComponent(msg.image ?? '')}`,
+						msg.image ?? ''
+					)}
 			>
 				<img
-					src="{API_BASE_URL}/media/{msg.image}"
+					src={`${API_BASE_URL}/chat/media/download/?file=${encodeURIComponent(msg.image)}`}
 					alt="Chat image"
 					class="messageImage {inChat ? (isSelf ? 'imgsent' : 'imgrecv') : 'imgout'}"
 				/>
@@ -100,7 +104,7 @@ function getAuthorColor(author: string, inChat: boolean): string {
 		>
 			{#each group.slice(0, 4) as msg, idx}
 				<span class="image-group-cell">
-					<img src="{API_BASE_URL}/media/{msg.image}" alt="" />
+					<img src={`${API_BASE_URL}/chat/media/download/?file=${encodeURIComponent(msg.image ?? '')}`} alt="" />
 					{#if idx === 3 && extraCount > 0}
 						<span class="image-group-more">+{extraCount}</span>
 					{/if}

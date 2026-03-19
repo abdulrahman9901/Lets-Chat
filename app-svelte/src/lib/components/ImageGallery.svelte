@@ -33,7 +33,7 @@
 							class="item"
 							onclick={() => onSelectImage(msg)}
 						>
-							<img src="{API_BASE_URL}/media/{msg.image}" alt="" />
+							<img src={`${API_BASE_URL}/chat/media/download/?file=${encodeURIComponent(msg.image)}`} alt="" />
 						</button>
 					{/if}
 				{/each}

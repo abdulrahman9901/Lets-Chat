@@ -140,7 +140,7 @@
 
 	function openImageFromGroup(msg: ChatMessage) {
 		if (!msg.image) return;
-		openImage(`${API_BASE_URL}/media/${msg.image}`, msg.image);
+		openImage(`${API_BASE_URL}/chat/media/download/?file=${encodeURIComponent(msg.image)}`, msg.image);
 	}
 
 	function openImage(url: string, path: string) {
