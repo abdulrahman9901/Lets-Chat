@@ -7,12 +7,9 @@ from dj_rest_auth.registration.serializers import RegisterSerializer
 
 from chat.views import get_user_contact
 from chat.services.chat_update_commands import dispatch_chat_update_command, resolve_actor
+from chat.services.chat_broadcast import broadcast_chats_update, broadcast_new_message
 
 from chat.models import GENDER_SELECTION
-
-from asgiref.sync import async_to_sync
-
-from channels.layers import get_channel_layer
 
 from django.conf import settings
 from cryptography.fernet import Fernet
@@ -115,22 +112,6 @@ class ContactSerializer(serializers.StringRelatedField):
         return value
 
 
-def send_socket_message(instance,message):
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)('chat_{}'.format(instance.id),{
-                    'type': 'chat_message',
-                    'message': {
-                    'command': 'new_message',
-                    'message':{
-                    'id':message.id,
-                    'author':message.contact.user.username,
-                    'content':message.content,
-                    'timestamp':str(message.created_at),
-                    'system_message':message.system_message    
-                    }
-                }       
-                })
-
 class ChatSerializer(serializers.ModelSerializer):
     participants = ContactSerializer(many=True, required=False)
     admins = ContactSerializer(many=True, required=False)
@@ -195,14 +176,7 @@ class ChatSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         data = request.data
 
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            'chat_{}'.format(instance.id),
-            {
-                'type': 'chat_message',
-                'message': {'command': 'chatsUpdate'},
-            },
-        )
+        broadcast_chats_update(instance)
 
         command = data.get('command') or ''
         actor = resolve_actor(data)
@@ -212,7 +186,7 @@ class ChatSerializer(serializers.ModelSerializer):
             data=data,
             validated_data=validated_data,
             actor=actor,
-            broadcaster=send_socket_message,
+            broadcaster=broadcast_new_message,
         )
         if updated is not None:
             return updated

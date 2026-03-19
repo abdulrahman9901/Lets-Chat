@@ -30,7 +30,7 @@ class ChatUpdateCommandsTests(TestCase):
         self.chat.participants.add(self.contact_admin, self.contact_a)
         self.chat.admins.add(self.contact_admin)
 
-    @patch('chat.api.serializers.get_channel_layer', return_value=_DummyChannelLayer())
+    @patch('chat.services.chat_broadcast.get_channel_layer', return_value=_DummyChannelLayer())
     def test_remove_member_by_ids(self, _layer):
         django_req = self.factory.put(
             f'/chat/{self.chat.id}/update/',
@@ -45,7 +45,7 @@ class ChatUpdateCommandsTests(TestCase):
         self.assertFalse(updated.participants.filter(id=self.contact_a.id).exists())
         self.assertTrue(updated.messages.filter(system_message=True, content__icontains='removed').exists())
 
-    @patch('chat.api.serializers.get_channel_layer', return_value=_DummyChannelLayer())
+    @patch('chat.services.chat_broadcast.get_channel_layer', return_value=_DummyChannelLayer())
     def test_leave_by_ids(self, _layer):
         django_req = self.factory.put(
             f'/chat/{self.chat.id}/update/',
@@ -60,7 +60,7 @@ class ChatUpdateCommandsTests(TestCase):
         self.assertFalse(updated.participants.filter(id=self.contact_a.id).exists())
         self.assertTrue(updated.messages.filter(system_message=True, content__icontains='left the chat').exists())
 
-    @patch('chat.api.serializers.get_channel_layer', return_value=_DummyChannelLayer())
+    @patch('chat.services.chat_broadcast.get_channel_layer', return_value=_DummyChannelLayer())
     def test_add_participant_by_ids(self, _layer):
         django_req = self.factory.put(
             f'/chat/{self.chat.id}/update/',
@@ -75,7 +75,7 @@ class ChatUpdateCommandsTests(TestCase):
         self.assertTrue(updated.participants.filter(id=self.contact_b.id).exists())
         self.assertTrue(updated.messages.filter(system_message=True, content__icontains='added').exists())
 
-    @patch('chat.api.serializers.get_channel_layer', return_value=_DummyChannelLayer())
+    @patch('chat.services.chat_broadcast.get_channel_layer', return_value=_DummyChannelLayer())
     def test_promote_admin_by_ids(self, _layer):
         self.chat.participants.add(self.contact_b)
 
