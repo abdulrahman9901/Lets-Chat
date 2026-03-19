@@ -271,6 +271,7 @@
 	}
 	.search input {
 		flex: 1;
+		min-width: 0;
 		padding: 9px 10px;
 		background: rgba(242, 242, 242, 0.06);
 		border: 1px solid var(--Border-Subtle);
@@ -284,7 +285,9 @@
 		gap: 8px;
 	}
 	.search select {
-		min-width: 132px;
+		flex: 0 1 auto;
+		min-width: 0;
+		width: clamp(96px, 32vw, 132px);
 		padding: 8px 28px 8px 12px;
 		background: rgba(242, 242, 242, 0.06);
 		border: 1px solid var(--Border-Subtle);
