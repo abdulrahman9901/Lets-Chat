@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { mediaDownloadUrl } from '$lib/utils/media';
+	import { mediaDownloadUrl, mediaInlineFallbackUrl } from '$lib/utils/media';
 
 	interface ImageRef {
 		url: string;
@@ -22,6 +22,14 @@
 		document.body.appendChild(iframe);
 		setTimeout(() => document.body.removeChild(iframe), 5000);
 	}
+
+	function handleImageError(event: Event): void {
+		if (!image) return;
+		const img = event.currentTarget as HTMLImageElement | null;
+		if (!img || img.dataset.fallbackApplied === '1') return;
+		img.dataset.fallbackApplied = '1';
+		img.src = mediaInlineFallbackUrl(image.mediaPath);
+	}
 </script>
 
 {#if image}
@@ -41,7 +49,7 @@
 			</button>
 		</div>
 		<div class="content" onclick={(e) => e.stopPropagation()}>
-			<img src={image.url} alt="" class="img" />
+			<img src={image.url} onerror={handleImageError} alt="" class="img" />
 		</div>
 	</div>
 {/if}

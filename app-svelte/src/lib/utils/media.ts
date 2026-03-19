@@ -21,6 +21,16 @@ export function mediaDownloadUrl(file: string, options: MediaDownloadOptions = {
 }
 
 export function mediaInlineUrl(file: string): string {
+	const normalizedFile = normalizeMediaKey(file);
+	if (IMAGE_PROCESSING_BASE_URL) {
+		const params = new URLSearchParams();
+		params.set('key', normalizedFile);
+		return `${IMAGE_PROCESSING_BASE_URL}/api/images?${params.toString()}`;
+	}
+	return mediaDownloadUrl(file, { download: false });
+}
+
+export function mediaInlineFallbackUrl(file: string): string {
 	return mediaDownloadUrl(file, { download: false });
 }
 
