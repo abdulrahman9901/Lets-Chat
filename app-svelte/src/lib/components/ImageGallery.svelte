@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { ChatMessage } from '$lib/stores/message';
-	import { mediaDownloadUrl } from '$lib/utils/media';
+	import { mediaThumbFallbackUrl, mediaThumbUrl } from '$lib/utils/media';
 
 	interface Props {
 		images: ChatMessage[] | null;
@@ -10,6 +10,13 @@
 	let { images, onClose, onSelectImage }: Props = $props();
 
 	const GALLERY_THUMB_SIZE = 320;
+
+	function handleThumbError(event: Event, key: string): void {
+		const img = event.currentTarget as HTMLImageElement | null;
+		if (!img || img.dataset.fallbackApplied === '1') return;
+		img.dataset.fallbackApplied = '1';
+		img.src = mediaThumbFallbackUrl(key, GALLERY_THUMB_SIZE, GALLERY_THUMB_SIZE);
+	}
 </script>
 
 {#if images && images.length > 0}
@@ -36,10 +43,8 @@
 							onclick={() => onSelectImage(msg)}
 						>
 							<img
-								src={mediaDownloadUrl(msg.image, {
-									width: GALLERY_THUMB_SIZE,
-									height: GALLERY_THUMB_SIZE,
-								})}
+								src={mediaThumbUrl(msg.image, GALLERY_THUMB_SIZE, GALLERY_THUMB_SIZE)}
+								onerror={(e) => handleThumbError(e, msg.image)}
 								alt=""
 							/>
 						</button>

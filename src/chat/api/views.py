@@ -1,4 +1,5 @@
 import logging
+import hashlib
 import mimetypes
 import os
 from urllib.parse import urljoin
@@ -112,6 +113,11 @@ class UserSearchView(APIView):
 class MediaDownloadView(APIView):
     permission_classes = (permissions.AllowAny,)
 
+    @staticmethod
+    def _processed_object_key(file_param: str, width: int, height: int) -> str:
+        digest = hashlib.sha256(f'{file_param}:{width}x{height}'.encode('utf-8')).hexdigest()
+        return f'processed/{digest}.jpg'
+
     def get(self, request):
         file_param = request.query_params.get('file')
         if not file_param or '..' in file_param or file_param.startswith('/') or '\\' in file_param:
@@ -143,6 +149,22 @@ class MediaDownloadView(APIView):
                 response = FileResponse(file_obj, as_attachment=download, filename=os.path.basename(file_param))
                 response['Content-Type'] = content_type
                 return response
+
+            processed_key = self._processed_object_key(file_param, width, height)
+            try:
+                processed_file_obj = default_storage.open(processed_key, mode='rb')
+                processed_response = FileResponse(
+                    processed_file_obj,
+                    as_attachment=download,
+                    filename=os.path.basename(file_param),
+                )
+                processed_response['Content-Type'] = 'image/jpeg'
+                processed_response['Cache-Control'] = 'public, max-age=31536000, immutable'
+                if download:
+                    processed_response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_param)}"'
+                return processed_response
+            except Exception:
+                pass
 
             processing_base = getattr(settings, 'IMAGE_PROCESSING_API_BASE_URL', '').strip()
             if not processing_base:

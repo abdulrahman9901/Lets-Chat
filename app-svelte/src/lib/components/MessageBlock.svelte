@@ -1,6 +1,6 @@
 <script lang="ts">
 import { formatMessageTimestamp } from '$lib/utils/format';
-import { mediaDownloadUrl, mediaInlineUrl } from '$lib/utils/media';
+import { mediaInlineUrl, mediaThumbFallbackUrl, mediaThumbUrl } from '$lib/utils/media';
 import type { ChatMessage } from '$lib/stores/message';
 
 type Block =
@@ -35,6 +35,13 @@ function getAuthorColor(author: string, inChat: boolean): string {
 	const i = orderedParticipants.indexOf(author);
 	return PALETTE[i >= 0 ? i % PALETTE.length : 0];
 }
+
+function handleThumbError(event: Event, key: string): void {
+	const img = event.currentTarget as HTMLImageElement | null;
+	if (!img || img.dataset.fallbackApplied === '1') return;
+	img.dataset.fallbackApplied = '1';
+	img.src = mediaThumbFallbackUrl(key, THUMB_SIZE, THUMB_SIZE);
+}
 </script>
 
 {#if block.type === 'system'}
@@ -64,7 +71,8 @@ function getAuthorColor(author: string, inChat: boolean): string {
 				onclick={() => onOpenImage(mediaInlineUrl(msg.image ?? ''), msg.image ?? '')}
 			>
 				<img
-					src={mediaDownloadUrl(msg.image, { width: THUMB_SIZE, height: THUMB_SIZE })}
+					src={mediaThumbUrl(msg.image, THUMB_SIZE, THUMB_SIZE)}
+					onerror={(e) => handleThumbError(e, msg.image)}
 					alt="Chat image"
 					class="messageImage {inChat ? (isSelf ? 'imgsent' : 'imgrecv') : 'imgout'}"
 				/>
@@ -103,7 +111,8 @@ function getAuthorColor(author: string, inChat: boolean): string {
 			{#each group.slice(0, 4) as msg, idx}
 				<span class="image-group-cell">
 					<img
-						src={mediaDownloadUrl(msg.image, { width: THUMB_SIZE, height: THUMB_SIZE })}
+						src={mediaThumbUrl(msg.image, THUMB_SIZE, THUMB_SIZE)}
+						onerror={(e) => handleThumbError(e, msg.image)}
 						alt=""
 					/>
 					{#if idx === 3 && extraCount > 0}
