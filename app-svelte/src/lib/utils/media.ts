@@ -6,6 +6,9 @@ type MediaDownloadOptions = {
 	download?: boolean;
 };
 
+const INLINE_WIDTH = 1600;
+const INLINE_HEIGHT = 1600;
+
 export function mediaDownloadUrl(file: string, options: MediaDownloadOptions = {}): string {
 	const normalizedFile = normalizeMediaKey(file);
 	const params = new URLSearchParams();
@@ -29,13 +32,15 @@ export function mediaInlineUrl(file: string): string {
 	if (IMAGE_PROCESSING_BASE_URL) {
 		const params = new URLSearchParams();
 		params.set('key', normalizedFile);
+		params.set('width', String(INLINE_WIDTH));
+		params.set('height', String(INLINE_HEIGHT));
 		return `${IMAGE_PROCESSING_BASE_URL}/api/images?${params.toString()}`;
 	}
-	return mediaDownloadUrl(file, { download: false });
+	return mediaDownloadUrl(file, { width: INLINE_WIDTH, height: INLINE_HEIGHT, download: false });
 }
 
 export function mediaInlineFallbackUrl(file: string): string {
-	return mediaDownloadUrl(file, { download: false });
+	return mediaDownloadUrl(file, { width: INLINE_WIDTH, height: INLINE_HEIGHT, download: false });
 }
 
 export function mediaThumbUrl(file: string, width: number, height: number): string {
