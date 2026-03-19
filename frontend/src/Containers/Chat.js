@@ -206,7 +206,13 @@ class Chat extends React.Component {
                 {
                 message.content === null ?
                 // "image has been uploaded to the chat"
-                  <img src={`${API_BASE_URL}/media/`.concat(message.image)} onClick={(e) => this.changeVisibility(e,message.timestamp)} id={message.id} className={`messageImage  ${participants.includes(message.author)? currentUser === message.author ? 'imgsent' :'imgrecv' :'imgout'}`} alt="" />
+                  <img
+                    src={`${API_BASE_URL}/chat/media/download/?file=${encodeURIComponent(message.image)}&width=200&height=200&download=0`}
+                    onClick={(e) => this.changeVisibility(e,message.timestamp)}
+                    id={message.id}
+                    className={`messageImage  ${participants.includes(message.author)? currentUser === message.author ? 'imgsent' :'imgrecv' :'imgout'}`}
+                    alt=""
+                  />
                 : <p onClick={(e) => this.changeVisibility(e,message.timestamp)} id={message.id}>{message.content}</p>
                 }
              <br/>
