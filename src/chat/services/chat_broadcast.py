@@ -33,6 +33,7 @@ def broadcast_new_message(chat: Any, message: Message) -> None:
                     'content': message.content,
                     'timestamp': str(message.created_at),
                     'system_message': message.system_message,
+                    'image': str(message.image),
                 },
             },
         },
