@@ -6,7 +6,7 @@ import Login from './Login';
 import AddChatModal from './Popup';
 import {connect} from 'react-redux'
 import axios from 'axios';
-import { API_BASE_URL } from '../config';
+import { API_BASE_URL, IMAGE_PROCESSING_BASE_URL } from '../config';
 import AddMemberModal from './MemeberPopup'
 import * as navActions from '../store/actions/nav'
 import * as messageActions from '../store/actions/messages'
@@ -26,6 +26,13 @@ class Chat extends React.Component {
         messageLoad:false,
         msgCount:50,
         showKickMemeberPopup:false
+    }
+
+    getThumbUrl = (imageKey) => {
+      if (IMAGE_PROCESSING_BASE_URL) {
+        return `${IMAGE_PROCESSING_BASE_URL}/api/images?key=${encodeURIComponent(imageKey)}&width=200&height=200`;
+      }
+      return `${API_BASE_URL}/chat/media/download/?file=${encodeURIComponent(imageKey)}&width=200&height=200&download=0`;
     }
 
     initializeChat(){
@@ -207,7 +214,12 @@ class Chat extends React.Component {
                 message.content === null ?
                 // "image has been uploaded to the chat"
                   <img
-                    src={`${API_BASE_URL}/chat/media/download/?file=${encodeURIComponent(message.image)}&width=200&height=200&download=0`}
+                    src={this.getThumbUrl(message.image)}
+                    onError={(e) => {
+                      if (e.currentTarget.dataset.fallbackApplied === '1') return;
+                      e.currentTarget.dataset.fallbackApplied = '1';
+                      e.currentTarget.src = `${API_BASE_URL}/chat/media/download/?file=${encodeURIComponent(message.image)}&width=200&height=200&download=0`;
+                    }}
                     onClick={(e) => this.changeVisibility(e,message.timestamp)}
                     id={message.id}
                     className={`messageImage  ${participants.includes(message.author)? currentUser === message.author ? 'imgsent' :'imgrecv' :'imgout'}`}
