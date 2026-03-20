@@ -1,3 +1,10 @@
+import hashlib
+import secrets
+from datetime import timedelta
+
+from django.conf import settings
+from django.core.mail import send_mail
+from django.utils import timezone
 from rest_framework import serializers
 from chat.models import Chat, Contact, Message
 
@@ -22,6 +29,28 @@ class CustomRegisterSerializer(RegisterSerializer):
         user = super().save(request)
         user.gender = self.data.get('gender')
         user.phone_number = self.data.get('phone_number')
+
+        if not user.email:
+            raise serializers.ValidationError({'email': 'Email is required for verification'})
+
+        otp_code = f'{secrets.randbelow(1000000):06d}'
+        otp_hash = hashlib.sha256(f'{otp_code}:{settings.SECRET_KEY}'.encode('utf-8')).hexdigest()
+        user.is_email_verified = False
+        user.email_verification_code_hash = otp_hash
+        user.email_verification_expires_at = timezone.now() + timedelta(minutes=settings.EMAIL_VERIFICATION_OTP_TTL_MINUTES)
+        user.is_active = False
+
+        send_mail(
+            subject='Verify your email',
+            message=(
+                'Your verification code is: {code}\n\n'
+                'This code will expire in {mins} minutes.\n'
+            ).format(code=otp_code, mins=settings.EMAIL_VERIFICATION_OTP_TTL_MINUTES),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
+
         contact = Contact()
         contact.user = user
         user.save()

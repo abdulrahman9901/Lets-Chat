@@ -22,8 +22,9 @@ from rest_framework.generics import (
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from cryptography.fernet import InvalidToken
+from django.utils import timezone
 
-from chat.models import Chat, Message, Contact
+from chat.models import Chat, Message, Contact, CustomUser
 from chat.user_search import search_users
 from .serializers import ChatSerializer, ChatListSerializer
 from chat.services.invite_keys import decrypter
@@ -125,6 +126,56 @@ class UserSearchView(APIView):
             return Response([], status=status.HTTP_200_OK)
         results = search_users(q, limit=limit)
         return Response(results, status=status.HTTP_200_OK)
+
+
+class VerifyEmailOTPView(APIView):
+    permission_classes = (permissions.AllowAny,)
+    authentication_classes = ()
+
+    def post(self, request):
+        username = request.data.get('username')
+        otp_raw = request.data.get('otp')
+        otp = str(otp_raw).strip() if otp_raw is not None else ''
+
+        if not username or not otp:
+            return Response(
+                {'detail': 'username and otp are required'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not otp.isdigit() or len(otp) < 4:
+            return Response(
+                {'detail': 'Invalid otp format'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user = get_object_or_404(CustomUser, username=username)
+        if user.is_email_verified:
+            return Response({'detail': 'Already verified'}, status=status.HTTP_200_OK)
+
+        now = timezone.now()
+        if not user.email_verification_expires_at or user.email_verification_expires_at < now:
+            return Response({'detail': 'OTP expired'}, status=status.HTTP_400_BAD_REQUEST)
+        if not user.email_verification_code_hash:
+            return Response({'detail': 'OTP not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+        expected_hash = hashlib.sha256(f'{otp}:{settings.SECRET_KEY}'.encode('utf-8')).hexdigest()
+        if expected_hash != user.email_verification_code_hash:
+            return Response({'detail': 'Invalid otp'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.is_email_verified = True
+        user.email_verification_code_hash = None
+        user.email_verification_expires_at = None
+        user.is_active = True
+        user.save(
+            update_fields=[
+                'is_email_verified',
+                'email_verification_code_hash',
+                'email_verification_expires_at',
+                'is_active',
+            ],
+        )
+
+        return Response({'detail': 'Verified'}, status=status.HTTP_200_OK)
 
 
 class MediaDownloadView(APIView):

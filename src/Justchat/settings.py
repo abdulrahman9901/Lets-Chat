@@ -251,12 +251,21 @@ ACCOUNT_EMAIL_VERIFICATION ='none'
 ACCOUNT_AUTHENTICATION_METHOD = 'username'
 ACCOUNT_EMAIL_REQUIRED =False
 
+# Email OTP verification (dev fallback)
+EMAIL_BACKEND = os.environ.get(
+    'EMAIL_BACKEND',
+    'django.core.mail.backends.console.EmailBackend',
+)
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@localhost')
+EMAIL_VERIFICATION_OTP_TTL_MINUTES = int(os.environ.get('EMAIL_VERIFICATION_OTP_TTL_MINUTES', '10'))
+EMAIL_VERIFICATION_DELETE_AFTER_HOURS = int(os.environ.get('EMAIL_VERIFICATION_DELETE_AFTER_HOURS', '2'))
+
 # https://github.com/Tivix/django-rest-auth/issues/502
 # https://stackoverflow.com/questions/6800894/django-returns-403-error-when-sending-a-post-request
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+        'chat.authentication.EmailVerifiedTokenAuthentication',
+        'chat.authentication.EmailVerifiedSessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.AllowAny',
