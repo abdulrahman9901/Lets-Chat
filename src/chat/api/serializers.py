@@ -76,15 +76,26 @@ class ChatSerializer(serializers.ModelSerializer):
         chat = Chat()
         chat.name = name
         chat.save()
-        for username in participants:
-            contact = get_user_contact(username)
-            chat.participants.add(contact)
+        admin_username = admins[0]
+        all_usernames = list({*participants, admin_username})
+        contacts_by_username = {
+            c.user.username: c
+            for c in Contact.objects.select_related('user').filter(user__username__in=all_usernames)
+        }
 
-        chat.admins.add(get_user_contact(admins[0]))
+        for u in participants:
+            if u not in contacts_by_username:
+                contacts_by_username[u] = get_user_contact(u)
+
+        participant_contacts = [contacts_by_username[u] for u in participants]
+        chat.participants.add(*participant_contacts)
+
+        admin_contact = contacts_by_username.get(admin_username) or get_user_contact(admin_username)
+        chat.admins.add(admin_contact)
 
         message = Message.objects.create(
-            contact=get_user_contact(admins[0]),
-            content='{} created the chat'.format(admins[0]),
+            contact=admin_contact,
+            content='{} created the chat'.format(admin_username),
             system_message=True,
         )
         chat.messages.add(message)

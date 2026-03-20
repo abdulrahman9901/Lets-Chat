@@ -260,8 +260,7 @@ class joinChatView(APIView):
                 )
             chat = get_object_or_404(Chat, id=id)
             username = get_user_contact(request.data["username"])
-            print(username)
-            if username not in chat.participants.all() :
+            if not chat.participants.filter(id=username.id).exists():
                 chat.participants.add(username)
                 message = Message.objects.create(
                     contact=username,
@@ -277,18 +276,19 @@ class joinChatView(APIView):
 
 class uploadimageView(APIView):
     def post(self, request):
-        print(type(request.data['image_0']))   
-        print(request.data)
-        print(len(request.data['image_0']))
         chat = get_object_or_404(Chat,id=request.data["chatid"])
         username = get_user_contact(request.data['username'])
-
-        for item in request.data :
-            if "image" in item :
-                print('item : ',request.data[item])
-                message = Message.objects.create(contact=username,content=None,image=request.data[item],system_message=False)
-                chat.messages.add(message)
-                chat.save()  
+        image_items = [(k, v) for k, v in request.data.items() if 'image' in k]
+        images = [v for _, v in image_items]
+        if images:
+            to_create = [
+                Message(contact=username, content=None, image=image, system_message=False)
+                for image in images
+            ]
+            created = Message.objects.bulk_create(to_create)
+            chat.messages.add(*created)
+            chat.save()
+            for message in created:
                 broadcast_new_message(chat, message)
        
         return Response({"status": "success", "data": "image"}, status=status.HTTP_200_OK)
