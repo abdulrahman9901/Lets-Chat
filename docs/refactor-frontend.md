@@ -214,6 +214,16 @@ For each significant change, add:
 - **Impact**
   - Full image viewer and inline image open flows no longer fail with `Width and height are required for processed image serving`.
 
+## 2026‑03‑20 – Registration: gender dropdown + phone validation
+
+- **What changed**
+  - Updated `app-svelte/src/routes/register/+page.svelte` to replace the free-text gender input with a dropdown (`M`, `F`, `NS`).
+  - Installed `libphonenumber-js` and added client-side phone validation/normalization to E.164 before submitting registration.
+- **Why**
+  - Prevent invalid phone numbers from reaching backend validation and keep gender values aligned with the backend choice field.
+- **Impact**
+  - Registration form is more consistent and safer; users get immediate feedback for invalid phone input.
+
 ## 2026‑03‑19 – Add-member flow switched to unified addParticipant payload
 
 - **What changed**

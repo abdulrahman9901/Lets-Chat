@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { token, loading, error } from '$lib/stores/auth';
 	import { register as doRegister, clearError } from '$lib/api/auth';
+	import { parsePhoneNumberFromString } from 'libphonenumber-js';
 
 	let username = $state('');
 	let email = $state('');
@@ -22,13 +23,26 @@
 		}
 		clearError();
 		loading.set(true);
+
+		let formattedPhone: string | null = null;
+		const trimmedPhone = phone_number.trim();
+		if (trimmedPhone) {
+			const parsed = parsePhoneNumberFromString(trimmedPhone);
+			if (!parsed || !parsed.isValid()) {
+				error.set('Invalid phone number');
+				loading.set(false);
+				return;
+			}
+			formattedPhone = parsed.format('E.164');
+		}
+
 		doRegister({
 			username,
 			email,
 			password1,
 			password2,
 			...(gender && { gender }),
-			...(phone_number && { phone_number }),
+			...(formattedPhone && { phone_number: formattedPhone }),
 		})
 			.then(() => goto('/'))
 			.catch((err: Error) => {
@@ -46,7 +60,12 @@
 			<input type="email" placeholder="Email" bind:value={email} disabled={$loading} />
 			<input type="password" placeholder="Password" bind:value={password1} disabled={$loading} />
 			<input type="password" placeholder="Confirm password" bind:value={password2} disabled={$loading} />
-			<input type="text" placeholder="Gender (optional)" bind:value={gender} disabled={$loading} />
+			<select bind:value={gender} disabled={$loading} aria-label="Gender (optional)">
+				<option value="">Gender (optional)</option>
+				<option value="M">Male</option>
+				<option value="F">Female</option>
+				<option value="NS">Other</option>
+			</select>
 			<input type="text" placeholder="Phone (optional)" bind:value={phone_number} disabled={$loading} />
 			{#if $error}
 				<p class="error">{$error}</p>
