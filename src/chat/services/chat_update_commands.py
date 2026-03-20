@@ -112,11 +112,26 @@ def handle_add_participant(
         snapshot_usernames = validated_data.get('participants') or []
         added_contacts = [get_user_contact(u) for u in snapshot_usernames if u]
 
+    existing_participant_ids = set(chat.participants.values_list('id', flat=True))
+    existing_admin_ids = set(chat.admins.values_list('id', flat=True))
     actually_added: list[Contact] = []
     for c in added_contacts:
-        if c not in chat.participants.all():
+        if c.id not in existing_participant_ids:
             chat.participants.add(c)
+            existing_participant_ids.add(c.id)
             actually_added.append(c)
+
+    promoted_ids = data.get('promotedIds') or []
+    promoted_contacts = contacts_from_ids(promoted_ids)
+    for c in promoted_contacts:
+        if c.id not in existing_participant_ids:
+            chat.participants.add(c)
+            existing_participant_ids.add(c.id)
+            if c not in actually_added:
+                actually_added.append(c)
+        if c.id not in existing_admin_ids:
+            chat.admins.add(c)
+            existing_admin_ids.add(c.id)
 
     if actually_added and actor:
         content = '{} added {} to the chat'.format(actor.user.username, format_contact_names(actually_added))
