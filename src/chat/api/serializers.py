@@ -117,22 +117,7 @@ class ChatSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
-class ChatListSerializer(serializers.ModelSerializer):
-    participants = ContactSerializer(many=True, required=False)
-    admins = ContactSerializer(many=True, required=False)
-    chatKey = serializers.SerializerMethodField('get_chat_key')
-    participantsMeta = serializers.SerializerMethodField('get_participants_meta')
-    adminsMeta = serializers.SerializerMethodField('get_admins_meta')
-
-    def get_chat_key(self, instance):
-        return get_chat_key_for_id(instance.id)
-
-    def get_participants_meta(self, instance):
-        return [{'id': c.id, 'username': c.user.username} for c in instance.participants.all()]
-
-    def get_admins_meta(self, instance):
-        return [{'id': c.id, 'username': c.user.username} for c in instance.admins.all()]
-
+class ChatListSerializer(ChatSerializer):
     class Meta:
         model = Chat
         fields = (
