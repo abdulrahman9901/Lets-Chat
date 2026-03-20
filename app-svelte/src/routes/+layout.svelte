@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import '../app.css';
-	import favicon from '$lib/assets/favicon.svg';
 	import { checkAuthState, token } from '$lib/stores/auth';
 	import { logout } from '$lib/api/auth';
 	import { setMessages, addMessage, setChats } from '$lib/stores/message';
@@ -52,7 +51,8 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
+	<link rel="icon" href="/pwa-icon.svg" />
+	<link rel="apple-touch-icon" href="/pwa-192.png" />
 	<meta name="theme-color" content="#050816" />
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
