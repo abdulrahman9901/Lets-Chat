@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Q
 
 from chat.models import Contact, Message
 
@@ -27,8 +27,7 @@ def contacts_from_ids(ids: list[int] | None) -> list[Contact]:
     # `ids` can come from either:
     # - Contact.id (participants/admins snapshots)
     # - CustomUser.id (user search results)
-    qs = Contact.objects.filter(id__in=ids).union(Contact.objects.filter(user__id__in=ids))
-    return list(qs)
+    return list(Contact.objects.select_related('user').filter(Q(id__in=ids) | Q(user__id__in=ids)))
 
 
 def resolve_actor(data: dict[str, Any]) -> Contact | None:
@@ -59,26 +58,39 @@ def handle_remove_member(
     broadcaster: Callable[[Any, Message], None],
 ) -> Any:
     removed_ids = data.get('removedIds') or []
+    existing_participant_ids = set(chat.participants.values_list('id', flat=True))
+    existing_admin_ids = set(chat.admins.values_list('id', flat=True))
+
     removed_contacts = contacts_from_ids(removed_ids)
-    actually_removed = [c for c in removed_contacts if c in chat.participants.all()]
+    removed_map = {c.id: c for c in removed_contacts}
+    actually_removed_ids = set(removed_map.keys()) & existing_participant_ids
+    actually_removed = [removed_map[cid] for cid in actually_removed_ids]
 
     if not actually_removed and 'participants' in validated_data:
         snapshot_usernames = validated_data.get('participants') or []
-        snapshot_contacts = [get_user_contact(u) for u in snapshot_usernames if u]
-        actually_removed = list(set(chat.participants.all()) - set(snapshot_contacts))
+        snapshot_ids = set(
+            Contact.objects.filter(user__username__in=snapshot_usernames).values_list('id', flat=True)
+        )
+        actually_removed_ids = existing_participant_ids - snapshot_ids
+        actually_removed = list(
+            Contact.objects.select_related('user').filter(id__in=actually_removed_ids)
+        )
 
-    for c in actually_removed:
-        chat.participants.remove(c)
-        if c in chat.admins.all():
-            chat.admins.remove(c)
+    if actually_removed:
+        chat.participants.remove(*actually_removed)
+        admins_to_remove = [c for c in actually_removed if c.id in existing_admin_ids]
+        if admins_to_remove:
+            chat.admins.remove(*admins_to_remove)
 
     if actually_removed and actor:
-        content = '{} removed {} from the chat'.format(actor.user.username, format_contact_names(actually_removed))
+        content = '{} removed {} from the chat'.format(
+            actor.user.username,
+            format_contact_names(actually_removed),
+        )
         msg = Message.objects.create(contact=actor, content=content, system_message=True)
         chat.messages.add(msg)
         broadcast_chat_message(broadcaster, chat, msg)
 
-    chat.save()
     return chat
 
 
@@ -89,16 +101,14 @@ def handle_leave(
     validated_data: dict[str, Any],
     broadcaster: Callable[[Any, Message], None],
 ) -> Any:
-    if actor and actor in chat.participants.all():
+    if actor and chat.participants.filter(id=actor.id).exists():
         chat.participants.remove(actor)
-        if actor in chat.admins.all():
+        if chat.admins.filter(id=actor.id).exists():
             chat.admins.remove(actor)
         content = '{} left the chat'.format(actor.user.username)
         msg = Message.objects.create(contact=actor, content=content, system_message=True)
         chat.messages.add(msg)
         broadcast_chat_message(broadcaster, chat, msg)
-
-    chat.save()
     return chat
 
 
@@ -118,32 +128,47 @@ def handle_add_participant(
 
     existing_participant_ids = set(chat.participants.values_list('id', flat=True))
     existing_admin_ids = set(chat.admins.values_list('id', flat=True))
+
     actually_added: list[Contact] = []
-    for c in added_contacts:
-        if c.id not in existing_participant_ids:
-            chat.participants.add(c)
-            existing_participant_ids.add(c.id)
-            actually_added.append(c)
+    missing_participants_from_added = [c for c in added_contacts if c.id not in existing_participant_ids]
+    if missing_participants_from_added:
+        chat.participants.add(*missing_participants_from_added)
+        actually_added.extend(missing_participants_from_added)
+        existing_participant_ids.update({c.id for c in missing_participants_from_added})
 
     promoted_ids = data.get('promotedIds') or []
     promoted_contacts = contacts_from_ids(promoted_ids)
-    for c in promoted_contacts:
-        if c.id not in existing_participant_ids:
-            chat.participants.add(c)
-            existing_participant_ids.add(c.id)
-            if c not in actually_added:
-                actually_added.append(c)
-        if c.id not in existing_admin_ids:
-            chat.admins.add(c)
-            existing_admin_ids.add(c.id)
 
-    if actually_added and actor:
-        content = '{} added {} to the chat'.format(actor.user.username, format_contact_names(actually_added))
-        msg = Message.objects.create(contact=actor, content=content, system_message=True)
-        chat.messages.add(msg)
-        broadcast_chat_message(broadcaster, chat, msg)
+    missing_participants_from_promoted = [
+        c for c in promoted_contacts if c.id not in existing_participant_ids
+    ]
+    if missing_participants_from_promoted:
+        chat.participants.add(*missing_participants_from_promoted)
+        actually_added.extend(missing_participants_from_promoted)
+        existing_participant_ids.update({c.id for c in missing_participants_from_promoted})
 
-    chat.save()
+    missing_admins = [c for c in promoted_contacts if c.id not in existing_admin_ids]
+    if missing_admins:
+        chat.admins.add(*missing_admins)
+        existing_admin_ids.update({c.id for c in missing_admins})
+
+    if actor:
+        if actually_added:
+            content = '{} added {} to the chat'.format(
+                actor.user.username,
+                format_contact_names(actually_added),
+            )
+            msg = Message.objects.create(contact=actor, content=content, system_message=True)
+            chat.messages.add(msg)
+            broadcast_chat_message(broadcaster, chat, msg)
+        elif missing_admins:
+            content = '{} made {} an admin in the chat'.format(
+                actor.user.username,
+                format_contact_names(missing_admins),
+            )
+            msg = Message.objects.create(contact=actor, content=content, system_message=True)
+            chat.messages.add(msg)
+            broadcast_chat_message(broadcaster, chat, msg)
     return chat
 
 
@@ -161,19 +186,19 @@ def handle_promote_admin(
         snapshot_admins = validated_data.get('admins') or []
         promoted_contacts = [get_user_contact(u) for u in snapshot_admins if u]
 
-    actually_promoted: list[Contact] = []
-    for c in promoted_contacts:
-        if c not in chat.admins.all():
-            chat.admins.add(c)
-            actually_promoted.append(c)
+    existing_admin_ids = set(chat.admins.values_list('id', flat=True))
+    actually_promoted = [c for c in promoted_contacts if c.id not in existing_admin_ids]
+    if actually_promoted:
+        chat.admins.add(*actually_promoted)
 
     if actually_promoted and actor:
-        content = '{} made {} an admin in the chat'.format(actor.user.username, format_contact_names(actually_promoted))
+        content = '{} made {} an admin in the chat'.format(
+            actor.user.username,
+            format_contact_names(actually_promoted),
+        )
         msg = Message.objects.create(contact=actor, content=content, system_message=True)
         chat.messages.add(msg)
         broadcast_chat_message(broadcaster, chat, msg)
-
-    chat.save()
     return chat
 
 
