@@ -73,19 +73,16 @@ export async function kickMembers(
 
 export async function addParticipants(
 	chatId: string,
-	currentParticipants: string[],
-	newUsernames: string[],
+	newUserIds: number[],
 	asAdmin: boolean
 ): Promise<unknown> {
-	const participants = [...currentParticipants, ...newUsernames];
 	return apiRequest(`/chat/${chatId}/update/`, {
 		method: 'PUT',
 		body: {
-			command: asAdmin ? 'addAdmin' : 'addParticipant',
+			command: 'addParticipant',
 			username: localStorage.getItem('username'),
-			messages: [],
-			participants,
-			admins: asAdmin ? newUsernames : [],
+			addedIds: newUserIds,
+			promotedIds: asAdmin ? newUserIds : [],
 		},
 	});
 }
