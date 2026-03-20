@@ -251,11 +251,31 @@ ACCOUNT_EMAIL_VERIFICATION ='none'
 ACCOUNT_AUTHENTICATION_METHOD = 'username'
 ACCOUNT_EMAIL_REQUIRED =False
 
-# Email OTP verification (dev fallback)
-EMAIL_BACKEND = os.environ.get(
-    'EMAIL_BACKEND',
-    'django.core.mail.backends.console.EmailBackend',
-)
+def _env_bool(key: str, default: str = 'false') -> bool:
+    return os.environ.get(key, default).lower() in ('1', 'true', 'yes')
+
+
+_email_host = os.environ.get('EMAIL_HOST', '').strip()
+_email_backend_explicit = os.environ.get('EMAIL_BACKEND', '').strip()
+
+if _email_backend_explicit:
+    EMAIL_BACKEND = _email_backend_explicit
+elif _email_host:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+if _email_host:
+    EMAIL_HOST = _email_host
+    EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+    EMAIL_USE_TLS = _env_bool('EMAIL_USE_TLS', 'true')
+    EMAIL_USE_SSL = _env_bool('EMAIL_USE_SSL', 'false')
+    _timeout = os.environ.get('EMAIL_TIMEOUT', '').strip()
+    if _timeout:
+        EMAIL_TIMEOUT = int(_timeout)
+
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@localhost')
 EMAIL_VERIFICATION_OTP_TTL_MINUTES = int(os.environ.get('EMAIL_VERIFICATION_OTP_TTL_MINUTES', '10'))
 EMAIL_VERIFICATION_DELETE_AFTER_HOURS = int(os.environ.get('EMAIL_VERIFICATION_DELETE_AFTER_HOURS', '2'))
