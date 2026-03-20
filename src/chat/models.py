@@ -19,6 +19,9 @@ class CustomUser(AbstractUser):
     # We don't need to define the email attribute because is inherited from AbstractUser
     gender = models.CharField(max_length=20, choices=GENDER_SELECTION)
     phone_number = models.CharField(max_length=30)
+    is_email_verified = models.BooleanField(default=False)
+    email_verification_code_hash = models.CharField(max_length=128, null=True, blank=True)
+    email_verification_expires_at = models.DateTimeField(null=True, blank=True)
 
 class Contact(models.Model):
     user=models.ForeignKey(CustomUser,on_delete=models.CASCADE,related_name="friends")
