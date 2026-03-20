@@ -52,3 +52,15 @@ export async function logout(): Promise<void> {
 }
 
 export { clearError } from '$lib/stores/auth';
+
+export interface VerifyEmailOtpPayload {
+	username: string;
+	otp: string;
+}
+
+export async function verifyEmailOtp(payload: VerifyEmailOtpPayload): Promise<unknown> {
+	return apiRequest('/chat/email/verify-otp/', {
+		method: 'POST',
+		body: payload,
+	});
+}

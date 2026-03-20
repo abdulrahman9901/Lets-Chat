@@ -3,6 +3,7 @@
 	import { token, loading, error } from '$lib/stores/auth';
 	import { register as doRegister, clearError } from '$lib/api/auth';
 	import { parsePhoneNumberFromString } from 'libphonenumber-js';
+	import { z } from 'zod';
 
 	let username = $state('');
 	let email = $state('');
@@ -11,19 +12,26 @@
 	let gender = $state('');
 	let phone_number = $state('');
 
+	const RegistrationSchema = z
+		.object({
+			username: z.string().min(3).regex(/^[a-zA-Z0-9_]+$/),
+			email: z.string().email(),
+			password1: z.string().min(8),
+			password2: z.string().min(8),
+			gender: z.enum(['M', 'F', 'NS']).optional(),
+			phone_number: z.string().regex(/^\+[1-9]\d{1,14}$/).optional(),
+		})
+		.refine((d) => d.password1 === d.password2, {
+			message: 'Passwords do not match',
+			path: ['password2'],
+		});
+
 	$effect(() => {
 		if ($token) goto('/');
 	});
 
 	function handleSubmit(e: SubmitEvent) {
 		e.preventDefault();
-		if (password1 !== password2) {
-			error.set('Passwords do not match');
-			return;
-		}
-		clearError();
-		loading.set(true);
-
 		let formattedPhone: string | null = null;
 		const trimmedPhone = phone_number.trim();
 		if (trimmedPhone) {
@@ -36,15 +44,36 @@
 			formattedPhone = parsed.format('E.164');
 		}
 
-		doRegister({
-			username,
-			email,
+		const usernameTrimmed = username.trim();
+		const emailTrimmed = email.trim();
+		const genderValue = gender ? gender : undefined;
+		const payload = {
+			username: usernameTrimmed,
+			email: emailTrimmed,
 			password1,
 			password2,
-			...(gender && { gender }),
-			...(formattedPhone && { phone_number: formattedPhone }),
+			...(genderValue ? { gender: genderValue } : {}),
+			...(formattedPhone ? { phone_number: formattedPhone } : {}),
+		};
+
+		const parsed = RegistrationSchema.safeParse(payload);
+		if (!parsed.success) {
+			error.set(parsed.error.issues[0]?.message ?? 'Invalid registration data');
+			return;
+		}
+
+		clearError();
+		loading.set(true);
+
+		doRegister({
+			username: parsed.data.username,
+			email: parsed.data.email,
+			password1: parsed.data.password1,
+			password2: parsed.data.password2,
+			...(parsed.data.gender && { gender: parsed.data.gender }),
+			...(parsed.data.phone_number && { phone_number: parsed.data.phone_number }),
 		})
-			.then(() => goto('/'))
+			.then(() => goto(`/verify-email?username=${encodeURIComponent(parsed.data.username)}`))
 			.catch((err: Error) => {
 				error.set(err.message ?? 'Registration failed');
 			})
@@ -61,7 +90,7 @@
 			<input type="password" placeholder="Password" bind:value={password1} disabled={$loading} />
 			<input type="password" placeholder="Confirm password" bind:value={password2} disabled={$loading} />
 			<select bind:value={gender} disabled={$loading} aria-label="Gender (optional)">
-				<option value="">Gender (optional)</option>
+				<option value="">Gender assigned to you on birth(optional)</option>
 				<option value="M">Male</option>
 				<option value="F">Female</option>
 				<option value="NS">Other</option>
