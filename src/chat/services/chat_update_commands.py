@@ -5,7 +5,7 @@ from typing import Any
 
 from django.db.models import QuerySet, Q
 
-from chat.models import Contact, Message
+from chat.models import Contact, CustomUser, Message
 
 from chat.services.contacts import get_user_contact
 
@@ -27,7 +27,21 @@ def contacts_from_ids(ids: list[int] | None) -> list[Contact]:
     # `ids` can come from either:
     # - Contact.id (participants/admins snapshots)
     # - CustomUser.id (user search results)
-    return list(Contact.objects.select_related('user').filter(Q(id__in=ids) | Q(user__id__in=ids)))
+    ids_set = set(ids)
+    base_contacts = Contact.objects.select_related('user').filter(Q(id__in=ids_set) | Q(user__id__in=ids_set))
+
+    # If the frontend sends CustomUser.id but the Contact row is missing,
+    # ensure we create it so M2M relations are applied correctly.
+    user_ids_from_input = list(ids_set)
+    existing_contact_user_ids = set(base_contacts.values_list('user__id', flat=True))
+    users = CustomUser.objects.filter(id__in=user_ids_from_input).exclude(id__in=existing_contact_user_ids)
+
+    if users.exists():
+        Contact.objects.bulk_create([Contact(user=u) for u in users])
+
+    return list(
+        Contact.objects.select_related('user').filter(Q(id__in=ids_set) | Q(user__id__in=ids_set)),
+    )
 
 
 def resolve_actor(data: dict[str, Any]) -> Contact | None:
