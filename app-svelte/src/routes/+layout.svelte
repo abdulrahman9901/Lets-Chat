@@ -18,9 +18,14 @@
 	let logoutTimer: ReturnType<typeof setTimeout> | null = null;
 	let installPromptEvent = $state<BeforeInstallPromptEvent | null>(null);
 	let showInstallButton = $state(false);
+	let isAndroid = $state(false);
+	let showInstallHelp = $state(false);
 
 	async function installApp() {
-		if (!installPromptEvent) return;
+		if (!installPromptEvent) {
+			showInstallHelp = true;
+			return;
+		}
 		await installPromptEvent.prompt();
 		await installPromptEvent.userChoice;
 		installPromptEvent = null;
@@ -33,7 +38,7 @@
 			(window.navigator as Navigator & { standalone?: boolean }).standalone === true;
 
 		const updateInstallVisibility = () => {
-			showInstallButton = !isStandalone() && installPromptEvent !== null;
+			showInstallButton = !isStandalone() && isAndroid;
 		};
 
 		const onBeforeInstallPrompt = (event: Event) => {
@@ -48,6 +53,7 @@
 		};
 
 		const mediaQuery = window.matchMedia('(display-mode: standalone)');
+		isAndroid = /Android/i.test(window.navigator.userAgent);
 		checkAuthState();
 		const unsub = token.subscribe((t) => {
 			if (logoutTimer) {
@@ -106,6 +112,11 @@
 	<button type="button" class="install-app-button" onclick={installApp}>
 		Install app
 	</button>
+	{#if showInstallHelp}
+		<div class="install-app-help">
+			Use Chrome menu (⋮) then tap Install app or Add to Home screen.
+		</div>
+	{/if}
 {/if}
 
 <style>
@@ -125,5 +136,19 @@
 
 	.install-app-button:hover {
 		background: rgba(56, 189, 248, 0.32);
+	}
+
+	.install-app-help {
+		position: fixed;
+		right: 14px;
+		bottom: 58px;
+		z-index: 1002;
+		max-width: 260px;
+		padding: 8px 10px;
+		border-radius: 10px;
+		border: 1px solid var(--Border-Subtle);
+		background: rgba(5, 8, 22, 0.94);
+		color: var(--Text-Heading-Medium);
+		font-size: 12px;
 	}
 </style>
