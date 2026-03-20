@@ -173,3 +173,53 @@ For each significant change, add:
 - **Impact**
   - Switching chats is immediate (cache) and one round-trip for fresh messages; scales to many chats and many messages.
 
+## 2026‑03‑18 – Vitest unit tests for API client
+
+- **What changed**
+  - Added Vitest to `app-svelte/` and configured JSDOM for browser-like globals.
+  - Added `app-svelte/src/lib/api/client.test.ts` to unit test `apiRequest()` behavior:
+    - JSON payloads are stringified
+    - auth + CSRF headers are set
+    - GET requests do not set a body
+    - non-2xx responses throw server `detail`
+- **Why**
+  - Tiny changes to the API client should be test-backed to avoid regressions.
+- **Impact**
+  - Safer refactors of the frontend API layer without relying only on typechecking.
+
+## 2026‑03‑19 – Mobile sidebar opener: semi-transparent overlay
+
+- **What changed**
+  - Updated mobile drawer opener buttons (`frontend/src/assets/style.css`: `#toChats`, `#toMessages`) to use semi-transparent `rgba(...)` backgrounds and a higher `z-index`.
+- **Why**
+  - When the opener overlaps chat messages on small screens, the messages remain visible through the button background.
+- **Impact**
+  - Visual-only change (no behavior/API changes). Verify contrast/accessibility on the current theme styling.
+
+## 2026‑03‑19 – Auth token included in media download URLs
+
+- **What changed**
+  - Updated `app-svelte/src/lib/utils/media.ts` so backend media URLs include `token=<localStorage token>` when available.
+- **Why**
+  - Browser-driven download flows (image/file URLs and iframe downloads) cannot attach Authorization headers; adding the token query keeps secured backend downloads functional after enforcing auth on original media.
+- **Impact**
+  - Download links continue to work for logged-in users with token auth while backend access checks remain enforced.
+
+## 2026‑03‑19 – Inline image requests now include processor dimensions
+
+- **What changed**
+  - Updated `app-svelte/src/lib/utils/media.ts` so `mediaInlineUrl()` always sends `width` and `height` (`1600x1600`) when calling the processor, and backend fallback uses the same sized media endpoint request.
+- **Why**
+  - Processor now enforces transformed-only responses and rejects requests without dimensions.
+- **Impact**
+  - Full image viewer and inline image open flows no longer fail with `Width and height are required for processed image serving`.
+
+## 2026‑03‑19 – Add-member flow switched to unified addParticipant payload
+
+- **What changed**
+  - Updated `app-svelte/src/lib/api/chat.ts` so add-member requests always use `command: "addParticipant"` with `addedIds`, and include `promotedIds` when role is Admin.
+- **Why**
+  - Prevent divergence between participant-add and admin-promote commands, which could leave admin adds without stable participant membership.
+- **Impact**
+  - New members added as Admin now persist correctly and backend can produce consistent add-member system message behavior.
+

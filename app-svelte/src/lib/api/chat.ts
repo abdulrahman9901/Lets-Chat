@@ -72,9 +72,10 @@ export async function addParticipants(
 	return apiRequest(`/chat/${chatId}/update/`, {
 		method: 'PUT',
 		body: {
-			command: asAdmin ? 'addAdmin' : 'addParticipant',
+			command: 'addParticipant',
 			actorId,
 			addedIds,
+			promotedIds: asAdmin ? addedIds : [],
 		},
 	});
 }
