@@ -25,7 +25,7 @@ from cryptography.fernet import InvalidToken
 
 from chat.models import Chat, Message, Contact
 from chat.user_search import search_users
-from .serializers import ChatSerializer
+from .serializers import ChatSerializer, ChatListSerializer
 from chat.services.invite_keys import decrypter
 from chat.services.contacts import get_user_contact
 from chat.services.chat_broadcast import broadcast_chats_update, broadcast_new_message
@@ -62,15 +62,31 @@ class FrontendLogView(APIView):
         return Response({"status": "ok"}, status=status.HTTP_201_CREATED)
 
 class ChatListView(ListAPIView):
-    serializer_class = ChatSerializer
+    serializer_class = ChatListSerializer
     permission_classes = (permissions.AllowAny,)
 
     def get_queryset(self):
-        queryset = Chat.objects.all()
+        queryset = (
+            Chat.objects.all()
+            .prefetch_related(
+                'participants',
+                'participants__user',
+                'admins',
+                'admins__user',
+            )
+        )
         username = self.request.query_params.get('username',None)
         if username is not None:
             contact = get_user_contact(username)
-            queryset = contact.chats.all()
+            queryset = (
+                contact.chats.all()
+                .prefetch_related(
+                    'participants',
+                    'participants__user',
+                    'admins',
+                    'admins__user',
+                )
+            )
         return queryset
 
 class ChatDetailView(RetrieveAPIView):
