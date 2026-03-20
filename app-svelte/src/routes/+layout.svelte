@@ -9,10 +9,45 @@
 
 	let { children } = $props();
 
+	interface BeforeInstallPromptEvent extends Event {
+		prompt: () => Promise<void>;
+		userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
+	}
+
 	const AUTH_EXPIRY_MS = 3600 * 1000;
 	let logoutTimer: ReturnType<typeof setTimeout> | null = null;
+	let installPromptEvent = $state<BeforeInstallPromptEvent | null>(null);
+	let showInstallButton = $state(false);
+
+	async function installApp() {
+		if (!installPromptEvent) return;
+		await installPromptEvent.prompt();
+		await installPromptEvent.userChoice;
+		installPromptEvent = null;
+		showInstallButton = false;
+	}
 
 	onMount(() => {
+		const isStandalone = () =>
+			window.matchMedia('(display-mode: standalone)').matches ||
+			(window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+
+		const updateInstallVisibility = () => {
+			showInstallButton = !isStandalone() && installPromptEvent !== null;
+		};
+
+		const onBeforeInstallPrompt = (event: Event) => {
+			event.preventDefault();
+			installPromptEvent = event as BeforeInstallPromptEvent;
+			updateInstallVisibility();
+		};
+
+		const onAppInstalled = () => {
+			installPromptEvent = null;
+			showInstallButton = false;
+		};
+
+		const mediaQuery = window.matchMedia('(display-mode: standalone)');
 		checkAuthState();
 		const unsub = token.subscribe((t) => {
 			if (logoutTimer) {
@@ -43,9 +78,16 @@
 				logoutTimer = setTimeout(() => logout(), Math.max(0, expiry));
 			}
 		});
+		window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt);
+		window.addEventListener('appinstalled', onAppInstalled);
+		mediaQuery.addEventListener('change', updateInstallVisibility);
+		updateInstallVisibility();
 		return () => {
 			unsub();
 			if (logoutTimer) clearTimeout(logoutTimer);
+			window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt);
+			window.removeEventListener('appinstalled', onAppInstalled);
+			mediaQuery.removeEventListener('change', updateInstallVisibility);
 		};
 	});
 </script>
@@ -59,3 +101,29 @@
 </svelte:head>
 
 {@render children()}
+
+{#if showInstallButton}
+	<button type="button" class="install-app-button" onclick={installApp}>
+		Install app
+	</button>
+{/if}
+
+<style>
+	.install-app-button {
+		position: fixed;
+		right: 14px;
+		bottom: 14px;
+		z-index: 1002;
+		padding: 10px 14px;
+		border-radius: 999px;
+		border: 1px solid var(--Border-Subtle);
+		background: rgba(56, 189, 248, 0.22);
+		color: var(--Text-Heading-Strong);
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	.install-app-button:hover {
+		background: rgba(56, 189, 248, 0.32);
+	}
+</style>
