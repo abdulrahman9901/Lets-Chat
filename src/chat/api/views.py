@@ -149,10 +149,8 @@ class MediaDownloadView(APIView):
 
     @staticmethod
     def _can_user_download_file(user, file_param: str) -> bool:
-        contact = Contact.objects.filter(user=user).first()
-        if not contact:
-            return False
-        return Message.objects.filter(image=file_param, chat__participants=contact).exists()
+        # Avoid an extra Contact lookup; participants are linked via Contact -> user.
+        return Message.objects.filter(image=file_param, chat__participants__user=user).exists()
 
     def get(self, request):
         file_param = request.query_params.get('file')
