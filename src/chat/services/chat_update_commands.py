@@ -24,7 +24,11 @@ def format_contact_names(contacts: QuerySet[Contact] | list[Contact]) -> str:
 def contacts_from_ids(ids: list[int] | None) -> list[Contact]:
     if not ids:
         return []
-    return list(Contact.objects.filter(id__in=ids))
+    # `ids` can come from either:
+    # - Contact.id (participants/admins snapshots)
+    # - CustomUser.id (user search results)
+    qs = Contact.objects.filter(id__in=ids).union(Contact.objects.filter(user__id__in=ids))
+    return list(qs)
 
 
 def resolve_actor(data: dict[str, Any]) -> Contact | None:
