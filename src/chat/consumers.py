@@ -5,7 +5,7 @@ from chat.models import Message
 from django.contrib.auth import get_user_model
 from .views import load_last_messages, get_current_chat
 from chat.services.contacts import get_user_contact
-from .api.serializers import ChatSerializer
+from .api.serializers import ChatListSerializer
 
 User = get_user_model()
 
@@ -65,11 +65,12 @@ class ChatConsumer(WebsocketConsumer):
         messages_qs = load_last_messages(chat_id, data.get('msgCount', 50))
         chat = get_current_chat(chat_id)
         username = data.get('username', '')
-        members = [c.user.username for c in chat.participants.all()]
-        admins = [a.user.username for a in chat.admins.all()]
-        chat_data = ChatSerializer(chat).data
+        chat_data = ChatListSerializer(chat).data
         participants_meta = chat_data.get('participantsMeta') or []
         admins_meta = chat_data.get('adminsMeta') or []
+
+        members = [c.get('username') for c in participants_meta if isinstance(c, dict)]
+        admins = [a.get('username') for a in admins_meta if isinstance(a, dict)]
 
         if username in members:
             content = {
@@ -81,7 +82,7 @@ class ChatConsumer(WebsocketConsumer):
                 'participantsMeta': participants_meta,
                 'adminsMeta': admins_meta,
                 'name': chat.name,
-                'chatKey': ChatSerializer(chat).data['chatKey'],
+                'chatKey': chat_data.get('chatKey'),
             }
         else:
             content = {

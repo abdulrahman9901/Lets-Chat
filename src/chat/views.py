@@ -18,4 +18,7 @@ def load_last_messages(chatId,msgCount=10):
     return chat.messages.order_by('-created_at').all()[:msgCount]
 
 def get_current_chat(chatId):
-    return get_object_or_404(Chat,id=chatId)
+    return get_object_or_404(
+        Chat.objects.prefetch_related('participants__user', 'admins__user'),
+        id=chatId,
+    )

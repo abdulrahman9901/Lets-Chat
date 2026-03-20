@@ -273,8 +273,7 @@ class joinChatView(APIView):
                 chat.messages.add(message)
                 chat.save()
                 broadcast_new_message(chat, message)
-            schat = ChatSerializer(chat)
-            print(schat.data)
+            schat = ChatListSerializer(chat)
             broadcast_chats_update(chat)
             return Response({"status": "success", "data": schat.data}, status=status.HTTP_200_OK)
 
