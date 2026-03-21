@@ -12,6 +12,7 @@
 	let resendInfo = $state<string | null>(null);
 	let resendError = $state<string | null>(null);
 	let resendSecondsLeft = $state(0);
+let identifierFromContext = $state(false);
 
 	let intervalId: ReturnType<typeof setInterval> | null = null;
 
@@ -33,12 +34,16 @@
 			'';
 		if (qIdentifier) {
 			identifier = qIdentifier;
+			identifierFromContext = true;
 			return;
 		}
 		const pending = getVerifyPending();
 		if (pending.identifier) {
 			identifier = pending.identifier;
+			identifierFromContext = true;
+			return;
 		}
+		identifierFromContext = false;
 	});
 
 	function clearTimer() {
@@ -111,13 +116,17 @@
 		<h1>Verify your email</h1>
 		<p class="verify-hint">Enter the OTP sent to your email.</p>
 		<form onsubmit={submit}>
-			<input
-				type="text"
-				placeholder="Username or email"
-				bind:value={identifier}
-				disabled={loading}
-				autocomplete="username"
-			/>
+			{#if identifierFromContext}
+				<p class="verify-identifier" title={identifier}>Verifying for: {identifier}</p>
+			{:else}
+				<input
+					type="text"
+					placeholder="Username or email"
+					bind:value={identifier}
+					disabled={loading}
+					autocomplete="username"
+				/>
+			{/if}
 			<input type="text" placeholder="OTP" bind:value={otp} disabled={loading} autocomplete="one-time-code" />
 			{#if errorText}
 				<p class="error">{errorText}</p>
@@ -155,6 +164,15 @@
 		color: var(--Text-Heading-Medium);
 		font-size: 14px;
 		line-height: 1.45;
+	}
+
+	.verify-identifier {
+		margin: 0 0 10px;
+		font-size: 14px;
+		color: var(--Text-Heading-Medium);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	.resend-row {
