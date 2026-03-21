@@ -14,12 +14,23 @@
 
 	const RegistrationSchema = z
 		.object({
-			username: z.string().min(3).regex(/^[a-zA-Z0-9_]+$/),
-			email: z.string().email(),
-			password1: z.string().min(8),
-			password2: z.string().min(8),
+			username: z
+				.string()
+				.min(3, { message: 'Username must be at least 3 characters.' })
+				.regex(/^[a-zA-Z0-9_]+$/, {
+					message:
+						'Username can only contain letters, numbers, and underscores. No spaces or special characters.',
+				}),
+			email: z.string().email({ message: 'Enter a valid email address.' }),
+			password1: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
+			password2: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
 			gender: z.enum(['M', 'F', 'NS']).optional(),
-			phone_number: z.string().regex(/^\+[1-9]\d{1,14}$/).optional(),
+			phone_number: z
+				.string()
+				.regex(/^\+[1-9]\d{1,14}$/, {
+					message: 'Phone must be a valid number in international format (e.g. +1 234 567 8900).',
+				})
+				.optional(),
 		})
 		.refine((d) => d.password1 === d.password2, {
 			message: 'Passwords do not match',
