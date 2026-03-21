@@ -40,7 +40,7 @@ const JoinChatForm = (props) => {
             }
         ).then(res=>{
             console.log("Chat id =======> ",res.data.data.id)
-            message.success('You has joined the Chat successfully. ',5)
+            message.success('You joined the chat successfully.', 5)
             props.getuserChats(props.username,props.token)
             //webSocketInstance.connect(props.username,res.data.data.id)
             // if(webSocketInstance.state() !== 1){

@@ -323,7 +323,7 @@ class Chat extends React.Component {
                 }
         ).then(res=>{
             console.log(res.data)
-            message.success('You have left the chat successfully',5)
+            message.success('You left the chat.', 5)
             this.props.getChats(localStorage.getItem('username'),this.props.token)
             this.initializeChat();
             // window.history.pushState('', 'Home page', '/');

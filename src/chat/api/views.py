@@ -315,7 +315,7 @@ class joinChatView(APIView):
                 chat.participants.add(username)
                 message = Message.objects.create(
                     contact=username,
-                    content='{} has joined the chat'.format(username.user.username),
+                    content='{} joined this chat.'.format(username.user.username),
                     system_message=True,
                 )
                 chat.messages.add(message)

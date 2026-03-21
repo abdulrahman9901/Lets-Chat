@@ -117,7 +117,7 @@ class Command(BaseCommand):
             creator = admins[0]
             created_msg = Message.objects.create(
                 contact=creator,
-                content=f"{creator.user.username} created the chat.",
+                content=f'{creator.user.username} created this chat.',
                 system_message=True,
                 created_at=now - timedelta(days=2),
             )
@@ -129,7 +129,7 @@ class Command(BaseCommand):
                     continue
                 join_msg = Message.objects.create(
                     contact=c,
-                    content=f"{c.user.username} joined the chat.",
+                    content=f'{c.user.username} joined this chat.',
                     system_message=True,
                     created_at=now - timedelta(days=2) + timedelta(minutes=random.randint(1, 30)),
                 )

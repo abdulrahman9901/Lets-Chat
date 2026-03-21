@@ -97,7 +97,7 @@ def handle_remove_member(
             chat.admins.remove(*admins_to_remove)
 
     if actually_removed and actor:
-        content = '{} removed {} from the chat'.format(
+        content = '{} removed {} from this chat.'.format(
             actor.user.username,
             format_contact_names(actually_removed),
         )
@@ -119,7 +119,7 @@ def handle_leave(
         chat.participants.remove(actor)
         if chat.admins.filter(id=actor.id).exists():
             chat.admins.remove(actor)
-        content = '{} left the chat'.format(actor.user.username)
+        content = '{} left this chat.'.format(actor.user.username)
         msg = Message.objects.create(contact=actor, content=content, system_message=True)
         chat.messages.add(msg)
         broadcast_chat_message(broadcaster, chat, msg)
@@ -168,7 +168,7 @@ def handle_add_participant(
 
     if actor:
         if actually_added:
-            content = '{} added {} to the chat'.format(
+            content = '{} added {} to this chat.'.format(
                 actor.user.username,
                 format_contact_names(actually_added),
             )
@@ -176,7 +176,7 @@ def handle_add_participant(
             chat.messages.add(msg)
             broadcast_chat_message(broadcaster, chat, msg)
         elif missing_admins:
-            content = '{} made {} an admin in the chat'.format(
+            content = '{} promoted {} to admin.'.format(
                 actor.user.username,
                 format_contact_names(missing_admins),
             )
@@ -206,7 +206,7 @@ def handle_promote_admin(
         chat.admins.add(*actually_promoted)
 
     if actually_promoted and actor:
-        content = '{} made {} an admin in the chat'.format(
+        content = '{} promoted {} to admin.'.format(
             actor.user.username,
             format_contact_names(actually_promoted),
         )

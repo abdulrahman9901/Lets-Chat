@@ -111,7 +111,7 @@ class ChatUpdateCommandsTests(TestCase):
         updated = s.save()
 
         self.assertFalse(updated.participants.filter(id=self.contact_a.id).exists())
-        self.assertTrue(updated.messages.filter(system_message=True, content__icontains='left the chat').exists())
+        self.assertTrue(updated.messages.filter(system_message=True, content__icontains='left this chat').exists())
 
     @patch('chat.services.chat_broadcast.get_channel_layer', return_value=_DummyChannelLayer())
     def test_add_participant_by_ids(self, _layer):
@@ -143,5 +143,5 @@ class ChatUpdateCommandsTests(TestCase):
         updated = s.save()
 
         self.assertTrue(updated.admins.filter(id=self.contact_b.id).exists())
-        self.assertTrue(updated.messages.filter(system_message=True, content__icontains='admin').exists())
+        self.assertTrue(updated.messages.filter(system_message=True, content__icontains='promoted').exists())
 

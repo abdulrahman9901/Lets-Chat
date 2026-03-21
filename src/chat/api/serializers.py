@@ -124,7 +124,7 @@ class ChatSerializer(serializers.ModelSerializer):
 
         message = Message.objects.create(
             contact=admin_contact,
-            content='{} created the chat'.format(admin_username),
+            content='{} created this chat.'.format(admin_username),
             system_message=True,
         )
         chat.messages.add(message)
