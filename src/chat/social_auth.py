@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from allauth.core.exceptions import ImmediateHttpResponse
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from dj_rest_auth.registration.serializers import SocialLoginSerializer
+from rest_framework import serializers
 
 from chat.models import Contact
 
@@ -38,6 +39,42 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
 
 
 class VerifiedSocialLoginSerializer(SocialLoginSerializer):
+    def set_callback_url(self, view, adapter_class):
+        from django.conf import settings
+
+        pid = getattr(adapter_class, 'provider_id', '')
+        if pid == 'google':
+            allowed = list(getattr(settings, 'SOCIAL_GOOGLE_ALLOWED_REDIRECT_URIS', []) or [])
+        else:
+            allowed = []
+
+        if not allowed:
+            super().set_callback_url(view, adapter_class)
+            return
+
+        initial = getattr(self, 'initial_data', None) or {}
+        raw = (initial.get('redirect_uri') or initial.get('callback_url') or '').strip()
+
+        if len(allowed) == 1:
+            if raw and raw not in allowed:
+                raise serializers.ValidationError(
+                    {'redirect_uri': [f'Allowed redirect URI for this server: {allowed[0]}']}
+                )
+            self.callback_url = raw if raw in allowed else allowed[0]
+            return
+
+        if not raw or raw not in allowed:
+            raise serializers.ValidationError(
+                {
+                    'redirect_uri': [
+                        'When multiple OAuth callbacks are configured, send redirect_uri with the exact '
+                        'URL used for this login (same as the Google redirect to your app). Allowed: '
+                        + ', '.join(allowed)
+                    ]
+                }
+            )
+        self.callback_url = raw
+
     def validate(self, attrs):
         attrs = super().validate(attrs)
         user = attrs['user']

@@ -1,9 +1,10 @@
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from django.test import TestCase
 from allauth.core.exceptions import ImmediateHttpResponse
+from django.test import TestCase, override_settings
 from dj_rest_auth.registration.serializers import SocialLoginSerializer
+from rest_framework import serializers as drf_serializers
 
 from chat.models import CustomUser
 from chat.social_auth import SocialAccountAdapter, VerifiedSocialLoginSerializer
@@ -33,6 +34,53 @@ class VerifiedSocialLoginSerializerTests(TestCase):
         self.assertTrue(user.is_active)
         self.assertTrue(user.is_email_verified)
         self.assertIsNone(user.email_verification_code_hash)
+
+
+class _GoogleAdapterStub:
+    provider_id = 'google'
+
+
+class SocialOAuthCallbackUrlTests(TestCase):
+    @override_settings(
+        SOCIAL_GOOGLE_ALLOWED_REDIRECT_URIS=[
+            'https://lets-chat-gray.vercel.app/oauth/callback/google',
+            'http://localhost:5173/oauth/callback/google',
+        ],
+        SOCIAL_GOOGLE_CALLBACK_URL='https://lets-chat-gray.vercel.app/oauth/callback/google',
+    )
+    def test_multiple_allowed_redirects_require_redirect_uri_in_body(self):
+        view = SimpleNamespace(callback_url='https://lets-chat-gray.vercel.app/oauth/callback/google')
+        serializer = VerifiedSocialLoginSerializer(data={'code': 'x'})
+        with self.assertRaises(drf_serializers.ValidationError):
+            serializer.set_callback_url(view, _GoogleAdapterStub)
+
+    @override_settings(
+        SOCIAL_GOOGLE_ALLOWED_REDIRECT_URIS=[
+            'https://lets-chat-gray.vercel.app/oauth/callback/google',
+            'http://localhost:5173/oauth/callback/google',
+        ],
+        SOCIAL_GOOGLE_CALLBACK_URL='https://lets-chat-gray.vercel.app/oauth/callback/google',
+    )
+    def test_multiple_allowed_redirects_accept_matching_redirect_uri(self):
+        view = SimpleNamespace(callback_url='https://lets-chat-gray.vercel.app/oauth/callback/google')
+        serializer = VerifiedSocialLoginSerializer(
+            data={
+                'code': 'x',
+                'redirect_uri': 'http://localhost:5173/oauth/callback/google',
+            }
+        )
+        serializer.set_callback_url(view, _GoogleAdapterStub)
+        self.assertEqual(serializer.callback_url, 'http://localhost:5173/oauth/callback/google')
+
+    @override_settings(
+        SOCIAL_GOOGLE_ALLOWED_REDIRECT_URIS=['http://localhost:5173/oauth/callback/google'],
+        SOCIAL_GOOGLE_CALLBACK_URL='http://localhost:5173/oauth/callback/google',
+    )
+    def test_single_allowed_redirect_works_without_redirect_uri(self):
+        view = SimpleNamespace(callback_url='http://localhost:5173/oauth/callback/google')
+        serializer = VerifiedSocialLoginSerializer(data={'code': 'x'})
+        serializer.set_callback_url(view, _GoogleAdapterStub)
+        self.assertEqual(serializer.callback_url, 'http://localhost:5173/oauth/callback/google')
 
 
 class SocialAccountAdapterTests(TestCase):

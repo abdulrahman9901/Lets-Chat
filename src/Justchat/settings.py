@@ -73,7 +73,6 @@ INSTALLED_APPS = [
 
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-    'allauth.socialaccount.providers.facebook',
 
 ]
 
@@ -290,18 +289,20 @@ SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 SOCIALACCOUNT_ADAPTER = 'chat.social_auth.SocialAccountAdapter'
 
-SOCIAL_GOOGLE_CALLBACK_URL = os.environ.get('SOCIAL_GOOGLE_CALLBACK_URL', '').strip()
-SOCIAL_FACEBOOK_CALLBACK_URL = os.environ.get('SOCIAL_FACEBOOK_CALLBACK_URL', '').strip()
+def _split_oauth_callback_urls(raw: str) -> list[str]:
+    return [u.strip() for u in (raw or '').split(',') if u.strip()]
+
+
+_SOCIAL_GOOGLE_CALLBACK_RAW = os.environ.get('SOCIAL_GOOGLE_CALLBACK_URL', '').strip()
+SOCIAL_GOOGLE_ALLOWED_REDIRECT_URIS = _split_oauth_callback_urls(_SOCIAL_GOOGLE_CALLBACK_RAW)
+SOCIAL_GOOGLE_CALLBACK_URL = (
+    SOCIAL_GOOGLE_ALLOWED_REDIRECT_URIS[0] if SOCIAL_GOOGLE_ALLOWED_REDIRECT_URIS else ''
+)
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'SCOPE': ['openid', 'email', 'profile'],
         'AUTH_PARAMS': {'access_type': 'online'},
-    },
-    'facebook': {
-        'METHOD': 'oauth2',
-        'SCOPE': ['email', 'public_profile'],
-        'FIELDS': ['id', 'email', 'name'],
     },
 }
 
