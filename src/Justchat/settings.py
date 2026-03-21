@@ -16,6 +16,7 @@ import hashlib
 import os
 import sys
 from django.contrib.auth.hashers import PBKDF2PasswordHasher
+from corsheaders.defaults import default_headers
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 _SRC_ROOT = Path(__file__).resolve().parent.parent
@@ -99,6 +100,7 @@ REST_AUTH = {
 # https://www.rootstrap.com/blog/registration-and-authentication-in-django-apps-with-dj-rest-auth/
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -107,9 +109,6 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'Justchat.urls'
@@ -264,6 +263,10 @@ if _cors_origin_regexes:
 
 # Needed when frontend sends credentialed CORS requests.
 CORS_ALLOW_CREDENTIALS = os.environ.get('CORS_ALLOW_CREDENTIALS', 'true').lower() in ('1', 'true', 'yes')
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'x-xsrf-token',
+]
 
 _csrf_trusted_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
 if _csrf_trusted_origins:
