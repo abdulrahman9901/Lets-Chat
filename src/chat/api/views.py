@@ -30,7 +30,7 @@ from django.utils import timezone
 
 from chat.models import Chat, Message, Contact, CustomUser
 from chat.user_search import search_users
-from .serializers import ChatSerializer, ChatListSerializer
+from .serializers import ChatSerializer, ChatListSerializer, CustomRegisterSerializer
 from chat.services.invite_keys import decrypter
 from chat.services.contacts import get_user_contact
 from chat.services.chat_broadcast import broadcast_chats_update, broadcast_new_message
@@ -119,6 +119,22 @@ class ChatCreateView(CreateAPIView):
     queryset = Chat.objects.all()
     serializer_class = ChatListSerializer
     permission_classes = (permissions.IsAuthenticated,)
+
+
+class RegistrationNoLoginView(CreateAPIView):
+    serializer_class = CustomRegisterSerializer
+    permission_classes = (permissions.AllowAny,)
+    authentication_classes = ()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save(request)
+        return Response(
+            {'detail': 'Registration successful. Verify your email with OTP.', 'username': user.username},
+            status=status.HTTP_201_CREATED,
+        )
+
 
 class ChatUpdateView(UpdateAPIView):
     queryset = Chat.objects.all()
