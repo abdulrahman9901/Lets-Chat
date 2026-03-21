@@ -77,7 +77,7 @@ AUTHENTICATION_BACKENDS = [
 
 SITE_ID = 1
 
-REST_AUTH_REGISTER_SERIALIZERS = {
+REST_AUTH = {
     'REGISTER_SERIALIZER': 'chat.api.serializers.CustomRegisterSerializer',
 }
 
