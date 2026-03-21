@@ -12,7 +12,7 @@
 	let resendInfo = $state<string | null>(null);
 	let resendError = $state<string | null>(null);
 	let resendSecondsLeft = $state(0);
-let identifierFromContext = $state(false);
+	let identifierFromContext = $state(false);
 
 	let intervalId: ReturnType<typeof setInterval> | null = null;
 
