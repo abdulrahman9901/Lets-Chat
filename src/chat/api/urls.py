@@ -11,6 +11,7 @@ from .views import (
     MediaDownloadView,
     FrontendLogView,
     VerifyEmailOTPView,
+    ResendEmailOtpView,
 )
 
 app_name = 'chat'
@@ -19,6 +20,7 @@ urlpatterns = [
     path('media/download/', MediaDownloadView.as_view()),
     path('users/search/', UserSearchView.as_view()),
     path('email/verify-otp/', VerifyEmailOTPView.as_view()),
+    path('email/resend-otp/', ResendEmailOtpView.as_view()),
     path('', ChatListView.as_view()),
     path('create/', ChatCreateView.as_view()),
     path('<int:pk>/update/', ChatUpdateView.as_view()),

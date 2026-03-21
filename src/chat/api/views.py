@@ -2,9 +2,13 @@ import logging
 import hashlib
 import mimetypes
 import os
+import secrets
+from datetime import timedelta
 from urllib.parse import urljoin
 import requests
 from django.conf import settings
+from django.core.cache import cache
+from django.core.mail import send_mail
 from rest_framework.authtoken.models import Token
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.files.storage import default_storage
@@ -32,6 +36,13 @@ from chat.services.contacts import get_user_contact
 from chat.services.chat_broadcast import broadcast_chats_update, broadcast_new_message
 
 frontend_logger = logging.getLogger("frontend")
+registration_logger = logging.getLogger("chat.registration")
+
+EMAIL_OTP_RESEND_COOLDOWN = 60
+
+
+def _resend_otp_cache_key(username: str) -> str:
+    return f'email_otp_resend:{username}'
 
 
 class ExtendedEncoder(DjangoJSONEncoder):
@@ -176,6 +187,70 @@ class VerifyEmailOTPView(APIView):
         )
 
         return Response({'detail': 'Verified'}, status=status.HTTP_200_OK)
+
+
+class ResendEmailOtpView(APIView):
+    permission_classes = (permissions.AllowAny,)
+    authentication_classes = ()
+
+    def post(self, request):
+        username = request.data.get('username')
+        if not username or not str(username).strip():
+            return Response(
+                {'detail': 'username is required'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        username = str(username).strip()
+        cache_key = _resend_otp_cache_key(username)
+        if cache.get(cache_key):
+            return Response(
+                {
+                    'detail': 'Please wait before requesting another code.',
+                    'retry_after': EMAIL_OTP_RESEND_COOLDOWN,
+                },
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
+
+        user = CustomUser.objects.filter(username=username).first()
+        if user is None or user.is_email_verified or not user.email:
+            cache.set(cache_key, 1, timeout=EMAIL_OTP_RESEND_COOLDOWN)
+            return Response({'detail': 'ok', 'cooldown': EMAIL_OTP_RESEND_COOLDOWN})
+
+        otp_code = f'{secrets.randbelow(1000000):06d}'
+        otp_hash = hashlib.sha256(f'{otp_code}:{settings.SECRET_KEY}'.encode('utf-8')).hexdigest()
+        expires_at = timezone.now() + timedelta(minutes=settings.EMAIL_VERIFICATION_OTP_TTL_MINUTES)
+        try:
+            send_mail(
+                subject='Verify your email',
+                message=(
+                    'Your verification code is: {code}\n\n'
+                    'This code will expire in {mins} minutes.\n'
+                ).format(code=otp_code, mins=settings.EMAIL_VERIFICATION_OTP_TTL_MINUTES),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+        except Exception:
+            registration_logger.exception(
+                'Resend OTP email failed backend=%s host=%r user_set=%s to=%r from=%r',
+                settings.EMAIL_BACKEND,
+                getattr(settings, 'EMAIL_HOST', ''),
+                bool(getattr(settings, 'EMAIL_HOST_USER', '')),
+                user.email,
+                settings.DEFAULT_FROM_EMAIL,
+            )
+            return Response(
+                {'detail': 'Unable to send email. Try again later.'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        user.email_verification_code_hash = otp_hash
+        user.email_verification_expires_at = expires_at
+        user.save(
+            update_fields=['email_verification_code_hash', 'email_verification_expires_at'],
+        )
+        cache.set(cache_key, 1, timeout=EMAIL_OTP_RESEND_COOLDOWN)
+        return Response({'detail': 'ok', 'cooldown': EMAIL_OTP_RESEND_COOLDOWN})
 
 
 class MediaDownloadView(APIView):
