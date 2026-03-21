@@ -79,6 +79,7 @@ SITE_ID = 1
 
 REST_AUTH = {
     'REGISTER_SERIALIZER': 'chat.api.serializers.CustomRegisterSerializer',
+    'REGISTER_LOGIN': False,
 }
 
 
