@@ -14,3 +14,5 @@ requests==2.32.3
 opensearch-py>=2.0.0
 django-storages==1.14.6
 boto3==1.42.71
+PyJWT==2.10.1
+python-dotenv==1.0.1

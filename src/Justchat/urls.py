@@ -16,6 +16,7 @@ urlpatterns += [
     path('admin/', admin.site.urls),
     path('chat/', include('chat.api.urls', namespace='chat')),
     path('rest-auth/', include('dj_rest_auth.urls')),
+    path('rest-auth/social/', include('chat.api.social_urls')),
     path('rest-auth/registration/', RegistrationNoLoginView.as_view(), name='rest_register_no_login'),
     path('rest-auth/registration/', include('dj_rest_auth.registration.urls')),
 ]

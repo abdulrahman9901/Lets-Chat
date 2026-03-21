@@ -17,6 +17,16 @@ import os
 import sys
 from django.contrib.auth.hashers import PBKDF2PasswordHasher
 
+_REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+_SRC_ROOT = Path(__file__).resolve().parent.parent
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv(_REPO_ROOT / '.env', override=False)
+    load_dotenv(_SRC_ROOT / '.env', override=False)
+except ImportError:
+    pass
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 LOG_DIR = BASE_DIR / "logs"
@@ -61,6 +71,8 @@ INSTALLED_APPS = [
     'dj_rest_auth.registration',
 
     'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.facebook',
 
 ]
 
@@ -256,16 +268,39 @@ CORS_ALLOW_CREDENTIALS = os.environ.get('CORS_ALLOW_CREDENTIALS', 'true').lower(
 _csrf_trusted_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
 if _csrf_trusted_origins:
     CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_trusted_origins.split(',') if o.strip()]
+
+def _env_bool(key: str, default: str = 'false') -> bool:
+    return os.environ.get(key, default).lower() in ('1', 'true', 'yes')
+
+
+if _env_bool('TRUST_BEHIND_PROXY', 'false'):
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    USE_X_FORWARDED_HOST = True
+
 # https://django-allauth.readthedocs.io/en/latest/advanced.html
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 
 ACCOUNT_EMAIL_VERIFICATION ='none'
 ACCOUNT_AUTHENTICATION_METHOD = 'username'
 ACCOUNT_EMAIL_REQUIRED =False
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+SOCIALACCOUNT_ADAPTER = 'chat.social_auth.SocialAccountAdapter'
 
-def _env_bool(key: str, default: str = 'false') -> bool:
-    return os.environ.get(key, default).lower() in ('1', 'true', 'yes')
+SOCIAL_GOOGLE_CALLBACK_URL = os.environ.get('SOCIAL_GOOGLE_CALLBACK_URL', '').strip()
+SOCIAL_FACEBOOK_CALLBACK_URL = os.environ.get('SOCIAL_FACEBOOK_CALLBACK_URL', '').strip()
 
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': ['openid', 'email', 'profile'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+    },
+    'facebook': {
+        'METHOD': 'oauth2',
+        'SCOPE': ['email', 'public_profile'],
+        'FIELDS': ['id', 'email', 'name'],
+    },
+}
 
 _email_host = os.environ.get('EMAIL_HOST', '').strip()
 _email_backend_explicit = os.environ.get('EMAIL_BACKEND', '').strip()
