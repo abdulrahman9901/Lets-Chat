@@ -363,6 +363,11 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+        'chat.registration': {
+            'handlers': ['console', 'file_django'],
+            'level': 'INFO',
+            'propagate': False,
+        },
         'frontend': {
             'handlers': ['file_frontend'],
             'level': 'INFO',

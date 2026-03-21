@@ -2,6 +2,8 @@ import hashlib
 import secrets
 from datetime import timedelta
 
+import logging
+
 from django.conf import settings
 from django.core.mail import send_mail
 from django.utils import timezone
@@ -18,6 +20,8 @@ from chat.services.chat_broadcast import broadcast_chats_update, broadcast_new_m
 from chat.services.invite_keys import get_chat_key_for_id
 
 from chat.models import GENDER_SELECTION
+
+logger = logging.getLogger('chat.registration')
 
 class CustomRegisterSerializer(RegisterSerializer):
     gender = serializers.ChoiceField(choices=GENDER_SELECTION)
@@ -40,16 +44,27 @@ class CustomRegisterSerializer(RegisterSerializer):
         user.email_verification_expires_at = timezone.now() + timedelta(minutes=settings.EMAIL_VERIFICATION_OTP_TTL_MINUTES)
         user.is_active = False
 
-        send_mail(
-            subject='Verify your email',
-            message=(
-                'Your verification code is: {code}\n\n'
-                'This code will expire in {mins} minutes.\n'
-            ).format(code=otp_code, mins=settings.EMAIL_VERIFICATION_OTP_TTL_MINUTES),
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            fail_silently=False,
-        )
+        try:
+            send_mail(
+                subject='Verify your email',
+                message=(
+                    'Your verification code is: {code}\n\n'
+                    'This code will expire in {mins} minutes.\n'
+                ).format(code=otp_code, mins=settings.EMAIL_VERIFICATION_OTP_TTL_MINUTES),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+        except Exception:
+            logger.exception(
+                'OTP email failed backend=%s host=%r user_set=%s to=%r from=%r',
+                settings.EMAIL_BACKEND,
+                getattr(settings, 'EMAIL_HOST', ''),
+                bool(getattr(settings, 'EMAIL_HOST_USER', '')),
+                user.email,
+                settings.DEFAULT_FROM_EMAIL,
+            )
+            raise
 
         contact = Contact()
         contact.user = user
