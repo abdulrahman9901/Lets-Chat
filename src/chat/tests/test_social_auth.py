@@ -2,7 +2,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from django.test import TestCase
-from allauth.exceptions import ImmediateHttpResponse
+from allauth.core.exceptions import ImmediateHttpResponse
 from dj_rest_auth.registration.serializers import SocialLoginSerializer
 
 from chat.models import CustomUser
@@ -53,3 +53,10 @@ class SocialAccountAdapterTests(TestCase):
             email_addresses=[SimpleNamespace(primary=True, verified=True)],
         )
         self.adapter.pre_social_login(None, sociallogin)
+
+    def test_populate_user_sets_required_custom_fields(self):
+        user = CustomUser(username='g', email='g@example.com')
+        sociallogin = SimpleNamespace(user=user)
+        out = self.adapter.populate_user(None, sociallogin, {})
+        self.assertEqual(out.gender, 'NS')
+        self.assertEqual(out.phone_number, '')

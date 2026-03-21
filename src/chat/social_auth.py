@@ -1,10 +1,26 @@
 from django.http import JsonResponse
-from allauth.exceptions import ImmediateHttpResponse
+from allauth.core.exceptions import ImmediateHttpResponse
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from dj_rest_auth.registration.serializers import SocialLoginSerializer
 
+from chat.models import Contact
+
 
 class SocialAccountAdapter(DefaultSocialAccountAdapter):
+    def populate_user(self, request, sociallogin, data):
+        user = super().populate_user(request, sociallogin, data)
+        if not getattr(user, 'gender', None):
+            user.gender = 'NS'
+        phone = getattr(user, 'phone_number', None)
+        if phone is None or phone == '':
+            user.phone_number = ''
+        return user
+
+    def save_user(self, request, sociallogin, form=None):
+        user = super().save_user(request, sociallogin, form=form)
+        Contact.objects.get_or_create(user=user)
+        return user
+
     def pre_social_login(self, request, sociallogin):
         super().pre_social_login(request, sociallogin)
         if sociallogin.is_existing:
