@@ -12,6 +12,14 @@
 	let gender = $state('');
 	let phone_number = $state('');
 
+	function toUserFacingRegistrationError(raw: string): string {
+		const msg = (raw || '').trim();
+		if (!msg || msg === 'Registration failed') return 'Unable to create your account. Please review the form and try again.';
+		if (msg === 'Failed to fetch') return 'Unable to reach the server. Please check your connection and try again.';
+		if (msg.toLowerCase().includes('network')) return 'Network error while contacting the server. Please try again.';
+		return msg;
+	}
+
 	const RegistrationSchema = z
 		.object({
 			username: z
@@ -86,7 +94,7 @@
 		})
 			.then(() => goto(`/verify-email?identifier=${encodeURIComponent(parsed.data.username)}`))
 			.catch((err: Error) => {
-				error.set(err.message ?? 'Registration failed');
+				error.set(toUserFacingRegistrationError(err.message ?? 'Registration failed'));
 			})
 			.finally(() => loading.set(false));
 	}

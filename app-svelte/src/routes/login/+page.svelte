@@ -8,6 +8,14 @@
 	let username = $state('');
 	let password = $state('');
 
+	function toUserFacingAuthError(raw: string): string {
+		const msg = (raw || '').trim();
+		if (!msg || msg === 'Login failed') return 'Unable to sign in. Please check your username and password.';
+		if (msg === 'Failed to fetch') return 'Unable to reach the server. Please check your connection and try again.';
+		if (msg.toLowerCase().includes('network')) return 'Network error while contacting the server. Please try again.';
+		return msg;
+	}
+
 	$effect(() => {
 		const prefill =
 			$page.url.searchParams.get('identifier') ??
@@ -32,11 +40,7 @@
 			.catch((err: Error) => {
 				const msg = err?.message ?? 'Login failed';
 				logger.error('auth:login:error', { username, message: msg });
-				error.set(
-					msg === 'Failed to fetch'
-						? 'Cannot reach server. Is the backend running at http://127.0.0.1:8000?'
-						: msg
-				);
+				error.set(toUserFacingAuthError(msg));
 			})
 			.finally(() => loading.set(false));
 	}

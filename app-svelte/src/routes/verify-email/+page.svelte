@@ -15,6 +15,14 @@
 
 	let intervalId: ReturnType<typeof setInterval> | null = null;
 
+	function toUserFacingVerifyError(raw: string): string {
+		const msg = (raw || '').trim();
+		if (!msg || msg === 'Verification failed') return 'Unable to verify the code. Please check it and try again.';
+		if (msg === 'Failed to fetch') return 'Unable to reach the server. Please check your connection and try again.';
+		if (msg.toLowerCase().includes('network')) return 'Network error while contacting the server. Please try again.';
+		return msg;
+	}
+
 	let identifier = $state('');
 
 	$effect(() => {
@@ -70,7 +78,7 @@
 		verifyEmailOtp({ username: identifier.trim(), otp: otp.trim() })
 			.then(() => goto(`/login?identifier=${encodeURIComponent(identifier.trim())}&verified=1`))
 			.catch((err: Error) => {
-				errorText = err.message ?? 'Verification failed';
+				errorText = toUserFacingVerifyError(err.message ?? 'Verification failed');
 			})
 			.finally(() => {
 				loading = false;
@@ -91,7 +99,7 @@
 			if (typeof e.retryAfter === 'number' && e.retryAfter > 0) {
 				startCooldown(e.retryAfter);
 			}
-			resendError = e.message ?? 'Could not resend code';
+			resendError = toUserFacingVerifyError(e.message ?? 'Could not resend code');
 		} finally {
 			resendLoading = false;
 		}
