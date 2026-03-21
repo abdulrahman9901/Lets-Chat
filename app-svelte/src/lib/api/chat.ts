@@ -80,6 +80,21 @@ export async function addParticipants(
 	});
 }
 
+export async function promoteToAdmins(
+	chatId: string,
+	actorId: number,
+	promotedIds: number[]
+): Promise<unknown> {
+	return apiRequest(`/chat/${chatId}/update/`, {
+		method: 'PUT',
+		body: {
+			command: 'promoteAdmin',
+			actorId,
+			promotedIds,
+		},
+	});
+}
+
 export async function deleteChat(chatId: string): Promise<unknown> {
 	return apiRequest(`/chat/${chatId}/delete/`, { method: 'DELETE' });
 }

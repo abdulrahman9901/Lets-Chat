@@ -97,7 +97,7 @@
 	}
 
 	function doDelete() {
-		if (!validChatId) return;
+		if (!validChatId || !isAdmin) return;
 		deleteChat(chatId!)
 			.then(() => {
 				getChats(currentUser).then(setChats);

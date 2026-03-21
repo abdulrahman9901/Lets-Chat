@@ -8,7 +8,7 @@
 		showParticipantsPanel,
 	} from '$lib/stores/nav';
 	import { onDestroy } from 'svelte';
-	import { kickMembers } from '$lib/api/chat';
+	import { kickMembers, promoteToAdmins } from '$lib/api/chat';
 	import { participantsCount } from '$lib/stores/message';
 
 	let currentUser = $derived($username ?? '');
@@ -39,6 +39,9 @@
 	let confirmKick = $state<string | null>(null);
 	let kickLoading = $state<string | null>(null);
 	let kickError = $state('');
+	let confirmPromote = $state<string | null>(null);
+	let promoteLoading = $state<string | null>(null);
+	let promoteError = $state('');
 
 	function onBackdropClick(e: MouseEvent) {
 		if (e.target === e.currentTarget) closeParticipantsPanel();
@@ -55,7 +58,16 @@
 
 	function openKickConfirm(p: string) {
 		kickError = '';
+		promoteError = '';
+		confirmPromote = null;
 		confirmKick = p;
+	}
+
+	function openPromoteConfirm(p: string) {
+		promoteError = '';
+		kickError = '';
+		confirmKick = null;
+		confirmPromote = p;
 	}
 
 	async function doKick(target: string) {
@@ -88,6 +100,35 @@
 			kickError = err instanceof Error ? err.message : 'Failed to remove participant';
 		} finally {
 			kickLoading = null;
+		}
+	}
+
+	async function doPromote(target: string) {
+		if (!chatId) return;
+		if (!actorId) return;
+		promoteError = '';
+
+		const targetId = ($participantsMeta ?? []).find((p) => p.username === target)?.id ?? null;
+		if (!targetId) {
+			promoteError = 'Unable to identify participant.';
+			return;
+		}
+
+		promoteLoading = target;
+		try {
+			await promoteToAdmins(chatId, actorId, [targetId]);
+			const nextAdmins = Array.from(new Set([...($admins ?? []), target]));
+			const meta = ($participantsMeta ?? []).find((p) => p.username === target);
+			const nextAdminsMeta = meta
+				? [...($adminsMeta ?? []).filter((a) => a.username !== target), meta]
+				: [...($adminsMeta ?? [])];
+			admins.set(nextAdmins);
+			adminsMeta.set(nextAdminsMeta);
+			confirmPromote = null;
+		} catch (err) {
+			promoteError = err instanceof Error ? err.message : 'Failed to promote participant';
+		} finally {
+			promoteLoading = null;
 		}
 	}
 </script>
@@ -156,17 +197,43 @@
 							{/if}
 						</span>
 						{#if isAdmin && !self}
-							<button
-								type="button"
-								class="kick"
-								aria-label={"Remove " + p}
-								disabled={kickLoading !== null && kickLoading !== p}
-								onclick={() => openKickConfirm(p)}
-							>
-								Remove
-							</button>
+							<div class="row-actions">
+								{#if !admin}
+									<button
+										type="button"
+										class="promote"
+										aria-label={"Make " + p + " an admin"}
+										disabled={promoteLoading !== null && promoteLoading !== p}
+										onclick={() => openPromoteConfirm(p)}
+									>
+										Make admin
+									</button>
+								{/if}
+								<button
+									type="button"
+									class="kick"
+									aria-label={"Remove " + p}
+									disabled={kickLoading !== null && kickLoading !== p}
+									onclick={() => openKickConfirm(p)}
+								>
+									Remove
+								</button>
+							</div>
 						{/if}
 					</li>
+					{#if confirmPromote === p}
+						<li class="confirm-row promote-confirm" aria-label={"Confirm promote " + p}>
+							<span class="confirm-text">Make {p} an admin?</span>
+							<div class="confirm-actions">
+								<button type="button" class="confirm-btn" onclick={() => (confirmPromote = null)} disabled={promoteLoading === p}>
+									Cancel
+								</button>
+								<button type="button" class="confirm-btn primary" onclick={() => doPromote(p)} disabled={promoteLoading === p}>
+									{promoteLoading === p ? 'Promoting…' : 'Make admin'}
+								</button>
+							</div>
+						</li>
+					{/if}
 					{#if confirmKick === p}
 						<li class="confirm-row" aria-label={"Confirm remove " + p}>
 							<span class="confirm-text">Remove {p} from this chat?</span>
@@ -188,6 +255,9 @@
 			{/if}
 			{#if kickError}
 				<p class="error" role="status" aria-live="polite">{kickError}</p>
+			{/if}
+			{#if promoteError}
+				<p class="error" role="status" aria-live="polite">{promoteError}</p>
 			{/if}
 		</aside>
 	</div>
@@ -350,13 +420,36 @@
 		display: flex;
 		align-items: center;
 		gap: 10px;
+		flex-wrap: wrap;
 		padding: 9px 10px;
 		border: 1px solid var(--Border-Subtle);
 		border-radius: 10px;
 		background: rgba(255, 255, 255, 0.02);
 	}
-	.kick {
+	.row-actions {
 		margin-left: auto;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 6px;
+		justify-content: flex-end;
+	}
+	.promote {
+		padding: 7px 9px;
+		border-radius: 8px;
+		border: 1px solid rgba(56, 189, 248, 0.45);
+		background: rgba(56, 189, 248, 0.12);
+		color: var(--accent-glow);
+		cursor: pointer;
+		font-size: 12px;
+		font-weight: 600;
+		white-space: nowrap;
+	}
+	.promote:disabled {
+		opacity: 0.55;
+		cursor: not-allowed;
+	}
+	.kick {
 		padding: 7px 9px;
 		border-radius: 8px;
 		border: 1px solid var(--Border-Subtle);
@@ -406,6 +499,11 @@
 		background: #dc2626;
 		border-color: #dc2626;
 		color: #fff;
+	}
+	.confirm-btn.primary {
+		background: rgba(56, 189, 248, 0.25);
+		border-color: var(--accent-glow);
+		color: var(--accent-glow);
 	}
 	.error {
 		margin: 0;
