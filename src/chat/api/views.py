@@ -45,6 +45,15 @@ def _resend_otp_cache_key(username: str) -> str:
     return f'email_otp_resend:{username}'
 
 
+def _resolve_user_from_identifier(identifier: str) -> CustomUser | None:
+    raw = (identifier or '').strip()
+    if not raw:
+        return None
+    if '@' in raw:
+        return CustomUser.objects.filter(email__iexact=raw).first()
+    return CustomUser.objects.filter(username=raw).first()
+
+
 class ExtendedEncoder(DjangoJSONEncoder):
     def default(self, o):
         if isinstance(o, ImageFieldFile):
@@ -144,13 +153,13 @@ class VerifyEmailOTPView(APIView):
     authentication_classes = ()
 
     def post(self, request):
-        username = request.data.get('username')
+        identifier = request.data.get('username') or request.data.get('email') or request.data.get('identifier')
         otp_raw = request.data.get('otp')
         otp = str(otp_raw).strip() if otp_raw is not None else ''
 
-        if not username or not otp:
+        if not identifier or not otp:
             return Response(
-                {'detail': 'username and otp are required'},
+                {'detail': 'username/email and otp are required'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         if not otp.isdigit() or len(otp) < 4:
@@ -159,7 +168,9 @@ class VerifyEmailOTPView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        user = get_object_or_404(CustomUser, username=username)
+        user = _resolve_user_from_identifier(str(identifier))
+        if user is None:
+            return Response({'detail': 'Invalid username/email'}, status=status.HTTP_400_BAD_REQUEST)
         if user.is_email_verified:
             return Response({'detail': 'Already verified'}, status=status.HTTP_200_OK)
 
@@ -194,14 +205,16 @@ class ResendEmailOtpView(APIView):
     authentication_classes = ()
 
     def post(self, request):
-        username = request.data.get('username')
-        if not username or not str(username).strip():
+        identifier = request.data.get('username') or request.data.get('email') or request.data.get('identifier')
+        if not identifier or not str(identifier).strip():
             return Response(
-                {'detail': 'username is required'},
+                {'detail': 'username or email is required'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        username = str(username).strip()
-        cache_key = _resend_otp_cache_key(username)
+        identifier = str(identifier).strip()
+        user = _resolve_user_from_identifier(identifier)
+        cache_id = user.username if user else identifier.lower()
+        cache_key = _resend_otp_cache_key(cache_id)
         if cache.get(cache_key):
             return Response(
                 {
@@ -211,7 +224,6 @@ class ResendEmailOtpView(APIView):
                 status=status.HTTP_429_TOO_MANY_REQUESTS,
             )
 
-        user = CustomUser.objects.filter(username=username).first()
         if user is None or user.is_email_verified or not user.email:
             cache.set(cache_key, 1, timeout=EMAIL_OTP_RESEND_COOLDOWN)
             return Response({'detail': 'ok', 'cooldown': EMAIL_OTP_RESEND_COOLDOWN})
