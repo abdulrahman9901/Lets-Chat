@@ -155,6 +155,9 @@
 		{#if resendError}
 			<p class="error">{resendError}</p>
 		{/if}
+		<button type="button" class="verify-back-to-login" onclick={() => goto('/login')}>
+			Back to login
+		</button>
 	</div>
 </div>
 
@@ -209,5 +212,17 @@
 		font-size: 13px;
 		color: var(--Text-Heading-Medium);
 		line-height: 1.45;
+	}
+
+	.verify-back-to-login {
+		margin-top: 20px;
+		width: 100%;
+		background: transparent;
+		color: var(--accent-glow, #38bdf8);
+		border: 1px solid var(--Button-Secondary-Default-Border, rgba(148, 163, 184, 0.6));
+	}
+
+	.verify-back-to-login:hover {
+		background: rgba(56, 189, 248, 0.08);
 	}
 </style>
