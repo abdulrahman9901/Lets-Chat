@@ -1,4 +1,5 @@
-import { apiRequest } from './client';
+import { API_BASE_URL } from '$lib/config';
+import { apiRequest, getCsrfToken } from './client';
 import { setAuth, clearError } from '$lib/stores/auth';
 import { resetNavState } from '$lib/stores/nav';
 
@@ -63,4 +64,32 @@ export async function verifyEmailOtp(payload: VerifyEmailOtpPayload): Promise<un
 		method: 'POST',
 		body: payload,
 	});
+}
+
+export type ResendEmailOtpResult = { cooldown: number };
+
+export async function resendEmailOtp(username: string): Promise<ResendEmailOtpResult> {
+	const url = `${API_BASE_URL}/chat/email/resend-otp/`;
+	const res = await fetch(url, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'X-CSRFToken': getCsrfToken(),
+		},
+		body: JSON.stringify({ username }),
+		credentials: 'omit',
+	});
+	const data = (await res.json().catch(() => ({}))) as {
+		detail?: string;
+		retry_after?: number;
+		cooldown?: number;
+	};
+	if (!res.ok) {
+		const err = new Error(
+			typeof data.detail === 'string' ? data.detail : res.statusText || 'Resend failed'
+		) as Error & { retryAfter?: number };
+		if (typeof data.retry_after === 'number') err.retryAfter = data.retry_after;
+		throw err;
+	}
+	return { cooldown: typeof data.cooldown === 'number' ? data.cooldown : 60 };
 }

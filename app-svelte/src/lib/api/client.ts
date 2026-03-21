@@ -2,7 +2,7 @@ import { API_BASE_URL } from '$lib/config';
 import { get } from 'svelte/store';
 import { token } from '$lib/stores/auth';
 
-function getCsrfToken(): string {
+export function getCsrfToken(): string {
 	const name = 'csrftoken';
 	const cookies = document.cookie.split(';');
 	for (const c of cookies) {
