@@ -244,6 +244,17 @@ if _cors_origins:
 else:
     CORS_ALLOWED_ORIGINS = []
     CORS_ORIGIN_ALLOW_ALL = True
+
+_cors_origin_regexes = os.environ.get('CORS_ALLOWED_ORIGIN_REGEXES', '')
+if _cors_origin_regexes:
+    CORS_ALLOWED_ORIGIN_REGEXES = [r.strip() for r in _cors_origin_regexes.split(',') if r.strip()]
+
+# Needed when frontend sends credentialed CORS requests.
+CORS_ALLOW_CREDENTIALS = os.environ.get('CORS_ALLOW_CREDENTIALS', 'true').lower() in ('1', 'true', 'yes')
+
+_csrf_trusted_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+if _csrf_trusted_origins:
+    CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_trusted_origins.split(',') if o.strip()]
 # https://django-allauth.readthedocs.io/en/latest/advanced.html
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 
