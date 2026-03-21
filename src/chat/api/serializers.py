@@ -64,7 +64,6 @@ class CustomRegisterSerializer(RegisterSerializer):
                 user.email,
                 settings.DEFAULT_FROM_EMAIL,
             )
-            raise
 
         contact = Contact()
         contact.user = user
