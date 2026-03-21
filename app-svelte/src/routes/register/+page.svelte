@@ -93,20 +93,77 @@
 </script>
 
 <div class="auth-page">
-	<div class="auth-card">
+	<div class="auth-card auth-card--wide">
 		<h1>Create account</h1>
 		<form onsubmit={handleSubmit}>
-			<input type="text" placeholder="Username" bind:value={username} disabled={$loading} />
-			<input type="email" placeholder="Email" bind:value={email} disabled={$loading} />
-			<input type="password" placeholder="Password" bind:value={password1} disabled={$loading} />
-			<input type="password" placeholder="Confirm password" bind:value={password2} disabled={$loading} />
-			<select bind:value={gender} disabled={$loading} aria-label="Gender (optional)">
-				<option value="">Gender assigned to you on birth(optional)</option>
-				<option value="M">Male</option>
-				<option value="F">Female</option>
-				<option value="NS">Other</option>
-			</select>
-			<input type="text" placeholder="Phone (optional)" bind:value={phone_number} disabled={$loading} />
+			<div class="auth-field">
+				<label for="reg-username">Username</label>
+				<input
+					id="reg-username"
+					type="text"
+					autocomplete="username"
+					placeholder="letters, numbers, underscores"
+					bind:value={username}
+					disabled={$loading}
+				/>
+			</div>
+			<div class="auth-field">
+				<label for="reg-email">Email</label>
+				<input
+					id="reg-email"
+					type="email"
+					autocomplete="email"
+					placeholder="you@example.com"
+					bind:value={email}
+					disabled={$loading}
+				/>
+			</div>
+			<div class="auth-field">
+				<label for="reg-password1">Password</label>
+				<input
+					id="reg-password1"
+					type="password"
+					autocomplete="new-password"
+					placeholder="At least 8 characters"
+					bind:value={password1}
+					disabled={$loading}
+				/>
+			</div>
+			<div class="auth-field">
+				<label for="reg-password2">Confirm password</label>
+				<input
+					id="reg-password2"
+					type="password"
+					autocomplete="new-password"
+					placeholder="Re-enter password"
+					bind:value={password2}
+					disabled={$loading}
+				/>
+			</div>
+			<div class="auth-field">
+				<label for="reg-gender"
+					>Gender <span class="auth-field-hint">(optional)</span></label
+				>
+				<select id="reg-gender" bind:value={gender} disabled={$loading}>
+					<option value="">Not specified</option>
+					<option value="M">Male</option>
+					<option value="F">Female</option>
+					<option value="NS">Other</option>
+				</select>
+			</div>
+			<div class="auth-field">
+				<label for="reg-phone"
+					>Phone <span class="auth-field-hint">(optional)</span></label
+				>
+				<input
+					id="reg-phone"
+					type="tel"
+					autocomplete="tel"
+					placeholder="e.g. +1 234 567 8900"
+					bind:value={phone_number}
+					disabled={$loading}
+				/>
+			</div>
 			{#if $error}
 				<p class="error">{$error}</p>
 			{/if}

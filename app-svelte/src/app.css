@@ -54,6 +54,10 @@ body {
 	padding: 32px;
 }
 
+.auth-card--wide {
+	max-width: min(440px, 92vw);
+}
+
 .auth-card h1 {
 	margin: 0 0 24px;
 	font-size: 24px;
@@ -63,7 +67,25 @@ body {
 .auth-card form {
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
+	gap: 14px;
+}
+
+.auth-field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	align-items: stretch;
+}
+
+.auth-field label {
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--Text-Heading-Medium);
+}
+
+.auth-field-hint {
+	font-weight: 400;
+	opacity: 0.88;
 }
 
 .auth-card input {
