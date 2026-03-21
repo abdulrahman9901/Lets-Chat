@@ -17,7 +17,12 @@
 	let currentToken: string | null = null;
 
 	function isPublicPath(pathname: string): boolean {
-		return pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/verify-email');
+		return (
+			pathname.startsWith('/login') ||
+			pathname.startsWith('/register') ||
+			pathname.startsWith('/verify-email') ||
+			pathname.startsWith('/oauth/callback/')
+		);
 	}
 
 	function enforceRouteAccess() {

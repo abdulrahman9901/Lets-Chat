@@ -4,6 +4,7 @@
 	import { token, loading, error } from '$lib/stores/auth';
 	import { login as doLogin, clearError } from '$lib/api/auth';
 	import { logger } from '$lib/logger';
+	import SocialLoginButtons from '$lib/components/SocialLoginButtons.svelte';
 
 	let username = $state('');
 	let password = $state('');
@@ -69,6 +70,7 @@
 			{/if}
 			<button type="submit" disabled={$loading}>{$loading ? 'Signing in…' : 'Sign in'}</button>
 		</form>
+		<SocialLoginButtons />
 		<p class="link"><a href="/register">Create an account</a></p>
 		<p class="link"><a href="/verify-email">Verify email</a></p>
 	</div>

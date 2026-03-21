@@ -12,3 +12,8 @@ export const IMAGE_PROCESSING_BASE_URL =
 	typeof import.meta.env !== 'undefined' && import.meta.env?.VITE_IMAGE_PROCESSING_BASE_URL
 		? String(import.meta.env.VITE_IMAGE_PROCESSING_BASE_URL)
 		: '';
+
+export const SOCIAL_GOOGLE_CLIENT_ID =
+	typeof import.meta.env !== 'undefined' && import.meta.env?.VITE_SOCIAL_GOOGLE_CLIENT_ID
+		? String(import.meta.env.VITE_SOCIAL_GOOGLE_CLIENT_ID)
+		: '';

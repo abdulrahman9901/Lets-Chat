@@ -4,6 +4,7 @@
 	import { register as doRegister, clearError } from '$lib/api/auth';
 	import { parsePhoneNumberFromString } from 'libphonenumber-js';
 	import { z } from 'zod';
+	import SocialLoginButtons from '$lib/components/SocialLoginButtons.svelte';
 
 	let username = $state('');
 	let email = $state('');
@@ -177,6 +178,7 @@
 			{/if}
 			<button type="submit" disabled={$loading}>{$loading ? 'Creating…' : 'Register'}</button>
 		</form>
+		<SocialLoginButtons />
 		<p class="link"><a href="/login">Already have an account?</a></p>
 		<p class="link"><a href="/verify-email">Verify email</a></p>
 	</div>
