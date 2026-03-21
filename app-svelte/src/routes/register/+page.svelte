@@ -145,7 +145,7 @@
 					>Gender <span class="auth-field-hint">(optional)</span></label
 				>
 				<select id="reg-gender" bind:value={gender} disabled={$loading}>
-					<option value="">Not specified</option>
+					<option value="">Gender assigned to you on birth(optional)</option>
 					<option value="M">Male</option>
 					<option value="F">Female</option>
 					<option value="NS">Other</option>
