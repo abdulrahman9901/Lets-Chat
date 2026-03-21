@@ -24,15 +24,15 @@ from chat.models import GENDER_SELECTION
 logger = logging.getLogger('chat.registration')
 
 class CustomRegisterSerializer(RegisterSerializer):
-    gender = serializers.ChoiceField(choices=GENDER_SELECTION)
-    phone_number = serializers.CharField(max_length=30)
+    gender = serializers.ChoiceField(choices=GENDER_SELECTION, required=False, allow_null=True)
+    phone_number = serializers.CharField(max_length=30, required=False, allow_blank=True)
 
     # Define transaction.atomic to rollback the save operation in case of error
     @transaction.atomic
     def save(self, request):
         user = super().save(request)
-        user.gender = self.data.get('gender')
-        user.phone_number = self.data.get('phone_number')
+        user.gender = self.validated_data.get('gender') or 'NS'
+        user.phone_number = self.validated_data.get('phone_number') or ''
 
         if not user.email:
             raise serializers.ValidationError({'email': 'Email is required for verification'})
