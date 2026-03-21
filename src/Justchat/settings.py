@@ -261,7 +261,10 @@ _email_backend_explicit = os.environ.get('EMAIL_BACKEND', '').strip()
 if _email_backend_explicit:
     EMAIL_BACKEND = _email_backend_explicit
 elif _email_host:
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    if _env_bool('EMAIL_SSL_NO_VERIFY', 'false'):
+        EMAIL_BACKEND = 'chat.email_backends.UnsafeTLSSMTPEmailBackend'
+    else:
+        EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
@@ -277,6 +280,7 @@ if _email_host:
         EMAIL_TIMEOUT = int(_timeout)
 
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@localhost')
+EMAIL_OTP_SUBJECT = os.environ.get('EMAIL_OTP_SUBJECT', 'Verify your email')
 EMAIL_VERIFICATION_OTP_TTL_MINUTES = int(os.environ.get('EMAIL_VERIFICATION_OTP_TTL_MINUTES', '10'))
 EMAIL_VERIFICATION_DELETE_AFTER_HOURS = int(os.environ.get('EMAIL_VERIFICATION_DELETE_AFTER_HOURS', '2'))
 

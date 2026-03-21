@@ -46,7 +46,7 @@ class CustomRegisterSerializer(RegisterSerializer):
 
         try:
             send_mail(
-                subject='Verify your email',
+                subject=settings.EMAIL_OTP_SUBJECT,
                 message=(
                     'Your verification code is: {code}\n\n'
                     'This code will expire in {mins} minutes.\n'
