@@ -170,5 +170,6 @@
 			<button type="submit" disabled={$loading}>{$loading ? 'Creating…' : 'Register'}</button>
 		</form>
 		<p class="link"><a href="/login">Already have an account?</a></p>
+		<p class="link"><a href="/verify-email">Verify email</a></p>
 	</div>
 </div>

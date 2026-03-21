@@ -66,5 +66,6 @@
 			<button type="submit" disabled={$loading}>{$loading ? 'Signing in…' : 'Sign in'}</button>
 		</form>
 		<p class="link"><a href="/register">Create an account</a></p>
+		<p class="link"><a href="/verify-email">Verify email</a></p>
 	</div>
 </div>
