@@ -1,6 +1,6 @@
 import { API_BASE_URL } from '$lib/config';
 import { apiRequest, getCsrfToken } from './client';
-import { setAuth, clearError } from '$lib/stores/auth';
+import { setAuth, clearError, setVerifyPending, clearVerifyPending } from '$lib/stores/auth';
 import { resetNavState } from '$lib/stores/nav';
 
 export interface LoginPayload {
@@ -26,6 +26,7 @@ export async function login(payload: LoginPayload): Promise<{ token: string; use
 		method: 'POST',
 		body: payload,
 	});
+	clearVerifyPending();
 	setAuth(data.key, payload.username);
 	return { token: data.key, username: payload.username };
 }
@@ -33,12 +34,13 @@ export async function login(payload: LoginPayload): Promise<{ token: string; use
 export async function register(
 	payload: RegisterPayload
 ): Promise<{ token: string; username: string }> {
-	const data = await apiRequest<LoginResponse>('/rest-auth/registration/', {
+	await apiRequest<LoginResponse>('/rest-auth/registration/', {
 		method: 'POST',
 		body: payload,
 	});
-	setAuth(data.key, payload.username);
-	return { token: data.key, username: payload.username };
+	setAuth(null, null);
+	setVerifyPending(payload.username);
+	return { token: '', username: payload.username };
 }
 
 export async function logout(): Promise<void> {
@@ -60,10 +62,12 @@ export interface VerifyEmailOtpPayload {
 }
 
 export async function verifyEmailOtp(payload: VerifyEmailOtpPayload): Promise<unknown> {
-	return apiRequest('/chat/email/verify-otp/', {
+	const result = await apiRequest('/chat/email/verify-otp/', {
 		method: 'POST',
 		body: payload,
 	});
+	clearVerifyPending();
+	return result;
 }
 
 export type ResendEmailOtpResult = { cooldown: number };
@@ -76,7 +80,7 @@ export async function resendEmailOtp(username: string): Promise<ResendEmailOtpRe
 			'Content-Type': 'application/json',
 			'X-CSRFToken': getCsrfToken(),
 		},
-		body: JSON.stringify({ username }),
+		body: JSON.stringify({ identifier: username }),
 		credentials: 'omit',
 	});
 	const data = (await res.json().catch(() => ({}))) as {

@@ -84,7 +84,7 @@
 			...(parsed.data.gender && { gender: parsed.data.gender }),
 			...(parsed.data.phone_number && { phone_number: parsed.data.phone_number }),
 		})
-			.then(() => goto(`/verify-email?username=${encodeURIComponent(parsed.data.username)}`))
+			.then(() => goto(`/verify-email?identifier=${encodeURIComponent(parsed.data.username)}`))
 			.catch((err: Error) => {
 				error.set(err.message ?? 'Registration failed');
 			})

@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import '../app.css';
-	import { checkAuthState, token } from '$lib/stores/auth';
+	import { checkAuthState, token, getVerifyPending } from '$lib/stores/auth';
 	import { logout } from '$lib/api/auth';
 	import { setMessages, addMessage, setChats } from '$lib/stores/message';
 	import { getChats } from '$lib/api/chat';
@@ -11,14 +13,40 @@
 
 	const AUTH_EXPIRY_MS = 3600 * 1000;
 	let logoutTimer: ReturnType<typeof setTimeout> | null = null;
+	let currentPath = '';
+	let currentToken: string | null = null;
+
+	function isPublicPath(pathname: string): boolean {
+		return pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/verify-email');
+	}
+
+	function enforceRouteAccess() {
+		const pending = getVerifyPending();
+		if (pending.pending) {
+			if (!currentPath.startsWith('/verify-email')) {
+				const q = pending.identifier ? `?identifier=${encodeURIComponent(pending.identifier)}` : '';
+				goto(`/verify-email${q}`, { replaceState: true });
+			}
+			return;
+		}
+		if (!currentToken && !isPublicPath(currentPath)) {
+			goto('/login', { replaceState: true });
+		}
+	}
 
 	onMount(() => {
 		checkAuthState();
+		const unsubPage = page.subscribe((p) => {
+			currentPath = p.url.pathname;
+			enforceRouteAccess();
+		});
 		const unsub = token.subscribe((t) => {
+			currentToken = t;
 			if (logoutTimer) {
 				clearTimeout(logoutTimer);
 				logoutTimer = null;
 			}
+			enforceRouteAccess();
 			if (t) {
 				ws.addCallbacks(
 					(payload) =>
@@ -45,6 +73,7 @@
 		});
 		return () => {
 			unsub();
+			unsubPage();
 			if (logoutTimer) clearTimeout(logoutTimer);
 		};
 	});

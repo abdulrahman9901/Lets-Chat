@@ -1,11 +1,20 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import { token, loading, error } from '$lib/stores/auth';
 	import { login as doLogin, clearError } from '$lib/api/auth';
 	import { logger } from '$lib/logger';
 
 	let username = $state('');
 	let password = $state('');
+
+	$effect(() => {
+		const prefill =
+			$page.url.searchParams.get('identifier') ??
+			$page.url.searchParams.get('username') ??
+			'';
+		if (prefill && !username) username = prefill;
+	});
 
 	$effect(() => {
 		if ($token) goto('/');

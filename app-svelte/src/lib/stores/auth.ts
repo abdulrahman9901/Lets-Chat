@@ -1,6 +1,8 @@
 import { writable } from 'svelte/store';
 
 const AUTH_EXPIRY_SEC = 3600;
+const VERIFY_PENDING_KEY = 'verify_pending';
+const VERIFY_IDENTIFIER_KEY = 'verify_identifier';
 
 function clearStorage() {
 	if (typeof localStorage === 'undefined') return;
@@ -24,6 +26,29 @@ export const token = writable<string | null>(null);
 export const username = writable<string | null>(null);
 export const loading = writable(false);
 export const error = writable<string | null>(null);
+
+export function setVerifyPending(identifier: string | null) {
+	if (typeof localStorage === 'undefined') return;
+	if (!identifier) {
+		localStorage.removeItem(VERIFY_PENDING_KEY);
+		localStorage.removeItem(VERIFY_IDENTIFIER_KEY);
+		return;
+	}
+	localStorage.setItem(VERIFY_PENDING_KEY, '1');
+	localStorage.setItem(VERIFY_IDENTIFIER_KEY, identifier);
+}
+
+export function clearVerifyPending() {
+	setVerifyPending(null);
+}
+
+export function getVerifyPending(): { pending: boolean; identifier: string | null } {
+	if (typeof localStorage === 'undefined') return { pending: false, identifier: null };
+	return {
+		pending: localStorage.getItem(VERIFY_PENDING_KEY) === '1',
+		identifier: localStorage.getItem(VERIFY_IDENTIFIER_KEY),
+	};
+}
 
 export function setAuth(t: string | null, u: string | null) {
 	token.set(t);

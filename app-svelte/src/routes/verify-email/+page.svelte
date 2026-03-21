@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { onDestroy } from 'svelte';
 	import { verifyEmailOtp, resendEmailOtp } from '$lib/api/auth';
+	import { getVerifyPending } from '$lib/stores/auth';
 
 	let otp = $state('');
 	let loading = $state(false);
@@ -14,7 +15,23 @@
 
 	let intervalId: ReturnType<typeof setInterval> | null = null;
 
-	const username = $derived($page.url.searchParams.get('username') ?? '');
+	let identifier = $state('');
+
+	$effect(() => {
+		const qIdentifier =
+			$page.url.searchParams.get('identifier') ??
+			$page.url.searchParams.get('username') ??
+			$page.url.searchParams.get('email') ??
+			'';
+		if (qIdentifier) {
+			identifier = qIdentifier;
+			return;
+		}
+		const pending = getVerifyPending();
+		if (pending.identifier) {
+			identifier = pending.identifier;
+		}
+	});
 
 	function clearTimer() {
 		if (intervalId) {
@@ -39,8 +56,8 @@
 
 	function submit(e: SubmitEvent) {
 		e.preventDefault();
-		if (!username) {
-			errorText = 'Missing username in verification link';
+		if (!identifier.trim()) {
+			errorText = 'Enter your username or email';
 			return;
 		}
 		if (!otp.trim()) {
@@ -50,8 +67,8 @@
 
 		loading = true;
 		errorText = null;
-		verifyEmailOtp({ username, otp: otp.trim() })
-			.then(() => goto('/'))
+		verifyEmailOtp({ username: identifier.trim(), otp: otp.trim() })
+			.then(() => goto(`/login?identifier=${encodeURIComponent(identifier.trim())}&verified=1`))
 			.catch((err: Error) => {
 				errorText = err.message ?? 'Verification failed';
 			})
@@ -61,13 +78,13 @@
 	}
 
 	async function resend() {
-		if (!username || resendSecondsLeft > 0 || resendLoading) return;
+		if (!identifier.trim() || resendSecondsLeft > 0 || resendLoading) return;
 		resendInfo = null;
 		resendError = null;
 		resendLoading = true;
 		try {
-			const { cooldown } = await resendEmailOtp(username);
-			resendInfo = 'If an account exists for this username, a new code was sent to its email.';
+			const { cooldown } = await resendEmailOtp(identifier.trim());
+			resendInfo = 'If an account exists, a new code was sent.';
 			startCooldown(cooldown);
 		} catch (err) {
 			const e = err as Error & { retryAfter?: number };
@@ -86,6 +103,13 @@
 		<h1>Verify your email</h1>
 		<p class="verify-hint">Enter the OTP sent to your email.</p>
 		<form onsubmit={submit}>
+			<input
+				type="text"
+				placeholder="Username or email"
+				bind:value={identifier}
+				disabled={loading}
+				autocomplete="username"
+			/>
 			<input type="text" placeholder="OTP" bind:value={otp} disabled={loading} autocomplete="one-time-code" />
 			{#if errorText}
 				<p class="error">{errorText}</p>
@@ -101,7 +125,7 @@
 				<button
 					type="button"
 					class="resend-btn"
-					disabled={resendLoading || !username}
+					disabled={resendLoading || !identifier.trim()}
 					onclick={resend}
 				>
 					{resendLoading ? 'Sending…' : 'Resend code'}
