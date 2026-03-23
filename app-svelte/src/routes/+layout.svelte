@@ -28,7 +28,12 @@
 	function enforceRouteAccess() {
 		const pending = getVerifyPending();
 		if (pending.pending) {
-			if (!currentPath.startsWith('/verify-email')) {
+			const allowedWhilePending =
+				currentPath.startsWith('/verify-email') ||
+				currentPath.startsWith('/login') ||
+				currentPath.startsWith('/register') ||
+				currentPath.startsWith('/oauth/callback/');
+			if (!allowedWhilePending) {
 				const q = pending.identifier ? `?identifier=${encodeURIComponent(pending.identifier)}` : '';
 				goto(`/verify-email${q}`, { replaceState: true });
 			}
