@@ -110,20 +110,11 @@
 	async function doPromote(target: string) {
 		if (!chatId) return;
 		promoteError = '';
-		if (!actorId) {
-			promoteError = 'Unable to identify current user.';
-			return;
-		}
-		const targetContactId = ($participantsMeta ?? []).find((p) => p.username === target)?.id ?? null;
-		if (!targetContactId) {
-			promoteError = 'Unable to identify participant.';
-			return;
-		}
 
 		promoteLoading = target;
 		const traceId = generateTraceId();
 		try {
-			await promoteToAdmins(chatId, { actorId, promotedIds: [targetContactId] }, traceId);
+			await promoteToAdmins(chatId, [target], traceId);
 			const nextAdmins = Array.from(new Set([...($admins ?? []), target]));
 			const meta = ($participantsMeta ?? []).find((p) => p.username === target);
 			const nextAdminsMeta = meta

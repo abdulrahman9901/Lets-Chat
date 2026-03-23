@@ -22,6 +22,7 @@ async function chatUpdatePut(
 		command: payload['command'],
 		actorId: payload['actorId'],
 		promotedIds: payload['promotedIds'],
+		promotedUsernames: payload['promotedUsernames'],
 		addedIds: payload['addedIds'],
 	});
 	const result = await apiRequest(`/chat/${chatId}/update/`, {
@@ -117,15 +118,14 @@ export async function addParticipants(
 
 export async function promoteToAdmins(
 	chatId: string,
-	params: { actorId: number; promotedIds: number[] },
+	promotedUsernames: string[],
 	traceId?: string
 ): Promise<unknown> {
 	return chatUpdatePut(
 		chatId,
 		{
 			command: 'promoteAdmin',
-			actorId: params.actorId,
-			promotedIds: params.promotedIds,
+			promotedUsernames,
 		},
 		traceId
 	);
