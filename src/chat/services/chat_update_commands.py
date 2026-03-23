@@ -70,6 +70,30 @@ def contacts_from_usernames(usernames: list[str] | None) -> list[Contact]:
     return [get_user_contact(username) for username in cleaned_usernames]
 
 
+def contacts_for_promote_ids(chat: Any, raw_ids: list[int] | None) -> list[Contact]:
+    if not raw_ids:
+        return []
+
+    ids_set = {rid for rid in raw_ids if isinstance(rid, int)}
+    if not ids_set:
+        return []
+
+    participant_contacts = list(
+        chat.participants.select_related('user').filter(id__in=ids_set),
+    )
+    participant_contact_ids = {c.id for c in participant_contacts}
+
+    remaining_ids = [rid for rid in ids_set if rid not in participant_contact_ids]
+    if not remaining_ids:
+        return participant_contacts
+
+    user_id_contacts = contacts_from_user_ids(remaining_ids)
+    merged: dict[int, Contact] = {c.id: c for c in participant_contacts}
+    for contact in user_id_contacts:
+        merged.setdefault(contact.id, contact)
+    return list(merged.values())
+
+
 def resolve_actor(data: dict[str, Any]) -> Contact | None:
     actor_id = data.get('actorId')
     actor = Contact.objects.filter(id=actor_id).first() if actor_id is not None else None
@@ -220,7 +244,7 @@ def handle_promote_admin(
     broadcaster: Callable[[Any, Message], None],
 ) -> Any:
     promoted_ids = data.get('promotedIds') or []
-    promoted_contacts = contacts_from_user_ids(promoted_ids)
+    promoted_contacts = contacts_for_promote_ids(chat, promoted_ids)
     if not promoted_contacts:
         promoted_usernames = data.get('promotedUsernames') or data.get('admins') or []
         promoted_contacts = contacts_from_usernames(promoted_usernames)
