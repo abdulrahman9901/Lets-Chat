@@ -85,11 +85,6 @@ export function connect(roomId: string | number | null | undefined): void {
 			const parsed = JSON.parse(e.data);
 			const cmd = parsed.command;
 			if (cmd === 'messages') {
-				logger.info('ws:trace:messages', {
-					traceId: parsed.traceId,
-					room_id: parsed.room_id,
-					count: Array.isArray(parsed.messages) ? parsed.messages.length : 0,
-				});
 				callbacks.messages?.({
 					messages: parsed.messages ?? [],
 					participants: parsed.participants ?? [],
@@ -107,14 +102,8 @@ export function connect(roomId: string | number | null | undefined): void {
 					typeof parsed.room_id === 'string' || typeof parsed.room_id === 'number'
 						? String(parsed.room_id)
 						: undefined;
-				logger.info('ws:trace:new_message', {
-					room_id: rid,
-					message_id: parsed.message?.id,
-					system_message: parsed.message?.system_message,
-				});
 				callbacks.new_message?.(parsed.message, rid);
 			} else if (cmd === 'chatsUpdate') {
-				logger.info('ws:trace:chatsUpdate', {});
 				const u = typeof localStorage !== 'undefined' ? localStorage.getItem('username') : '';
 				const t = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : '';
 				callbacks.chatsUpdate?.(u ?? '', t ?? '');
@@ -154,11 +143,8 @@ export function disconnect(): void {
 	}
 }
 
-export function fetchMessages(username: string, chatId: string, msgCount = 50, traceId?: string): void {
-	const payload: Record<string, unknown> = { command: 'load_messages', username, chatId, msgCount };
-	if (traceId) payload.traceId = traceId;
-	logger.info('ws:trace:load_messages send', { traceId: traceId ?? '(none)', chatId, msgCount });
-	send(payload);
+export function fetchMessages(username: string, chatId: string, msgCount = 50): void {
+	send({ command: 'load_messages', username, chatId, msgCount });
 }
 
 export function newChatMessage(msg: { from: string; content: string; chatId: string }): void {

@@ -5,7 +5,6 @@
 	import { addParticipants } from '$lib/api/chat';
 	import UserSearchBar from '$lib/components/UserSearchBar.svelte';
 	import { username } from '$lib/stores/auth';
-	import { generateTraceId } from '$lib/utils/trace';
 	import * as ws from '$lib/websocket';
 
 	let selectedUsers = $state<{ id: number; username: string }[]>([]);
@@ -45,11 +44,10 @@
 			return;
 		}
 		loading = true;
-		const traceId = generateTraceId();
 		try {
 			const addedIds = selectedUsers.map((u) => u.id);
 			const addedUsernames = selectedUsers.map((u) => u.username);
-			await addParticipants(chatId, actorId, addedIds, role === 'Admin', traceId);
+			await addParticipants(chatId, actorId, addedIds, role === 'Admin');
 			const nextParticipants = Array.from(new Set([...($participants ?? []), ...addedUsernames]));
 			participants.set(nextParticipants);
 			participantsCount.set(nextParticipants.length);
@@ -57,7 +55,7 @@
 				const nextAdmins = Array.from(new Set([...($admins ?? []), ...addedUsernames]));
 				admins.set(nextAdmins);
 			}
-			ws.fetchMessages(currentUsername, chatId, 50, traceId);
+			ws.fetchMessages(currentUsername, chatId, 50);
 			closeAddMemberPopup();
 			selectedUsers = [];
 			role = 'Participant';

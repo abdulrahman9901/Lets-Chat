@@ -16,7 +16,6 @@ import hashlib
 import os
 import sys
 from django.contrib.auth.hashers import PBKDF2PasswordHasher
-from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -225,10 +224,6 @@ if _cors_origins:
 else:
     CORS_ALLOWED_ORIGINS = []
     CORS_ORIGIN_ALLOW_ALL = True
-
-CORS_ALLOW_HEADERS = list(default_headers) + [
-    'x-trace-id',
-]
 # https://django-allauth.readthedocs.io/en/latest/advanced.html
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 

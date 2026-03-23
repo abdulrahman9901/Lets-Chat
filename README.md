@@ -29,4 +29,4 @@ If the Django API sets `CORS_ALLOWED_ORIGINS` (recommended for production), it m
 
 `CORS_ALLOWED_ORIGINS=https://lets-chat-gray.vercel.app,https://your-app-git-branch.vercel.app`
 
-If the frontend origin is missing, the browser shows a CORS error on `PUT /chat/<id>/update/` and similar requests. The API allows the `X-Trace-Id` request header used by the Svelte client.
+If the frontend origin is missing, the browser shows a CORS error on `PUT /chat/<id>/update/` and similar requests.

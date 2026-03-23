@@ -17,17 +17,14 @@ export async function apiRequest<T>(
 	options: Omit<RequestInit, 'body' | 'headers'> & {
 		body?: unknown;
 		headers?: Record<string, string>;
-		traceId?: string;
 	} = {}
 ): Promise<T> {
 	const t = get(token);
-	const traceId = options.traceId;
-	const { traceId: _omitTrace, body, headers: extraHeaders, ...rest } = options;
+	const { body, headers: extraHeaders, ...rest } = options;
 	const headers: Record<string, string> = {
 		'Content-Type': 'application/json',
 		...(t ? { Authorization: `Token ${t}` } : {}),
 		'X-CSRFToken': getCsrfToken(),
-		...(traceId ? { 'X-Trace-Id': traceId } : {}),
 		...(extraHeaders ?? {}),
 	};
 	const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
