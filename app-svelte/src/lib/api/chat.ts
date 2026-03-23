@@ -82,15 +82,13 @@ export async function addParticipants(
 
 export async function promoteToAdmins(
 	chatId: string,
-	actorId: number,
-	promotedIds: number[]
+	promotedUsernames: string[]
 ): Promise<unknown> {
 	return apiRequest(`/chat/${chatId}/update/`, {
 		method: 'PUT',
 		body: {
 			command: 'promoteAdmin',
-			actorId,
-			promotedIds,
+			promotedUsernames,
 		},
 	});
 }

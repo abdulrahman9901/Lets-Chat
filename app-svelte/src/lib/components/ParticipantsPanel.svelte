@@ -105,18 +105,11 @@
 
 	async function doPromote(target: string) {
 		if (!chatId) return;
-		if (!actorId) return;
 		promoteError = '';
-
-		const targetId = ($participantsMeta ?? []).find((p) => p.username === target)?.id ?? null;
-		if (!targetId) {
-			promoteError = 'Unable to identify participant.';
-			return;
-		}
 
 		promoteLoading = target;
 		try {
-			await promoteToAdmins(chatId, actorId, [targetId]);
+			await promoteToAdmins(chatId, [target]);
 			const nextAdmins = Array.from(new Set([...($admins ?? []), target]));
 			const meta = ($participantsMeta ?? []).find((p) => p.username === target);
 			const nextAdminsMeta = meta

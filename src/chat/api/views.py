@@ -103,6 +103,72 @@ class ChatUpdateView(UpdateAPIView):
     serializer_class = ChatSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
+    def put(self, request, *args, **kwargs):
+        cmd = request.data.get('command')
+        if cmd == 'promoteAdmin':
+            return self._handle_promote_admin(request, kwargs.get('pk'))
+        return super().put(request, *args, **kwargs)
+
+    def _handle_promote_admin(self, request, pk):
+        chat = get_object_or_404(Chat, pk=pk)
+
+        promoted_usernames = request.data.get('promotedUsernames')
+        promoted_ids = request.data.get('promotedIds')
+
+        if isinstance(promoted_usernames, list) and any(str(u).strip() for u in promoted_usernames):
+            target_contacts = []
+            for raw in promoted_usernames:
+                uname = str(raw).strip()
+                if not uname:
+                    continue
+                contact = Contact.objects.filter(user__username=uname).first()
+                if contact:
+                    target_contacts.append(contact)
+        else:
+            if not isinstance(promoted_ids, list) or not promoted_ids:
+                return Response({'detail': 'promotedUsernames or promotedIds must be provided'}, status=status.HTTP_400_BAD_REQUEST)
+            target_contacts = []
+            for raw_id in promoted_ids:
+                try:
+                    pid = int(raw_id)
+                except (TypeError, ValueError):
+                    continue
+                contact = Contact.objects.filter(pk=pid).first()
+                if contact:
+                    target_contacts.append(contact)
+
+        actor_contact = chat.admins.filter(user_id=request.user.id).first()
+        if actor_contact is None:
+            return Response({'detail': 'Only admins can promote others'}, status=status.HTTP_403_FORBIDDEN)
+
+        actor_username = request.user.username
+
+        added_any = False
+        for target in target_contacts:
+            if not chat.participants.filter(pk=target.pk).exists():
+                continue
+            if chat.admins.filter(pk=target.pk).exists():
+                continue
+
+            chat.admins.add(target)
+            sys_msg = Message.objects.create(
+                contact=actor_contact,
+                content='{} made {} an admin in the chat.'.format(actor_username, target.user.username),
+                system_message=True,
+            )
+            chat.messages.add(sys_msg)
+            send_socket_message(chat, sys_msg)
+            added_any = True
+
+        chat.save()
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)('chat_{}'.format(chat.id), {
+            'type': 'chat_message',
+            'message': {'command': 'chatsUpdate'},
+        })
+
+        return Response(ChatSerializer(chat, context={'request': request}).data, status=status.HTTP_200_OK)
+
 class ChatDeleteView(DestroyAPIView):
     queryset = Chat.objects.all()
     serializer_class = ChatSerializer
