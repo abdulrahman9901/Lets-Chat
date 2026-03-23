@@ -71,7 +71,7 @@
 							chatKey: payload.chatKey,
 							room_id: payload.room_id,
 						}),
-					(msg) => addMessage(msg),
+					(msg, roomId) => addMessage(msg, roomId),
 					(u) => {
 						getChats(u).then((chats) => setChats(chats));
 					}

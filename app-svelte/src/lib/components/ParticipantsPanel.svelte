@@ -10,6 +10,8 @@
 	import { onDestroy } from 'svelte';
 	import { kickMembers, promoteToAdmins } from '$lib/api/chat';
 	import { participantsCount } from '$lib/stores/message';
+	import { generateTraceId } from '$lib/utils/trace';
+	import * as ws from '$lib/websocket';
 
 	let currentUser = $derived($username ?? '');
 	let list = $derived(($participants ?? []).slice().sort((a, b) => a.localeCompare(b)));
@@ -90,12 +92,14 @@
 		const nextAdmins = ($admins ?? []).filter((a) => a !== target);
 
 		kickLoading = target;
+		const traceId = generateTraceId();
 		try {
-			await kickMembers(chatId, actorId, [targetId]);
+			await kickMembers(chatId, actorId, [targetId], traceId);
 			participants.set(nextParticipants);
 			participantsCount.set(nextParticipants.length);
 			admins.set(nextAdmins);
 			confirmKick = null;
+			ws.fetchMessages(currentUser, chatId, 50, traceId);
 		} catch (err) {
 			kickError = err instanceof Error ? err.message : 'Failed to remove participant';
 		} finally {
@@ -106,10 +110,20 @@
 	async function doPromote(target: string) {
 		if (!chatId) return;
 		promoteError = '';
+		if (!actorId) {
+			promoteError = 'Unable to identify current user.';
+			return;
+		}
+		const targetContactId = ($participantsMeta ?? []).find((p) => p.username === target)?.id ?? null;
+		if (!targetContactId) {
+			promoteError = 'Unable to identify participant.';
+			return;
+		}
 
 		promoteLoading = target;
+		const traceId = generateTraceId();
 		try {
-			await promoteToAdmins(chatId, [target]);
+			await promoteToAdmins(chatId, { actorId, promotedIds: [targetContactId] }, traceId);
 			const nextAdmins = Array.from(new Set([...($admins ?? []), target]));
 			const meta = ($participantsMeta ?? []).find((p) => p.username === target);
 			const nextAdminsMeta = meta
@@ -118,6 +132,7 @@
 			admins.set(nextAdmins);
 			adminsMeta.set(nextAdminsMeta);
 			confirmPromote = null;
+			ws.fetchMessages(currentUser, chatId, 50, traceId);
 		} catch (err) {
 			promoteError = err instanceof Error ? err.message : 'Failed to promote participant';
 		} finally {

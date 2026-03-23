@@ -1,10 +1,36 @@
 import { apiRequest, apiFormDataWithProgress } from './client';
+import { logger } from '$lib/logger';
+import { generateTraceId } from '$lib/utils/trace';
 import type { Chat } from '$lib/stores/message';
 
 export interface UserSearchHit {
 	id: number;
 	username: string;
 	email: string;
+}
+
+async function chatUpdatePut(
+	chatId: string,
+	body: Record<string, unknown>,
+	explicitTraceId?: string
+): Promise<unknown> {
+	const traceId = explicitTraceId ?? generateTraceId();
+	const payload: Record<string, unknown> = { ...body, traceId };
+	logger.info('chat:trace:PUT /chat/update', {
+		traceId,
+		chatId,
+		command: payload['command'],
+		actorId: payload['actorId'],
+		promotedIds: payload['promotedIds'],
+		addedIds: payload['addedIds'],
+	});
+	const result = await apiRequest(`/chat/${chatId}/update/`, {
+		method: 'PUT',
+		body: payload,
+		traceId,
+	});
+	logger.info('chat:trace:PUT /chat/update ok', { traceId, chatId });
+	return result;
 }
 
 export async function searchUsers(q: string, limit = 20): Promise<UserSearchHit[]> {
@@ -42,55 +68,67 @@ export async function joinChat(username: string, chatKey: string): Promise<{ dat
 	});
 }
 
-export async function leaveChat(chatId: string, actorId: number): Promise<unknown> {
-	return apiRequest(`/chat/${chatId}/update/`, {
-		method: 'PUT',
-		body: {
+export async function leaveChat(chatId: string, actorId: number, traceId?: string): Promise<unknown> {
+	return chatUpdatePut(
+		chatId,
+		{
 			command: 'leave',
 			actorId,
 		},
-	});
+		traceId
+	);
 }
 
-export async function kickMembers(chatId: string, actorId: number, removedIds: number[]): Promise<unknown> {
-	return apiRequest(`/chat/${chatId}/update/`, {
-		method: 'PUT',
-		body: {
+export async function kickMembers(
+	chatId: string,
+	actorId: number,
+	removedIds: number[],
+	traceId?: string
+): Promise<unknown> {
+	return chatUpdatePut(
+		chatId,
+		{
 			command: 'removeMember',
 			actorId,
 			removedIds,
 		},
-	});
+		traceId
+	);
 }
 
 export async function addParticipants(
 	chatId: string,
 	actorId: number,
 	addedIds: number[],
-	asAdmin: boolean
+	asAdmin: boolean,
+	traceId?: string
 ): Promise<unknown> {
-	return apiRequest(`/chat/${chatId}/update/`, {
-		method: 'PUT',
-		body: {
+	return chatUpdatePut(
+		chatId,
+		{
 			command: 'addParticipant',
 			actorId,
 			addedIds,
 			promotedIds: asAdmin ? addedIds : [],
 		},
-	});
+		traceId
+	);
 }
 
 export async function promoteToAdmins(
 	chatId: string,
-	promotedUsernames: string[]
+	params: { actorId: number; promotedIds: number[] },
+	traceId?: string
 ): Promise<unknown> {
-	return apiRequest(`/chat/${chatId}/update/`, {
-		method: 'PUT',
-		body: {
+	return chatUpdatePut(
+		chatId,
+		{
 			command: 'promoteAdmin',
-			promotedUsernames,
+			actorId: params.actorId,
+			promotedIds: params.promotedIds,
 		},
-	});
+		traceId
+	);
 }
 
 export async function deleteChat(chatId: string): Promise<unknown> {
