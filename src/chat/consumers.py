@@ -64,8 +64,14 @@ class ChatConsumer(WebsocketConsumer):
         messages_qs = load_last_messages(chat_id, data.get('msgCount', 50))
         chat = get_current_chat(chat_id)
         username = data.get('username', '')
-        members = [c.user.username for c in chat.participants.all()]
-        admins = [a.user.username for a in chat.admins.all()]
+        participant_contacts = chat.participants.all()
+        admin_contacts = chat.admins.all()
+
+        members = [c.user.username for c in participant_contacts]
+        admins = [a.user.username for a in admin_contacts]
+
+        participants_meta = [{'id': c.id, 'username': c.user.username} for c in participant_contacts]
+        admins_meta = [{'id': a.id, 'username': a.user.username} for a in admin_contacts]
 
         if username in members:
             content = {
@@ -74,6 +80,8 @@ class ChatConsumer(WebsocketConsumer):
                 'messages': self.messages_to_json(messages_qs),
                 'participants': members,
                 'admins': admins,
+                'participantsMeta': participants_meta,
+                'adminsMeta': admins_meta,
                 'name': chat.name,
                 'chatKey': ChatSerializer(chat).data['chatKey'],
             }
@@ -84,6 +92,8 @@ class ChatConsumer(WebsocketConsumer):
                 'messages': [],
                 'participants': members,
                 'admins': [],
+                'participantsMeta': participants_meta,
+                'adminsMeta': admins_meta,
                 'name': chat.name,
             }
         self.send_message(content)
