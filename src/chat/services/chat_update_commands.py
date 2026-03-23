@@ -97,6 +97,8 @@ def contacts_for_promote_ids(chat: Any, raw_ids: list[int] | None) -> list[Conta
 def resolve_actor(data: dict[str, Any]) -> Contact | None:
     actor_id = data.get('actorId')
     actor = Contact.objects.filter(id=actor_id).first() if actor_id is not None else None
+    if actor is None and actor_id is not None:
+        actor = Contact.objects.filter(user__id=actor_id).first()
     if actor is not None:
         return actor
 
@@ -254,10 +256,11 @@ def handle_promote_admin(
     if actually_promoted:
         chat.admins.add(*actually_promoted)
 
-    if actually_promoted and actor:
+    if promoted_contacts and actor:
+        contacts_for_message = actually_promoted or promoted_contacts
         content = '{} promoted {} to admin.'.format(
             actor.user.username,
-            format_contact_names(actually_promoted),
+            format_contact_names(contacts_for_message),
         )
         msg = Message.objects.create(contact=actor, content=content, system_message=True)
         chat.messages.add(msg)
