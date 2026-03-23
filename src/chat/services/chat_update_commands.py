@@ -44,6 +44,21 @@ def contacts_from_ids(ids: list[int] | None) -> list[Contact]:
     )
 
 
+def contacts_from_user_ids(user_ids: list[int] | None) -> list[Contact]:
+    if not user_ids:
+        return []
+
+    user_ids_set = set(user_ids)
+    base_contacts = Contact.objects.select_related('user').filter(user__id__in=user_ids_set)
+    existing_contact_user_ids = set(base_contacts.values_list('user__id', flat=True))
+    users = CustomUser.objects.filter(id__in=user_ids_set).exclude(id__in=existing_contact_user_ids)
+
+    if users.exists():
+        Contact.objects.bulk_create([Contact(user=u) for u in users])
+
+    return list(Contact.objects.select_related('user').filter(user__id__in=user_ids_set))
+
+
 def resolve_actor(data: dict[str, Any]) -> Contact | None:
     actor_id = data.get('actorId')
     actor = Contact.objects.filter(id=actor_id).first() if actor_id is not None else None
@@ -134,7 +149,7 @@ def handle_add_participant(
     broadcaster: Callable[[Any, Message], None],
 ) -> Any:
     added_ids = data.get('addedIds') or []
-    added_contacts = contacts_from_ids(added_ids)
+    added_contacts = contacts_from_user_ids(added_ids)
 
     if not added_contacts and 'participants' in validated_data:
         snapshot_usernames = validated_data.get('participants') or []
@@ -151,7 +166,7 @@ def handle_add_participant(
         existing_participant_ids.update({c.id for c in missing_participants_from_added})
 
     promoted_ids = data.get('promotedIds') or []
-    promoted_contacts = contacts_from_ids(promoted_ids)
+    promoted_contacts = contacts_from_user_ids(promoted_ids)
 
     missing_participants_from_promoted = [
         c for c in promoted_contacts if c.id not in existing_participant_ids
@@ -194,11 +209,7 @@ def handle_promote_admin(
     broadcaster: Callable[[Any, Message], None],
 ) -> Any:
     promoted_ids = data.get('promotedIds') or []
-    promoted_contacts = contacts_from_ids(promoted_ids)
-
-    if not promoted_contacts and 'admins' in validated_data:
-        snapshot_admins = validated_data.get('admins') or []
-        promoted_contacts = [get_user_contact(u) for u in snapshot_admins if u]
+    promoted_contacts = contacts_from_user_ids(promoted_ids)
 
     existing_admin_ids = set(chat.admins.values_list('id', flat=True))
     actually_promoted = [c for c in promoted_contacts if c.id not in existing_admin_ids]

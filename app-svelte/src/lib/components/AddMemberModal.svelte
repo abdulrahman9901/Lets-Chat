@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { participants } from '$lib/stores/message';
 	import { showAddMemberPopup, closeAddMemberPopup } from '$lib/stores/nav';
 	import { addParticipants, searchUsers } from '$lib/api/chat';
 
-	let selectedUsernames = $state<string[]>([]);
+	let selectedUsers = $state<{ id: number; username: string }[]>([]);
 	let role = $state<'Participant' | 'Admin'>('Participant');
 	let loading = $state(false);
 	let error = $state('');
@@ -24,7 +23,7 @@
 			.then((list) => {
 				if (searchQuery.trim() !== q) return;
 				const arr = Array.isArray(list) ? list : [];
-				const existing = new Set(selectedUsernames);
+				const existing = new Set(selectedUsers.map((u) => u.username));
 				searchResults = arr.filter((u) => u && typeof u.username === 'string' && !existing.has(u.username));
 			})
 			.catch(() => {
@@ -38,30 +37,31 @@
 		searchDebounce = setTimeout(runSearch, 120);
 	}
 
-	function addUser(u: { username: string }) {
-		if (selectedUsernames.includes(u.username)) return;
-		selectedUsernames = [...selectedUsernames, u.username];
+	function addUser(u: { id: number; username: string }) {
+		if (selectedUsers.some((sel) => sel.username === u.username)) return;
+		selectedUsers = [...selectedUsers, { id: u.id, username: u.username }];
 		searchQuery = '';
 		searchResults = [];
 	}
 
 	function removeUser(username: string) {
-		selectedUsernames = selectedUsernames.filter((p) => p !== username);
+		selectedUsers = selectedUsers.filter((u) => u.username !== username);
 	}
 
 	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault();
 		if (!chatId) return;
 		error = '';
-		if (selectedUsernames.length === 0) {
+		if (selectedUsers.length === 0) {
 			error = 'Add at least one participant.';
 			return;
 		}
 		loading = true;
 		try {
-			await addParticipants(chatId, $participants, selectedUsernames, role === 'Admin');
+			const newUserIds = selectedUsers.map((u) => u.id);
+			await addParticipants(chatId, newUserIds, role === 'Admin');
 			closeAddMemberPopup();
-			selectedUsernames = [];
+			selectedUsers = [];
 			role = 'Participant';
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to add member(s)';
@@ -80,17 +80,21 @@
 				<p class="hint">Type a name or part of it; click a suggestion to add. Chosen persons appear in the bar.</p>
 				<div class="search-wrap">
 					<div class="search-bar">
-						{#each selectedUsernames as name (name)}
+						{#each selectedUsers as u (u.username)}
 							<span class="chip">
-								{name}
-								<button type="button" class="chip-remove" onclick={() => removeUser(name)} aria-label="Remove">×</button>
+								{u.username}
+								<button
+									type="button"
+									class="chip-remove"
+									onclick={() => removeUser(u.username)}
+									aria-label="Remove">×</button>
 							</span>
 						{/each}
 						<input
 							type="text"
 							bind:value={searchQuery}
 							oninput={onSearchInput}
-							placeholder={selectedUsernames.length ? 'Add another…' : 'e.g. charlie or cha'}
+							placeholder={selectedUsers.length ? 'Add another…' : 'e.g. charlie or cha'}
 							disabled={loading}
 							autocomplete="off"
 							class="search-input"

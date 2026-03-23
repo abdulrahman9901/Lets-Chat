@@ -30,10 +30,12 @@ class ChatUpdateCommandsTests(TestCase):
         self.user_admin = CustomUser.objects.create_user(username='admin_u', password='x', gender='M', phone_number='1')
         self.user_a = CustomUser.objects.create_user(username='a_u', password='x', gender='M', phone_number='2')
         self.user_b = CustomUser.objects.create_user(username='b_u', password='x', gender='M', phone_number='3')
+        self.user_admin3 = CustomUser.objects.create_user(username='admin3', password='x', gender='M', phone_number='4')
 
         self.contact_admin = Contact.objects.create(user=self.user_admin)
         self.contact_a = Contact.objects.create(user=self.user_a)
         self.contact_b = Contact.objects.create(user=self.user_b)
+        self.contact_admin3 = Contact.objects.create(user=self.user_admin3)
 
         self.chat = Chat.objects.create(name='t')
         self.chat.participants.add(self.contact_admin, self.contact_a)
@@ -127,6 +129,57 @@ class ChatUpdateCommandsTests(TestCase):
 
         self.assertTrue(updated.participants.filter(id=self.contact_b.id).exists())
         self.assertTrue(updated.messages.filter(system_message=True, content__icontains='added').exists())
+
+    @patch('chat.services.chat_broadcast.get_channel_layer', return_value=_DummyChannelLayer())
+    def test_add_participant_promote_admin_does_not_promote_others(self, _layer):
+        self.chat.participants.add(self.contact_admin3)
+        self.chat.participants.add(self.contact_b)
+
+        django_req = self.factory.put(
+            f'/chat/{self.chat.id}/update/',
+            {
+                'command': 'addParticipant',
+                'actorId': self.contact_admin.id,
+                'addedIds': [self.contact_b.id],
+                'promotedIds': [self.contact_b.id],
+            },
+            format='json',
+        )
+        req = Request(django_req, parsers=[JSONParser()])
+        s = ChatSerializer(self.chat, data={}, partial=True, context={'request': req})
+        s.is_valid(raise_exception=True)
+        updated = s.save()
+
+        self.assertTrue(updated.admins.filter(id=self.contact_b.id).exists())
+        self.assertFalse(updated.admins.filter(id=self.contact_admin3.id).exists())
+        self.assertTrue(updated.messages.filter(system_message=True, content__icontains='promoted').exists())
+
+    @patch('chat.services.chat_broadcast.get_channel_layer', return_value=_DummyChannelLayer())
+    def test_add_participant_promote_admin_user_id_collision_does_not_promote_wrong_contact(self, _layer):
+        extra_contact = Contact.objects.create(user=self.user_admin3)
+        user_target = CustomUser.objects.create_user(username='target_u', password='x', gender='M', phone_number='5')
+        contact_target = Contact.objects.create(user=user_target)
+        self.chat.participants.add(extra_contact, contact_target)
+
+        self.assertEqual(extra_contact.id, user_target.id)
+
+        django_req = self.factory.put(
+            f'/chat/{self.chat.id}/update/',
+            {
+                'command': 'addParticipant',
+                'actorId': self.contact_admin.id,
+                'addedIds': [user_target.id],
+                'promotedIds': [user_target.id],
+            },
+            format='json',
+        )
+        req = Request(django_req, parsers=[JSONParser()])
+        s = ChatSerializer(self.chat, data={}, partial=True, context={'request': req})
+        s.is_valid(raise_exception=True)
+        updated = s.save()
+
+        self.assertTrue(updated.admins.filter(id=contact_target.id).exists())
+        self.assertFalse(updated.admins.filter(id=extra_contact.id).exists())
 
     @patch('chat.services.chat_broadcast.get_channel_layer', return_value=_DummyChannelLayer())
     def test_promote_admin_by_ids(self, _layer):
