@@ -59,6 +59,17 @@ def contacts_from_user_ids(user_ids: list[int] | None) -> list[Contact]:
     return list(Contact.objects.select_related('user').filter(user__id__in=user_ids_set))
 
 
+def contacts_from_usernames(usernames: list[str] | None) -> list[Contact]:
+    if not usernames:
+        return []
+
+    cleaned_usernames = {u.strip() for u in usernames if isinstance(u, str) and u.strip()}
+    if not cleaned_usernames:
+        return []
+
+    return [get_user_contact(username) for username in cleaned_usernames]
+
+
 def resolve_actor(data: dict[str, Any]) -> Contact | None:
     actor_id = data.get('actorId')
     actor = Contact.objects.filter(id=actor_id).first() if actor_id is not None else None
@@ -210,6 +221,9 @@ def handle_promote_admin(
 ) -> Any:
     promoted_ids = data.get('promotedIds') or []
     promoted_contacts = contacts_from_user_ids(promoted_ids)
+    if not promoted_contacts:
+        promoted_usernames = data.get('promotedUsernames') or data.get('admins') or []
+        promoted_contacts = contacts_from_usernames(promoted_usernames)
 
     existing_admin_ids = set(chat.admins.values_list('id', flat=True))
     actually_promoted = [c for c in promoted_contacts if c.id not in existing_admin_ids]
